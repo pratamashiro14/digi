@@ -103,8 +103,7 @@ if(isset($_SESSION['keranjang'])) {
                             <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
 
                         <?php } else { ?>
-                            <a href="#" class="flex-c-m trans-04 p-lr-25" onclick="$('#loginModal').modal('show'); return false;">Akun saya</a>
-                            <a href="#" class="flex-c-m trans-04 p-lr-25" onclick="$('#designerModal').modal('show'); return false;">Desainer</a>
+                            <a href="login.php" class="flex-c-m trans-04 p-lr-25">Masuk / Daftar</a>
                         <?php } ?>
 					</div>
 				</div>
@@ -157,8 +156,7 @@ if(isset($_SESSION['keranjang'])) {
                         <a href="profil.php" class="flex-c-m p-lr-10 trans-04">Halo, <?php echo $nama_user; ?></a>
                         <a href="logout.php" class="flex-c-m p-lr-10 trans-04">Logout</a>
                     <?php } else { ?>
-                        <a href="#" class="flex-c-m p-lr-10 trans-04" onclick="$('#loginModal').modal('show'); return false;">Akun saya</a>
-                        <a href="#" class="flex-c-m p-lr-10 trans-04" onclick="$('#designerModal').modal('show'); return false;">Desainer</a>
+                        <a href="login.php" class="flex-c-m p-lr-10 trans-04">Masuk / Daftar</a>
                     <?php } ?>
                 </div></li>
 			</ul>

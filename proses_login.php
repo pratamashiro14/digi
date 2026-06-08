@@ -2,58 +2,44 @@
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
-$email = $_POST['email'];
-$password_input = $_POST['password']; // Password yang diketik user
+$email          = $_POST['email'] ?? '';
+$password_input = $_POST['password'] ?? '';
 
-// 1. Cek dulu apakah Emailnya ada di database?
-$query = mysqli_query($koneksi, "SELECT * FROM t_user WHERE email='$email'");
-$cek_email = mysqli_num_rows($query);
+// Amankan input email untuk query
+$email_safe = mysqli_real_escape_string($koneksi, $email);
 
-if($cek_email > 0){
-    // Ambil datanya
-    $data = mysqli_fetch_assoc($query);
-    $password_db = $data['password']; // Password asli di database (Hash/MD5/Plain)
+// 1. Cari akun berdasarkan email (tabel t_user untuk pembeli & desainer)
+$query     = mysqli_query($koneksi, "SELECT * FROM t_user WHERE email='$email_safe'");
+$cek_email = $query ? mysqli_num_rows($query) : 0;
 
-    // 2. CEK PASSWORD (YANG DIPERBAIKI)
-    // Sekarang kita cek 3 kemungkinan:
-    // A. Apakah cocok pakai password_verify? (Untuk akun yang baru daftar lewat web)
-    // B. Apakah cocok pakai MD5? (Untuk akun lama)
-    // C. Apakah cocok polos/biasa? (Untuk akun yang diinsert manual di database)
-    
-    if(password_verify($password_input, $password_db) || md5($password_input) == $password_db || $password_input == $password_db) {
-        
-        // --- JIKA LOGIN BERHASIL ---
+if ($cek_email > 0) {
+    $data        = mysqli_fetch_assoc($query);
+    $password_db = $data['password'];
 
-        // Cek Role: Kalau ini akun Desainer, suruh ke login desainer
-        if(isset($data['role']) && $data['role'] == 'designer'){
-             echo "<script>
-                alert('Ini akun Desainer. Silakan login di menu Desainer.');
-                window.location.href='index.php';
-            </script>";
-            exit();
+    // 2. Cek password (dukung 3 format: password_hash, md5, plaintext)
+    $cocok = password_verify($password_input, $password_db)
+          || md5($password_input) === $password_db
+          || $password_input === $password_db;
+
+    if ($cocok) {
+        // 3. OTOMATIS arahkan sesuai ROLE di database
+        $role = strtolower(trim($data['role'] ?? ''));
+
+        if ($role === 'designer' || $role === 'desainer') {
+            // --- Login sebagai DESAINER ---
+            login_as_designer($data['id_user'], $data['nama'], $data['email']);
+            redirect_with_alert('Login berhasil sebagai Desainer! Selamat datang, ' . $data['nama'] . '.', 'index.php');
+        } else {
+            // --- Login sebagai USER / Pembeli ---
+            login_as_user($data['id_user'], $data['nama'], $data['email']);
+            redirect_with_alert('Login berhasil! Selamat datang, ' . $data['nama'] . '.', 'index.php');
         }
-
-        // Simpan sesi baru secara seragam (lihat auth.php)
-        login_as_user($data['id_user'], $data['nama'], $data['email']);
-
-        echo "<script>
-            alert('Login Berhasil!');
-            window.location.href='index.php';
-        </script>";
-
     } else {
-        // Jika Password Salah
-        echo "<script>
-            alert('Password Salah! (Pastikan Capslock mati)');
-            window.history.back();
-        </script>";
+        // Password salah
+        echo "<script>alert('Password salah! (Pastikan Capslock mati)'); window.history.back();</script>";
     }
-
 } else {
-    // Jika Email Tidak Ditemukan
-    echo "<script>
-        alert('Email tidak terdaftar!');
-        window.history.back();
-    </script>";
+    // Email tidak ditemukan
+    echo "<script>alert('Email tidak terdaftar! Silakan daftar dulu.'); window.history.back();</script>";
 }
 ?>

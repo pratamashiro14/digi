@@ -41,7 +41,7 @@ if(!isset($jumlah_item_keranjang)) {
 }
 ?>
 
-<header>
+<header class="header-v4">
 	<div class="container-menu-desktop">
 		<div class="top-bar">
 			<div class="content-topbar flex-sb-m h-full container">

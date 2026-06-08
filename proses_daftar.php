@@ -29,15 +29,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Ini SANGAT PENTING supaya password_verify di login bekerja
         $password_hashed = password_hash($pass_input, PASSWORD_DEFAULT);
 
-        // Generate ID Random (Karena data contohmu ID-nya acak spt 202, 303)
-        $id_user = rand(100, 999); 
+        // Generate ID random yang tidak bentrok dengan user lama
+        do {
+            $id_user = rand(100, 999);
+            $check_id = "SELECT id_user FROM t_user WHERE id_user = '$id_user'";
+            $result_id = $conn->query($check_id);
+        } while ($result_id && $result_id->num_rows > 0);
 
         // 4. Insert Data
         $sql = "INSERT INTO t_user (id_user, nama, email, password, role, status, premium, foto) 
                 VALUES ('$id_user', '$nama', '$email', '$password_hashed', '$role', 'aktif', 0, 'default.jpg')";
 
         if ($conn->query($sql) === TRUE) {
-            echo "<script>alert('Pendaftaran Berhasil! Silakan Login dengan akun baru Anda.'); window.location='index.php';</script>";
+            echo "<script>alert('Pendaftaran Pembeli berhasil! Silakan login dengan akun baru Anda.'); window.location='index.php';</script>";
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }

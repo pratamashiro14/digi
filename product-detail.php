@@ -106,100 +106,10 @@ if(isset($_SESSION['id_user'])){
 </head>
 <body class="animsition">
 
-    <header class="header-v4">
-        <div class="container-menu-desktop">
-            <div class="top-bar">
-                <div class="content-topbar flex-sb-m h-full container">
-                    <div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div>
-                    <div class="right-top-bar flex-w h-full">
-                        <a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
-
-                        <?php if ($is_designer_logged_in) { ?>
-                            <a href="profil_desainer.php" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_desainer; ?> (Desainer)</a>
-                            <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-
-                        <?php } elseif ($is_user_logged_in) { ?>
-                            <a href="profil.php" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_user; ?></a>
-                            <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-
-                        <?php } else { ?>
-                            <a href="#" class="flex-c-m trans-04 p-lr-25" onclick="$('#loginModal').modal('show'); return false;">Akun saya</a>
-                            <a href="#" class="flex-c-m trans-04 p-lr-25" onclick="$('#designerModal').modal('show'); return false;">Desainer</a>
-                        <?php } ?>
-                    </div>
-                </div>
-            </div>
-
-            <div class="wrap-menu-desktop">
-                <nav class="limiter-menu-desktop container">
-                    <a href="index.php" class="logo"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-                    <div class="menu-desktop">
-                        <ul class="main-menu">
-                            <li><a href="index.php">Beranda</a></li>
-                            <li class="active-menu"><a href="product.php">Pasar Desain</a></li>
-                            <li><a href="shoping-cart.php">Pembelian</a></li>
-                            <li><a href="premium.php">Fitur Unggulan</a></li>
-                            <li><a href="contact.php">Hubungi Kami</a></li>
-                        </ul>
-                    </div>  
-
-                    <div class="wrap-icon-header flex-w flex-r-m">
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" 
-                             data-notify="<?php echo $jumlah_item_keranjang; ?>">
-                            <i class="zmdi zmdi-shopping-cart"></i>
-                        </div>
-                        <a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti" data-notify="0"><i class="zmdi zmdi-favorite-outline"></i></a>
-                    </div>
-                </nav>
-            </div>  
-        </div>
-
-        <div class="wrap-header-mobile">
-            <div class="logo-mobile"><a href="index.php"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a></div>
-            <div class="wrap-icon-header flex-w flex-r-m m-r-15">
-                <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
-                <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="<?php echo $jumlah_item_keranjang; ?>">
-                    <i class="zmdi zmdi-shopping-cart"></i>
-                </div>
-            </div>
-            <div class="btn-show-menu-mobile hamburger hamburger--squeeze"><span class="hamburger-box"><span class="hamburger-inner"></span></span></div>
-        </div>
-
-        <div class="menu-mobile">
-            <ul class="topbar-mobile">
-                <li><div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div></li>
-                <li><div class="right-top-bar flex-w h-full">
-                    <a href="#" class="flex-c-m p-lr-10 trans-04">Bantuan</a>
-                    <?php if ($is_designer_logged_in) { ?>
-                        <a href="profil_desainer.php" class="flex-c-m p-lr-10 trans-04">Halo, <?php echo $nama_desainer; ?></a>
-                        <a href="logout.php" class="flex-c-m p-lr-10 trans-04">Logout</a>
-                    <?php } elseif ($is_user_logged_in) { ?>
-                        <a href="profil.php" class="flex-c-m p-lr-10 trans-04">Halo, <?php echo $nama_user; ?></a>
-                        <a href="logout.php" class="flex-c-m p-lr-10 trans-04">Logout</a>
-                    <?php } else { ?>
-                        <a href="#" class="flex-c-m p-lr-10 trans-04" onclick="$('#loginModal').modal('show'); return false;">Akun saya</a>
-                        <a href="#" class="flex-c-m p-lr-10 trans-04" onclick="$('#designerModal').modal('show'); return false;">Desainer</a>
-                    <?php } ?>
-                </div></li>
-            </ul>
-            <ul class="main-menu-m">
-                <li><a href="index.php">Home</a></li>
-                <li><a href="product.php">Shop</a></li>
-                <li><a href="shoping-cart.php">Cart</a></li>
-            </ul>
-        </div>
-
-        <div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
-            <div class="container-search-header">
-                <button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search"><img src="images/icons/icon-close2.png" alt="CLOSE"></button>
-                <form class="wrap-search-header flex-w p-l-15">
-                    <button class="flex-c-m trans-04"><i class="zmdi zmdi-search"></i></button>
-                    <input class="plh3" type="text" name="search" placeholder="Search...">
-                </form>
-            </div>
-        </div>
-    </header>
+    <?php
+    $active_page = 'product';
+    include 'navbar.php';
+    ?>
 
     <div class="wrap-header-cart js-panel-cart">
         <div class="s-full js-hide-cart"></div>
@@ -270,7 +180,28 @@ if(isset($_SESSION['id_user'])){
                         <div class="p-t-33">
                             <div class="timer-box"><span id="timer-detail"><i class="fa fa-clock-o"></i> Loading Waktu...</span></div>
 
-                            <?php if($status_verifikasi == 'verified') { ?>
+                            <?php if(current_role() === 'designer') { ?>
+
+                                <div class="alert alert-info text-center" style="font-size:13px;">
+                                    Kamu sedang masuk sebagai <b>Desainer</b>. Penawaran hanya tersedia untuk pembeli.
+                                </div>
+                                <a href="unggahan.php" class="btn-verif" style="background:#2563eb;"><i class="fa fa-cloud-upload"></i> KELOLA UNGGAHAN</a>
+
+                            <?php } elseif(current_role() === 'admin') { ?>
+
+                                <div class="alert alert-secondary text-center" style="font-size:13px;">
+                                    Kamu sedang masuk sebagai <b>Admin</b>. Gunakan dashboard admin untuk mengelola data platform.
+                                </div>
+                                <a href="admin/beranda.php" class="btn-verif" style="background:#171717;"><i class="fa fa-dashboard"></i> BUKA DASHBOARD ADMIN</a>
+
+                            <?php } elseif(current_role() === 'guest') { ?>
+
+                                <div class="alert alert-warning text-center" style="font-size:13px;">
+                                    Masuk sebagai pembeli untuk ikut lelang dan mengajukan penawaran.
+                                </div>
+                                <a href="login.php" class="btn-verif"><i class="fa fa-sign-in"></i> MASUK SEBAGAI PEMBELI</a>
+
+                            <?php } elseif($status_verifikasi == 'verified') { ?>
                                 
                                 <form action="proses_bidding.php" method="POST">
                                     <input type="hidden" name="id_design" value="<?php echo $id_produk; ?>">
@@ -295,7 +226,7 @@ if(isset($_SESSION['id_user'])){
                             <?php } else { ?>
 
                                 <div class="alert alert-warning text-center" style="font-size:13px;">
-                                    Kamu harus <b>Verifikasi KTP</b> untuk ikut lelang. <br>(Biar gak Bid & Run!)
+                                    Kamu harus <b>Verifikasi KTP</b> untuk ikut lelang.
                                 </div>
                                 <a href="verifikasi.php" class="btn-verif"><i class="fa fa-id-card"></i> VERIFIKASI AKUN SEKARANG</a>
 

@@ -1,9 +1,9 @@
 <?php
-session_start();
+require_once __DIR__ . '/../auth.php';
 include 'koneksi.php'; // Pastikan koneksi.php ada dan benar
 
 if (isset($_POST['login'])) {
-    $email = $_POST['email'];
+    $email = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
     $password = $_POST['password'];
 
     $query = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE email='$email'");
@@ -28,7 +28,7 @@ if (isset($_POST['login'])) {
         }
 
         if ($pw_ok) {
-            $_SESSION['admin'] = $data['id_admin']; 
+            login_as_admin($data['id_admin']);
             header("Location: beranda.php");
             exit;
         } else {

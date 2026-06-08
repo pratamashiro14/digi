@@ -5,8 +5,8 @@ if(empty($_SESSION['admin'])){
   header('location:../logout.php');
 } else 
 ?>
-<!DOCTYPE php>
-<php lang="en">
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <title>Tables - Kaiadmin Bootstrap 5 Admin Dashboard</title>
@@ -44,6 +44,7 @@ if(empty($_SESSION['admin'])){
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
+    <link rel="stylesheet" href="../assets/css/digidesain-admin.css" />
 
     <!-- CSS Just for demo purpose, don't include it in your project -->
     <link rel="stylesheet" href="../assets/css/demo.css" />
@@ -486,4 +487,4 @@ include "../koneksi.php";
       });
     </script>
   </body>
-</php>
+</html>

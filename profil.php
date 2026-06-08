@@ -87,6 +87,7 @@ $nama_header = $_SESSION['nama'] ?? 'User';
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
 
@@ -121,32 +122,10 @@ $nama_header = $_SESSION['nama'] ?? 'User';
 </head>
 <body class="animsition">
 
-    <header class="header-v4">
-        <div class="container-menu-desktop">
-            <div class="top-bar">
-                <div class="content-topbar flex-sb-m h-full container">
-                    <div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div>
-                    <div class="right-top-bar flex-w h-full">
-                        <a href="index.php" class="flex-c-m trans-04 p-lr-25">Beranda</a>
-                        <a href="#" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_header; ?></a>
-                        <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-                    </div>
-                </div>
-            </div>
-            <div class="wrap-menu-desktop how-shadow1">
-                <nav class="limiter-menu-desktop container">
-                    <a href="index.php" class="logo"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-                    <div class="menu-desktop">
-                        <ul class="main-menu">
-                            <li><a href="index.php">Beranda</a></li>
-                            <li><a href="product.php">Pasar Desain</a></li>
-                            <li><a href="shoping-cart.php">Pembelian</a></li>
-                        </ul>
-                    </div>    
-                </nav>
-            </div>    
-        </div>
-    </header>
+    <?php
+    $active_page = 'profil';
+    include 'navbar.php';
+    ?>
 
     <div class="container p-t-50 p-b-80">
         <div class="row">

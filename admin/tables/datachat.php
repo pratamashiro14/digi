@@ -44,6 +44,7 @@ if(empty($_SESSION['admin'])){
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
+    <link rel="stylesheet" href="../assets/css/digidesain-admin.css" />
 
     <!-- CSS Just for demo purpose, don't include it in your project -->
     <link rel="stylesheet" href="../assets/css/demo.css" />
@@ -465,4 +466,4 @@ $query = mysqli_query($koneksi, "
     <!-- Kaiadmin JS -->
     <script src="../assets/js/kaiadmin.min.js"></script>
   </body>
-</php>
+</html>

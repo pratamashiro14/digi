@@ -1,0 +1,339 @@
+/* DIGIDESAIN admin UI refresh */
+:root {
+  --dd-admin-bg: #f6f7fb;
+  --dd-admin-ink: #111827;
+  --dd-admin-muted: #667085;
+  --dd-admin-border: #e5e7eb;
+  --dd-admin-sidebar: #121417;
+  --dd-admin-accent: #f05a3f;
+  --dd-admin-blue: #2563eb;
+}
+
+body {
+  background: var(--dd-admin-bg);
+  color: var(--dd-admin-ink);
+}
+
+.wrapper,
+.main-panel {
+  background: var(--dd-admin-bg);
+}
+
+.sidebar[data-background-color="dark"],
+.sidebar .sidebar-logo,
+.sidebar .logo-header {
+  background: var(--dd-admin-sidebar) !important;
+  border-right: 0 !important;
+}
+
+.sidebar .logo-header {
+  height: 72px !important;
+  padding: 0 18px !important;
+}
+
+.sidebar .logo-header .logo {
+  height: 100% !important;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar .logo-header .navbar-brand,
+.main-header-logo .navbar-brand {
+  height: 42px !important;
+  max-height: 42px !important;
+  width: auto !important;
+  object-fit: contain;
+}
+
+.sidebar .sidebar-wrapper {
+  padding-top: 10px;
+}
+
+.sidebar .nav {
+  gap: 3px;
+}
+
+.sidebar .nav > .nav-item {
+  margin: 0 10px;
+}
+
+.sidebar .nav > .nav-item > a {
+  min-height: 44px;
+  margin: 2px 0;
+  padding: 11px 13px !important;
+  border-radius: 8px;
+  color: #d1d5db !important;
+}
+
+.sidebar .nav > .nav-item > a p {
+  color: inherit !important;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+
+.sidebar .nav > .nav-item > a i {
+  color: #9ca3af !important;
+}
+
+.sidebar .nav > .nav-item > a:hover {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: #fff !important;
+}
+
+.sidebar .nav > .nav-item > a:hover i {
+  color: #fff !important;
+}
+
+.sidebar .nav > .nav-item.active > a {
+  background: #fff !important;
+  color: var(--dd-admin-ink) !important;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
+}
+
+.sidebar .nav > .nav-item.active > a i {
+  color: var(--dd-admin-accent) !important;
+}
+
+.sidebar #submenu,
+.custom-template {
+  display: none !important;
+}
+
+.main-panel > .main-header {
+  height: 72px;
+  background: transparent;
+  box-shadow: none;
+}
+
+.navbar-header {
+  min-height: 72px !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border-bottom: 1px solid var(--dd-admin-border) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
+  backdrop-filter: blur(14px);
+}
+
+.navbar-header .container-fluid {
+  min-height: 72px;
+}
+
+.navbar-form .input-group {
+  height: 42px;
+  background: #f4f6f8;
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  padding: 0 10px;
+}
+
+.navbar-form .form-control {
+  height: 40px;
+  background: transparent !important;
+  border: 0 !important;
+  color: var(--dd-admin-ink) !important;
+}
+
+.navbar-form .form-control:focus {
+  box-shadow: none;
+}
+
+.btn-search {
+  color: var(--dd-admin-muted) !important;
+}
+
+.topbar-nav .nav-link,
+.topbar-icon .nav-link {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 8px;
+  background: #f4f6f8;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  color: var(--dd-admin-ink) !important;
+}
+
+.topbar-nav .nav-link:hover,
+.topbar-icon .nav-link:hover {
+  background: var(--dd-admin-ink);
+  color: #fff !important;
+}
+
+.notification {
+  background: var(--dd-admin-accent) !important;
+  box-shadow: 0 6px 12px rgba(240, 90, 63, 0.28);
+}
+
+.topbar-user .profile-pic {
+  min-height: 42px;
+  padding: 4px 10px 4px 5px;
+  border-radius: 999px;
+  background: #f4f6f8;
+}
+
+.profile-username .op-7 {
+  color: var(--dd-admin-muted) !important;
+}
+
+.profile-username .fw-bold {
+  color: var(--dd-admin-ink) !important;
+}
+
+.avatar-sm {
+  width: 34px !important;
+  height: 34px !important;
+}
+
+.page-inner {
+  padding-top: 28px !important;
+}
+
+.page-header {
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.page-header h1,
+.page-header h3 {
+  font-size: 26px;
+  line-height: 1.2;
+  color: var(--dd-admin-ink);
+  letter-spacing: 0;
+}
+
+.breadcrumbs {
+  background: #fff;
+  border: 1px solid var(--dd-admin-border);
+  border-radius: 8px;
+  padding: 8px 12px;
+}
+
+.card {
+  border: 1px solid var(--dd-admin-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06) !important;
+}
+
+.card-header {
+  background: #fff !important;
+  border-bottom: 1px solid var(--dd-admin-border) !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.card-title {
+  color: var(--dd-admin-ink) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+}
+
+.table {
+  color: var(--dd-admin-ink);
+}
+
+.table thead th {
+  background: #f8fafc !important;
+  color: #475467 !important;
+  border-bottom: 1px solid var(--dd-admin-border) !important;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+}
+
+.table-hover tbody tr:hover {
+  background: #fbfcff;
+}
+
+.btn {
+  border-radius: 8px !important;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: var(--dd-admin-blue) !important;
+  border-color: var(--dd-admin-blue) !important;
+}
+
+.btn-secondary {
+  background: #111827 !important;
+  border-color: #111827 !important;
+}
+
+.badge {
+  border-radius: 999px;
+  font-weight: 700;
+  padding: 0.45em 0.7em;
+}
+
+.dropdown-menu {
+  border: 1px solid var(--dd-admin-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.14) !important;
+}
+
+.form-control,
+.form-select {
+  border-color: #d7dce3 !important;
+  border-radius: 8px !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--dd-admin-blue) !important;
+  box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.12) !important;
+}
+
+@media (min-width: 992px) {
+  .main-header-logo {
+    display: none !important;
+  }
+
+  .main-panel > .main-header {
+    width: calc(100% - 265px);
+  }
+}
+
+@media (max-width: 991.98px) {
+  .main-header-logo {
+    display: block !important;
+  }
+
+  .page-inner {
+    padding-top: 24px !important;
+  }
+
+  .sidebar .logo-header .navbar-brand,
+  .main-header-logo .navbar-brand {
+    height: 34px !important;
+    max-height: 34px !important;
+  }
+
+  .navbar-header,
+  .navbar-header .container-fluid {
+    min-height: 64px !important;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .page-inner {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+
+  .page-header h1,
+  .page-header h3 {
+    font-size: 22px;
+  }
+
+  .table-responsive,
+  .card-body {
+    overflow-x: auto;
+  }
+
+  .topbar-user .profile-username {
+    display: none;
+  }
+}

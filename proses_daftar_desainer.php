@@ -1,48 +1,39 @@
 <?php
-// Mulai Session
-session_start();
-
-// Hubungkan ke Database
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
-// 1. Tangkap Data dari Form
-$nama = $_POST['nama'];
-$email = $_POST['email'];
-$password = $_POST['password']; 
-// Jika password di database dienkripsi (md5), gunakan baris ini:
-// $password = md5($_POST['password']);
+$nama = mysqli_real_escape_string($koneksi, $_POST['nama'] ?? '');
+$email = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
+$password_input = $_POST['password'] ?? '';
 
-// 2. Validasi: Cek apakah Email sudah pernah terdaftar?
-// (Asumsi desainer disimpan di tabel 't_user'. Jika punya tabel 't_desainer' sendiri, ubah nama tabelnya)
-$cek_email = mysqli_query($koneksi, "SELECT * FROM t_user WHERE email = '$email'");
+if ($nama === '' || $email === '' || $password_input === '') {
+    redirect_with_alert('Lengkapi nama, email, dan kata sandi desainer.', 'index.php');
+}
 
-if(mysqli_num_rows($cek_email) > 0) {
-    // Jika email sudah ada
+$cek_email = mysqli_query($koneksi, "SELECT id_user FROM t_user WHERE email = '$email'");
+if ($cek_email && mysqli_num_rows($cek_email) > 0) {
     echo "<script>
-        alert('Gagal Daftar! Email sudah digunakan. Silakan gunakan email lain.');
-        window.history.back(); // Kembali ke halaman sebelumnya
+        alert('Gagal daftar! Email sudah digunakan. Silakan gunakan email lain.');
+        window.history.back();
     </script>";
     exit();
 }
 
-// 3. Simpan ke Database
-// Saya tambahkan kolom 'level' = 'desainer' untuk membedakan dengan user biasa.
-// Pastikan di database tabel t_user kamu ada kolom 'level' atau 'role'.
-// Jika tidak ada, hapus bagian ", level" dan ", 'desainer'".
+$password_hashed = password_hash($password_input, PASSWORD_DEFAULT);
+do {
+    $id_user = rand(100, 999);
+    $cek_id = mysqli_query($koneksi, "SELECT id_user FROM t_user WHERE id_user = '$id_user'");
+} while ($cek_id && mysqli_num_rows($cek_id) > 0);
 
-$query_insert = "INSERT INTO t_user (nama, email, password, role) VALUES ('$nama', '$email', '$password', 'designer')";
+$query_insert = "INSERT INTO t_user (id_user, nama, email, password, role, status, premium, foto)
+                 VALUES ('$id_user', '$nama', '$email', '$password_hashed', 'designer', 'aktif', 0, 'default.jpg')";
 
-if(mysqli_query($koneksi, $query_insert)) {
-    // Jika Berhasil Disimpan
-    echo "<script>
-        alert('Pendaftaran Desainer Berhasil! Silakan Login.');
-        window.location.href='index.php';
-    </script>";
-} else {
-    // Jika Gagal
-    echo "<script>
-        alert('Terjadi kesalahan sistem. Coba lagi nanti.');
-        window.history.back();
-    </script>";
+if (mysqli_query($koneksi, $query_insert)) {
+    redirect_with_alert('Pendaftaran Desainer berhasil! Silakan login sebagai desainer.', 'index.php');
 }
+
+echo "<script>
+    alert('Terjadi kesalahan sistem. Coba lagi nanti.');
+    window.history.back();
+</script>";
 ?>

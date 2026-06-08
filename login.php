@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk / Daftar — DIGIDESAIN</title>
+    <title>Masuk / Daftar - DIGIDESAIN</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -50,6 +50,15 @@
         .badge-role { font-size: 11px; background:#eef1ff; color:var(--brand); padding:3px 9px; border-radius:50px; }
         .back-home { position: absolute; top: 22px; left: 24px; color:#888; text-decoration:none; font-size:14px; }
         .back-home:hover { color: var(--brand); }
+        .role-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:22px; }
+        .role-option {
+            border:1px solid #e5e7ff; background:#fff; border-radius:10px; padding:10px 8px;
+            color:#333; text-decoration:none; text-align:left; min-height:76px; cursor:pointer;
+        }
+        .role-option:hover { border-color:var(--brand); color:#333; box-shadow:0 8px 22px rgba(78,96,255,.12); }
+        .role-option strong { display:block; font-size:13px; color:#222; margin-bottom:4px; }
+        .role-option span { display:block; font-size:11px; color:#777; line-height:1.35; }
+        @media (max-width: 520px) { .role-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
@@ -59,6 +68,21 @@
     <div class="auth-card">
         <h3 class="brand-title">DIGIDESAIN</h3>
         <p class="brand-sub">Marketplace Desain Grafis</p>
+
+        <div class="role-grid">
+            <button class="role-option" type="button" onclick="showAuthTab('#tab-pembeli')">
+                <strong>Pembeli</strong>
+                <span>Belanja, bidding, dan riwayat pembelian.</span>
+            </button>
+            <button class="role-option" type="button" onclick="showAuthTab('#tab-desainer')">
+                <strong>Desainer</strong>
+                <span>Unggah karya dan pantau penjualan.</span>
+            </button>
+            <a class="role-option" href="admin/">
+                <strong>Admin</strong>
+                <span>Kelola pengguna, karya, dan transaksi.</span>
+            </a>
+        </div>
 
         <!-- TAB HEADER -->
         <ul class="nav nav-pills nav-justified" id="authTab" role="tablist">
@@ -137,5 +161,13 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function showAuthTab(target) {
+            const trigger = document.querySelector('[data-bs-target="' + target + '"]');
+            if (trigger) {
+                bootstrap.Tab.getOrCreateInstance(trigger).show();
+            }
+        }
+    </script>
 </body>
 </html>

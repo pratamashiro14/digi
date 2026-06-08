@@ -3359,3 +3359,351 @@ input.num-product::-webkit-inner-spin-button {
 .account-menu a i { font-size: 17px; color: #4e60ff; width: 18px; text-align: center; }
 .account-menu a:hover { background: #f3f4ff; color: #4e60ff !important; }
 .account-divider { height: 1px; background: #ececec; margin: 6px 0; }
+
+/*=================================================================
+[ DIGIDESAIN UI Refresh ]*/
+:root {
+  --dd-ink: #171717;
+  --dd-muted: #6b7280;
+  --dd-border: #e8eaef;
+  --dd-accent: #f05a3f;
+  --dd-blue: #2563eb;
+}
+
+body {
+  background: #f8fafc;
+  color: var(--dd-ink);
+}
+
+.top-bar {
+  height: 36px;
+  background: #151515;
+}
+
+.content-topbar {
+  min-height: 36px;
+}
+
+.left-top-bar,
+.right-top-bar a,
+.account-dd .account-toggle {
+  color: #d4d4d8;
+  font-size: 12px;
+  letter-spacing: 0;
+}
+
+.right-top-bar a {
+  border-right: 0;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.right-top-bar a:first-child {
+  border-left: 0;
+}
+
+.right-top-bar a:hover,
+.account-dd .account-toggle:hover {
+  color: #fff;
+}
+
+.header-v4 .container-menu-desktop,
+header:not([class]) .container-menu-desktop {
+  height: 112px;
+}
+
+.wrap-menu-desktop {
+  top: 36px;
+  height: 76px;
+  background: rgba(255, 255, 255, 0.96);
+  border-bottom: 1px solid rgba(23, 23, 23, 0.08);
+  box-shadow: 0 14px 38px rgba(15, 23, 42, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.header-v4 .wrap-menu-desktop,
+header:not([class]) .wrap-menu-desktop,
+.fix-menu-desktop .wrap-menu-desktop {
+  background: rgba(255, 255, 255, 0.97);
+}
+
+.limiter-menu-desktop {
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.logo {
+  height: 52px;
+  margin-right: 34px;
+  flex: 0 0 auto;
+}
+
+.logo img,
+.logo-mobile img {
+  max-height: 46px;
+  object-fit: contain;
+}
+
+.menu-desktop {
+  flex: 1 1 auto;
+}
+
+.main-menu {
+  gap: 4px;
+}
+
+.main-menu > li {
+  margin: 0;
+  padding: 0;
+}
+
+.main-menu > li > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 42px;
+  padding: 0 15px;
+  border-radius: 8px;
+  color: #2b2f36;
+  font-family: Poppins-Medium, sans-serif;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.main-menu > li:hover > a {
+  color: var(--dd-ink);
+  background: #f2f4f7;
+}
+
+.main-menu > li.active-menu > a {
+  color: #fff;
+  background: var(--dd-ink);
+  box-shadow: 0 10px 22px rgba(23, 23, 23, 0.18);
+}
+
+.wrap-icon-header {
+  gap: 8px;
+}
+
+.icon-header-item {
+  width: 42px;
+  height: 42px;
+  padding: 0 !important;
+  border-radius: 8px;
+  background: #f4f6f8;
+  color: var(--dd-ink);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-header-item:hover {
+  background: var(--dd-ink);
+  color: #fff;
+}
+
+.icon-header-noti::after {
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--dd-accent);
+  box-shadow: 0 6px 12px rgba(240, 90, 63, 0.3);
+}
+
+.account-dd {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+.account-dd .account-toggle {
+  min-height: 30px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+}
+
+.account-menu {
+  border: 1px solid var(--dd-border);
+  border-radius: 8px;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+}
+
+.account-menu a i {
+  color: var(--dd-blue);
+}
+
+.account-menu a:hover {
+  background: #f5f7fb;
+  color: var(--dd-ink) !important;
+}
+
+.role-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  margin: 3px 8px 3px 0;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+.role-admin .role-chip {
+  background: rgba(240, 90, 63, 0.22);
+  color: #ffd8cf;
+}
+
+.role-designer .role-chip {
+  background: rgba(37, 99, 235, 0.28);
+  color: #dbeafe;
+}
+
+.role-pelanggan .role-chip {
+  background: rgba(22, 163, 74, 0.24);
+  color: #dcfce7;
+}
+
+.role-home-panel {
+  margin-top: 28px;
+  padding: 24px;
+  border: 1px solid var(--dd-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+.role-home-panel__inner {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 24px;
+  align-items: center;
+}
+
+.role-home-panel__eyebrow {
+  margin-bottom: 8px;
+  color: var(--dd-muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.role-home-panel h2 {
+  margin: 0 0 8px;
+  color: var(--dd-ink);
+  font-size: 26px;
+  line-height: 1.25;
+  font-weight: 800;
+}
+
+.role-home-panel p {
+  max-width: 640px;
+  margin: 0;
+  color: var(--dd-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.role-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.role-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 8px;
+  border: 1px solid var(--dd-border);
+  background: #fff;
+  color: var(--dd-ink);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.role-action:hover {
+  color: #fff;
+  background: var(--dd-ink);
+  border-color: var(--dd-ink);
+}
+
+.role-action.is-primary {
+  color: #fff;
+  background: var(--dd-blue);
+  border-color: var(--dd-blue);
+}
+
+.role-action.is-primary:hover {
+  background: #1d4ed8;
+  border-color: #1d4ed8;
+}
+
+.wrap-header-mobile {
+  min-height: 68px;
+  border-bottom: 1px solid var(--dd-border);
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+}
+
+.menu-mobile {
+  border-bottom: 1px solid var(--dd-border);
+  box-shadow: 0 14px 26px rgba(15, 23, 42, 0.08);
+}
+
+.topbar-mobile li {
+  background: #151515;
+}
+
+.main-menu-m {
+  background: #fff;
+}
+
+.main-menu-m > li > a {
+  color: var(--dd-ink);
+  font-weight: 600;
+  padding: 14px 22px;
+}
+
+.main-menu-m > li {
+  border-top: 1px solid #f0f2f5;
+}
+
+.bread-crumb {
+  color: var(--dd-muted);
+}
+
+.block2,
+.premium-card,
+.box-checkout,
+.container-riwayat .table-riwayat tbody tr {
+  border-radius: 8px;
+}
+
+@media (max-width: 991px) {
+  .wrap-menu-desktop,
+  .container-menu-desktop {
+    display: none;
+  }
+
+  .header-v4 .container-menu-desktop,
+  header:not([class]) .container-menu-desktop {
+    height: auto;
+  }
+
+  .role-home-panel__inner {
+    grid-template-columns: 1fr;
+  }
+
+  .role-home-actions {
+    justify-content: flex-start;
+  }
+}

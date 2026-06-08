@@ -11,10 +11,10 @@ $id_user = current_id();
 // 2. LOGIKA UPDATE DATA (DIGABUNG DI SINI)
 // ==========================================================
 if (isset($_POST['simpan_profil'])) {
-    $nama_baru = $_POST['nama'];
-    $telp_baru = $_POST['no_telp'];
-    $alamat_baru = $_POST['alamat'];
-    $email_baru = $_POST['email'];
+    $nama_baru = mysqli_real_escape_string($koneksi, $_POST['nama'] ?? '');
+    $telp_baru = mysqli_real_escape_string($koneksi, $_POST['no_telp'] ?? '');
+    $alamat_baru = mysqli_real_escape_string($koneksi, $_POST['alamat'] ?? '');
+    $email_baru = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
     $pass_baru = $_POST['password'];
 
     // A. Cek Upload Foto
@@ -29,11 +29,11 @@ if (isset($_POST['simpan_profil'])) {
         }
     }
 
-    // B. Cek Ganti Password (Pakai MD5 biar cocok sama login user)
+    // B. Cek Ganti Password
     $query_pass = "";
     if (!empty($pass_baru)) {
-        $pass_md5 = md5($pass_baru);
-        $query_pass = ", password = '$pass_md5'";
+        $pass_hash = password_hash($pass_baru, PASSWORD_DEFAULT);
+        $query_pass = ", password = '$pass_hash'";
     }
 
     // C. Update Database
@@ -52,6 +52,8 @@ if (isset($_POST['simpan_profil'])) {
         // Update Session Nama supaya Header langsung berubah tanpa logout
         $_SESSION['nama_desainer'] = $nama_baru;
         $_SESSION['nama_designer'] = $nama_baru; // Jaga-jaga kalau pake ejaan ini
+        $_SESSION['nama'] = $nama_baru;
+        $_SESSION['email'] = $email_baru;
         $_SESSION['email_designer'] = $email_baru;
 
         echo "<script>
@@ -91,6 +93,7 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
 
@@ -118,32 +121,10 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
 </head>
 <body class="animsition">
 
-    <header class="header-v4">
-        <div class="container-menu-desktop">
-            <div class="top-bar">
-                <div class="content-topbar flex-sb-m h-full container">
-                    <div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div>
-                    <div class="right-top-bar flex-w h-full">
-                        <a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
-                        <a href="profil_desainer.php" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_desainer_header; ?></a>
-                        <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-                    </div>
-                </div>
-            </div>
-            <div class="wrap-menu-desktop how-shadow1">
-                <nav class="limiter-menu-desktop container">
-                    <a href="index.php" class="logo"><img src="images/icons/logo-01.png" alt="IMG-LOGO"></a>
-                    <div class="menu-desktop">
-                        <ul class="main-menu">
-                            <li><a href="index.php">Beranda</a></li>
-                            <li><a href="product.php">Pasar Desain</a></li>
-                            <li><a href="shoping-cart.php">Pembelian</a></li>
-                        </ul>
-                    </div>    
-                </nav>
-            </div>    
-        </div>
-    </header>
+    <?php
+    $active_page = 'designer-profile';
+    include 'navbar.php';
+    ?>
 
     <div class="container p-t-50 p-b-80">
         <div class="row">

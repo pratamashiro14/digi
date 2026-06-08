@@ -4,8 +4,8 @@ require_once __DIR__ . '/auth.php';
 // Pastikan path ini benar (sesuai struktur folder kamu)
 include 'admin/koneksi.php';
 
-// 2. CEK LOGIN (user atau desainer)
-require_login();
+// 2. CEK LOGIN KHUSUS PEMBELI
+require_user();
 
 $id_buyer = current_id();
 
@@ -32,6 +32,8 @@ if (!$result) {
     
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+    <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
 
@@ -67,18 +69,10 @@ if (!$result) {
 </head>
 <body class="animsition">
 
-    <header class="header-v4">
-        <div class="container-menu-desktop">
-            <div class="top-bar">
-                <div class="content-topbar flex-sb-m h-full container">
-                    <div class="left-top-bar">Riwayat Transaksi Kamu</div>
-                    <div class="right-top-bar flex-w h-full">
-                        <a href="index.php" class="flex-c-m trans-04 p-lr-25">Kembali ke Beranda</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <?php
+    $active_page = 'cart';
+    include 'navbar.php';
+    ?>
 
     <div class="container-riwayat">
         <h3 class="mtext-105 cl2 txt-center p-b-40">Riwayat Pembelian & File Saya</h3>

@@ -45,10 +45,20 @@ if (session_status() === PHP_SESSION_NONE) {
 // 2. PENGECEKAN STATUS LOGIN per ROLE
 // ------------------------------------------------------------
 function is_user_login() {
-    return isset($_SESSION['status']) && $_SESSION['status'] === 'login';
+    if (!isset($_SESSION['status']) || $_SESSION['status'] !== 'login') {
+        return false;
+    }
+
+    $role = strtolower($_SESSION['role'] ?? 'pelanggan');
+    return in_array($role, ['user', 'pelanggan', 'buyer', 'pembeli'], true);
 }
 function is_designer_login() {
-    return isset($_SESSION['status_designer']) && $_SESSION['status_designer'] === 'login';
+    if (!isset($_SESSION['status_designer']) || $_SESSION['status_designer'] !== 'login') {
+        return false;
+    }
+
+    $role = strtolower($_SESSION['role'] ?? 'designer');
+    return in_array($role, ['designer', 'desainer'], true);
 }
 function is_admin_login() {
     return !empty($_SESSION['admin']);
@@ -64,11 +74,14 @@ function is_login() {
 function current_role() {
     if (is_admin_login())    return 'admin';
     if (is_designer_login()) return 'designer';
-    if (is_user_login())     return 'user';
+    if (is_user_login())     return 'pelanggan';
     return 'guest';
 }
 /** ID akun (user & desainer sama-sama tersimpan di 'id_user'). */
 function current_id() {
+    if (is_admin_login()) {
+        return $_SESSION['admin'];
+    }
     return $_SESSION['id_user'] ?? null;
 }
 /** Nama tampilan sesuai role. */
@@ -83,6 +96,30 @@ function current_email() {
         return $_SESSION['email_designer'] ?? ($_SESSION['email'] ?? '');
     }
     return $_SESSION['email'] ?? '';
+}
+
+function current_role_label() {
+    $labels = [
+        'admin' => 'Admin',
+        'designer' => 'Desainer',
+        'pelanggan' => 'Pembeli',
+        'guest' => 'Tamu',
+    ];
+
+    return $labels[current_role()] ?? 'Tamu';
+}
+
+function current_role_home() {
+    switch (current_role()) {
+        case 'admin':
+            return 'admin/beranda.php';
+        case 'designer':
+            return 'profil_desainer.php';
+        case 'pelanggan':
+            return 'product.php';
+        default:
+            return 'index.php';
+    }
 }
 
 // ------------------------------------------------------------
@@ -131,16 +168,27 @@ function require_designer($redirect = 'login.php') {
 /** Set session untuk USER biasa secara seragam. */
 function login_as_user($id, $nama, $email) {
     session_regenerate_id(true); // cegah session fixation, sekaligus sesi bersih
+    unset(
+        $_SESSION['admin'],
+        $_SESSION['status_designer'],
+        $_SESSION['nama_desainer'],
+        $_SESSION['nama_designer'],
+        $_SESSION['email_designer']
+    );
     $_SESSION['id_user'] = $id;
     $_SESSION['nama']    = $nama;
     $_SESSION['email']   = $email;
     $_SESSION['status']  = 'login';
-    $_SESSION['role']    = 'user';
+    $_SESSION['role']    = 'pelanggan';
 }
 
 /** Set session untuk DESAINER secara seragam. */
 function login_as_designer($id, $nama, $email) {
     session_regenerate_id(true);
+    unset(
+        $_SESSION['admin'],
+        $_SESSION['status']
+    );
     $_SESSION['id_user']         = $id;
     $_SESSION['nama']            = $nama;          // disimpan juga di 'nama' biar konsisten
     $_SESSION['nama_desainer']   = $nama;
@@ -148,6 +196,23 @@ function login_as_designer($id, $nama, $email) {
     $_SESSION['email_designer']  = $email;
     $_SESSION['status_designer'] = 'login';
     $_SESSION['role']            = 'designer';
+}
+
+/** Set session untuk ADMIN dan bersihkan role publik. */
+function login_as_admin($id) {
+    session_regenerate_id(true);
+    unset(
+        $_SESSION['id_user'],
+        $_SESSION['nama'],
+        $_SESSION['email'],
+        $_SESSION['status'],
+        $_SESSION['status_designer'],
+        $_SESSION['nama_desainer'],
+        $_SESSION['nama_designer'],
+        $_SESSION['email_designer']
+    );
+    $_SESSION['admin'] = $id;
+    $_SESSION['role'] = 'admin';
 }
 
 /** Logout total (user/desainer). Admin punya logout sendiri di /admin. */

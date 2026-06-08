@@ -90,6 +90,7 @@ if(empty($_SESSION['admin'])){
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
+    <link rel="stylesheet" href="../assets/css/digidesain-admin.css" />
 
     <link rel="stylesheet" href="../assets/css/demo.css" />
   </head>

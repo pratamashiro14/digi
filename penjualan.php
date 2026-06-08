@@ -1,16 +1,12 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN DESAINER
-if (!isset($_SESSION['status_designer']) || $_SESSION['status_designer'] != "login") {
-    echo "<script>alert('Silakan login sebagai desainer terlebih dahulu!'); window.location.href='index.php';</script>";
-    exit();
-}
+require_designer();
 
-// PERBAIKAN 1: Session di file login tersimpan sebagai 'id_user'
-$id_desainer = $_SESSION['id_user'];
-$nama_desainer = $_SESSION['nama_desainer'] ?? 'Desainer';
+$id_desainer = current_id();
+$nama_desainer = current_name();
 
 // 2. QUERY PENJUALAN (SESUAI GAMBAR DATABASE)
 // - t_transaksi menggunakan 'id_buyer' untuk join ke t_user

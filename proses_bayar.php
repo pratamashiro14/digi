@@ -1,18 +1,15 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 // 1. HUBUNGKAN KONEKSI DATABASE (Arahkan ke folder admin)
-include 'admin/koneksi.php'; 
+include 'admin/koneksi.php';
 
 // Hubungkan ke Midtrans
 require_once __DIR__ . '/midtrans/Midtrans.php';
 
 // Cek apakah user sudah login
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    header("Location: login.php");
-    exit;
-}
+require_user();
 
-$id_user = $_SESSION['id_user'];
+$id_user = current_id();
 
 // 2. SETTING KONFIGURASI MIDTRANS
 \Midtrans\Config::$serverKey = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0'; // Pastikan Server Key Benar

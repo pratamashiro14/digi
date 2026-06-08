@@ -1,15 +1,12 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 // Hubungkan ke database (Folder admin)
-include 'admin/koneksi.php'; 
+include 'admin/koneksi.php';
 // Hubungkan Library Midtrans
 require_once __DIR__ . '/midtrans/Midtrans.php';
 
-// Cek Login
-if (!isset($_SESSION['id_user'])) {
-    header("Location: login.php");
-    exit;
-}
+// Cek Login — khusus pembeli/user
+require_user();
 
 // Cek ID Transaksi dari URL
 if (!isset($_GET['id'])) {

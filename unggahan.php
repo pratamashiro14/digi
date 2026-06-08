@@ -1,15 +1,12 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN - Bisa User Biasa atau Desainer
-if (!((isset($_SESSION['status']) && $_SESSION['status'] == "login") || (isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login"))) {
-    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href='login.php';</script>";
-    exit();
-}
+require_login();
 
-$id_desainer = $_SESSION['id_user'];
-$nama_desainer = $_SESSION['nama'] ?? 'Desainer';
+$id_desainer = current_id();
+$nama_desainer = current_name();
 
 // 2. LOGIKA HAPUS KARYA
 if (isset($_GET['hapus'])) {

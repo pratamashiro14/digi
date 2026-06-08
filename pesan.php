@@ -1,15 +1,12 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN (User Biasa atau Desainer)
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href='login.php';</script>";
-    exit();
-}
+require_login();
 
-$id_user = $_SESSION['id_user']; // ID User atau Desainer
-$nama_user = $_SESSION['nama'] ?? 'User';
+$id_user = current_id(); // ID User atau Desainer
+$nama_user = current_name();
 
 // 2. LOGIKA KIRIM PESAN
 if (isset($_POST['kirim_pesan'])) {

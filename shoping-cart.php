@@ -2,7 +2,7 @@
 // ==========================================
 // 1. BAGIAN PHP (BACKEND) - AUTO DETECT PEMENANG
 // ==========================================
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php'; 
 
 // Cek Login untuk navbar

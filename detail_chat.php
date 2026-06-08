@@ -1,18 +1,14 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
-// --- LOGIKA CEK LOGIN FLEKSIBEL ---
-$is_user     = isset($_SESSION['status']) && $_SESSION['status'] == "login";
-$is_designer = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";
-
-if (!$is_user && !$is_designer) {
-    echo "<script>alert('Silakan Login Terlebih Dahulu untuk Memulai Chat!'); window.location.href='login.php';</script>";
-    exit();
-}
+// --- LOGIKA CEK LOGIN FLEKSIBEL (user atau desainer) ---
+require_login();
+$is_user     = is_user_login();
+$is_designer = is_designer_login();
 
 // Ambil ID Pelaku
-$id_saya = $_SESSION['id_user'];
+$id_saya = current_id();
 
 // 2. TANGKAP ID LAWAN BICARA
 if (isset($_GET['tujuan'])) {

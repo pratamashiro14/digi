@@ -1,16 +1,13 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 // 1. HUBUNGKAN KE DATABASE
 // Pastikan path ini benar (sesuai struktur folder kamu)
-include 'admin/koneksi.php'; 
+include 'admin/koneksi.php';
 
-// 2. CEK LOGIN
-if (!((isset($_SESSION['status']) && $_SESSION['status'] == "login") || (isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login"))) {
-    echo "<script>alert('Silakan login terlebih dahulu'); location='login.php';</script>";
-    exit;
-}
+// 2. CEK LOGIN (user atau desainer)
+require_login();
 
-$id_buyer = $_SESSION['id_user'] ?? $_SESSION['id_designer'] ?? null;
+$id_buyer = current_id();
 
 // 3. QUERY DATABASE
 // Mengambil data transaksi digabung (JOIN) dengan data desain

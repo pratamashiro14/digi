@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // Cek Login User
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Silakan login dulu!'); window.location.href='index.php';</script>";
-    exit();
-}
+require_user();
 
-$id_user = $_SESSION['id_user'];
+$id_user = current_id();
 ?>
 
 <!DOCTYPE html>

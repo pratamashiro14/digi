@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
-// 1. CEK LOGIN USER BIASA
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Sesi habis, silakan login kembali.'); window.location.href='index.php';</script>";
-    exit();
-}
+// 1. CEK LOGIN USER BIASA — halaman khusus pembeli/user
+require_user();
 
-$id_user = $_SESSION['id_user'];
+$id_user = current_id();
 
 // ==========================================================
 // 2. LOGIKA UPDATE DATA

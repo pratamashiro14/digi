@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. Cek Login User
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Silakan login sebagai User terlebih dahulu untuk ikut lelang!'); window.history.back();</script>";
-    exit();
-}
+require_user();
 
-$id_user = $_SESSION['id_user']; // ID User yang sedang login
+$id_user = current_id(); // ID User yang sedang login
 $id_design = $_POST['id_design'];
 
 // Bersihkan format Rupiah (Contoh: "Rp 120.000" jadi "120000")

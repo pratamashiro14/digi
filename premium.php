@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 // Hubungkan ke database
 include 'admin/koneksi.php'; 
 

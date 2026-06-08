@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 $email = $_POST['email'];
@@ -12,16 +12,8 @@ $cek = mysqli_num_rows($query);
 if($cek > 0){
     $data = mysqli_fetch_assoc($query);
 
-    session_unset(); 
-
-    $_SESSION['id_user'] = $data['id_user'];
-    
-    // PERBAIKAN DI SINI: Ganti 'nama_designer' jadi 'nama_desainer'
-    $_SESSION['nama_desainer'] = $data['nama']; 
-    
-    $_SESSION['email_designer'] = $data['email'];
-    $_SESSION['status_designer'] = "login";
-    $_SESSION['role'] = "designer"; 
+    // Simpan sesi desainer secara seragam (lihat auth.php)
+    login_as_designer($data['id_user'], $data['nama'], $data['email']);
 
     echo "<script>
         alert('Halo designer! Login Berhasil.');

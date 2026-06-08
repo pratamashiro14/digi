@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // --- 1. LOGIKA HEADER (DARI INDEX.PHP) ---

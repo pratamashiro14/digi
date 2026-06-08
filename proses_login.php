@@ -1,5 +1,5 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 $email = $_POST['email'];
@@ -33,15 +33,8 @@ if($cek_email > 0){
             exit();
         }
 
-        // Hapus sesi lama biar bersih
-        session_unset();
-
-        // Simpan sesi baru
-        $_SESSION['id_user'] = $data['id_user'];
-        $_SESSION['nama'] = $data['nama'];
-        $_SESSION['email'] = $data['email'];
-        $_SESSION['status'] = "login";
-        $_SESSION['role'] = "user"; // Set sebagai user biasa
+        // Simpan sesi baru secara seragam (lihat auth.php)
+        login_as_user($data['id_user'], $data['nama'], $data['email']);
 
         echo "<script>
             alert('Login Berhasil!');

@@ -1,11 +1,8 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 
-// CEK LOGIN TERLEBIH DAHULU
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href='login.php';</script>";
-    exit();
-}
+// CEK LOGIN TERLEBIH DAHULU — khusus pembeli/user
+require_user();
 
 // 1. Ambil ID Produk dari Link
 $id_design = isset($_GET['id']) ? $_GET['id'] : null;

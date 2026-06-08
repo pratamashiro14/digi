@@ -1,11 +1,8 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 
-// 1. CEK LOGIN TERLEBIH DAHULU
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Silakan login terlebih dahulu!'); window.location.href='login.php';</script>";
-    exit();
-}
+// 1. CEK LOGIN TERLEBIH DAHULU — khusus pembeli/user
+require_user();
 
 // 2. HUBUNGKAN KE DATABASE
 // Pastikan nama file koneksi kamu benar
@@ -24,14 +21,8 @@ require_once dirname(__FILE__) . '/Midtrans/Midtrans.php';
 \Midtrans\Config::$isSanitized = true;
 \Midtrans\Config::$is3ds = true;
 
-// 4. AMBIL DATA USER & SIAPKAN TRANSAKSI
-// Pastikan user sudah login
-if (!isset($_SESSION['id_buyer'])) {
-    echo "Harap login terlebih dahulu.";
-    exit;
-}
-
-$id_buyer = $_SESSION['id_buyer']; 
+// 4. AMBIL DATA USER & SIAPKAN TRANSAKSI (id_buyer = id user yang login)
+$id_buyer = current_id();
 // Buat Order ID unik (misal: PREM + timestamp)
 $order_id = 'PREM-' . time(); 
 // Tentukan harga premium (bisa hardcode atau ambil dari database paket)

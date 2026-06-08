@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
-// Cek Login
-if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
-    echo "<script>alert('Login dulu ya!'); window.location.href='index.php';</script>";
-    exit();
-}
+// Cek Login — khusus pembeli/user
+require_user();
 
-$id_user = $_SESSION['id_user'];
+$id_user = current_id();
 
 // Proses Upload
 if (isset($_POST['upload_ktp'])) {

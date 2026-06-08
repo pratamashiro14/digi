@@ -1,14 +1,11 @@
 <?php
-session_start();
+require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
-if (!isset($_SESSION['status_designer']) || $_SESSION['status_designer'] != "login") {
-    echo "<script>alert('Sesi habis, silakan login kembali.'); window.location.href='index.php';</script>";
-    exit();
-}
+require_designer();
 
-$id_user = $_SESSION['id_user'];
+$id_user = current_id();
 
 // ==========================================================
 // 2. LOGIKA UPDATE DATA (DIGABUNG DI SINI)

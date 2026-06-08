@@ -92,14 +92,18 @@ if(isset($_SESSION['keranjang'])) {
 					<div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div>
 					<div class="right-top-bar flex-w h-full">
 						<a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
+                        <?php if (function_exists('is_admin_login') && is_admin_login()) { ?>
 						<a href="admin/" class="flex-c-m trans-04 p-lr-25" style="font-weight: 600; color: #d90429;">Admin</a>
+                        <?php } ?>
 
                         <?php if ($is_designer_logged_in) { ?>
-                            <a href="profil_desainer.php" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_desainer; ?> (Desainer)</a>
+                            <a href="profil_desainer.php" class="flex-c-m trans-04 p-lr-25" title="Profil Saya"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo $nama_desainer; ?> (Desainer)</a>
+                            <a href="penjualan.php" class="flex-c-m trans-04 p-lr-25">Penjualan</a>
                             <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
 
                         <?php } elseif ($is_user_logged_in) { ?>
-                            <a href="profil.php" class="flex-c-m trans-04 p-lr-25">Halo, <?php echo $nama_user; ?></a>
+                            <a href="profil.php" class="flex-c-m trans-04 p-lr-25" title="Profil Saya"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo $nama_user; ?></a>
+                            <a href="riwayat.php" class="flex-c-m trans-04 p-lr-25">Riwayat Pembelian</a>
                             <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
 
                         <?php } else { ?>
@@ -150,10 +154,12 @@ if(isset($_SESSION['keranjang'])) {
 				<li><div class="right-top-bar flex-w h-full">
                     <a href="#" class="flex-c-m p-lr-10 trans-04">Bantuan</a>
                     <?php if ($is_designer_logged_in) { ?>
-                        <a href="profil_desainer.php" class="flex-c-m p-lr-10 trans-04">Halo, <?php echo $nama_desainer; ?></a>
+                        <a href="profil_desainer.php" class="flex-c-m p-lr-10 trans-04"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo $nama_desainer; ?></a>
+                        <a href="penjualan.php" class="flex-c-m p-lr-10 trans-04">Penjualan</a>
                         <a href="logout.php" class="flex-c-m p-lr-10 trans-04">Logout</a>
                     <?php } elseif ($is_user_logged_in) { ?>
-                        <a href="profil.php" class="flex-c-m p-lr-10 trans-04">Halo, <?php echo $nama_user; ?></a>
+                        <a href="profil.php" class="flex-c-m p-lr-10 trans-04"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo $nama_user; ?></a>
+                        <a href="riwayat.php" class="flex-c-m p-lr-10 trans-04">Riwayat Pembelian</a>
                         <a href="logout.php" class="flex-c-m p-lr-10 trans-04">Logout</a>
                     <?php } else { ?>
                         <a href="login.php" class="flex-c-m p-lr-10 trans-04">Masuk / Daftar</a>

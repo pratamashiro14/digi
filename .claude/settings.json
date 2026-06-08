@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh repo *)",
+      "Bash(powershell -NoProfile -Command \"Start-Process 'https://github.com/pratamashiro14/digi/security/secret-scanning/unblock-secret/3Epir3uYX9DCwxYsU1mUQOenGNB'\")",
+      "Bash(git push *)",
+      "Bash(mkdir -p docs database _arsip)",
+      "Bash(git mv *)",
+      "Bash(git commit -q -m 'Rapikan struktur: dokumentasi ke docs/, dump SQL ke database/, file tak terpakai ke _arsip/ *)"
+    ]
+  }
+}

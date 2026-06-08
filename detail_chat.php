@@ -1,0 +1,222 @@
+<?php
+session_start();
+include 'admin/koneksi.php';
+
+// --- LOGIKA CEK LOGIN FLEKSIBEL ---
+$is_user     = isset($_SESSION['status']) && $_SESSION['status'] == "login";
+$is_designer = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";
+
+if (!$is_user && !$is_designer) {
+    echo "<script>alert('Silakan Login Terlebih Dahulu untuk Memulai Chat!'); window.location.href='login.php';</script>";
+    exit();
+}
+
+// Ambil ID Pelaku
+$id_saya = $_SESSION['id_user'];
+
+// 2. TANGKAP ID LAWAN BICARA
+if (isset($_GET['tujuan'])) {
+    $id_lawan = $_GET['tujuan'];
+} else {
+    // Kalau gak ada tujuan, balik ke halaman sebelumnya
+    echo "<script>window.history.back();</script>";
+    exit();
+}
+
+// Ambil Nama Lawan Bicara
+$q_lawan = mysqli_query($koneksi, "SELECT nama FROM t_user WHERE id_user='$id_lawan'");
+$data_lawan = mysqli_fetch_assoc($q_lawan);
+$nama_lawan = $data_lawan['nama'] ?? 'Pengguna';
+
+// 3. LOGIKA KUOTA CHAT (Khusus untuk User Biasa)
+$status_member = 'free'; // Default
+if ($is_user) {
+    $q_me = mysqli_query($koneksi, "SELECT status_member FROM t_user WHERE id_user='$id_saya'");
+    $me = mysqli_fetch_assoc($q_me);
+    $status_member = $me['status_member'] ?? 'free';
+}
+
+// Hitung Chat yang Sudah Saya Kirim
+$q_count = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM t_chat WHERE id_pengirim='$id_saya'");
+$count_data = mysqli_fetch_assoc($q_count);
+$total_chat_saya = $count_data['total'];
+
+// Hitung Sisa Kuota
+$batas_chat = 30;
+$sisa_kuota = $batas_chat - $total_chat_saya;
+$bisa_chat = true;
+
+// Kalau Free DAN Kuota Habis, Kunci Chat
+if ($status_member == 'free' && $sisa_kuota <= 0) {
+    $bisa_chat = false;
+    $sisa_kuota = 0; 
+}
+
+// 4. PROSES KIRIM PESAN
+if (isset($_POST['kirim_pesan'])) {
+    // Cek: Kalau Desainer selalu bisa, kalau User cek kuota/status
+    if ($is_designer || ($bisa_chat == true || $status_member == 'premium')) {
+        $isi_pesan = mysqli_real_escape_string($koneksi, $_POST['isi_pesan']);
+        
+        // Simpan ke DB
+        $kirim = mysqli_query($koneksi, "INSERT INTO t_chat (id_pengirim, id_penerima, isi_pesan, waktu_kirim) VALUES ('$id_saya', '$id_lawan', '$isi_pesan', NOW())");
+        
+        if($kirim){
+            header("Location: detail_chat.php?tujuan=$id_lawan"); 
+            exit;
+        }
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <title>Chat dengan <?php echo $nama_lawan; ?></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; height: 100vh; margin:0; }
+        
+        /* HEADER BARU */
+        .chat-header {
+            background: #fff; color: #333; padding: 15px;
+            display: flex; align-items: center;
+            border-bottom: 1px solid #eee; z-index: 10;
+        }
+        .btn-back { color: #555; margin-right: 15px; font-size: 20px; text-decoration: none; transition: 0.3s; }
+        .btn-back:hover { color: #4e8eff; }
+        .user-avatar { width: 40px; height: 40px; background: #e9ecef; border-radius: 50%; margin-right: 12px; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size: 16px;}
+        .chat-title { font-weight: 600; font-size: 16px; color: #333; }
+        .chat-status { font-size: 12px; color: #888; }
+
+        /* INFO KUOTA */
+        .quota-bar {
+            background: #eef2ff; color: #4e8eff; padding: 8px 15px; font-size: 13px; text-align: center; border-bottom: 1px solid #dce4ff; font-weight: 500;
+        }
+        
+        /* AREA CHAT */
+        .chat-area {
+            flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column;
+            background-color: #f8f9fa; 
+        }
+        
+        /* BUBBLE CHAT */
+        .bubble {
+            max-width: 75%; padding: 12px 15px; border-radius: 12px; margin-bottom: 12px; position: relative; font-size: 14px; line-height: 1.5; word-wrap: break-word; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .bubble-me {
+            align-self: flex-end; 
+            background-color: #4e8eff; 
+            color: #fff;
+            border-bottom-right-radius: 2px;
+        }
+        .bubble-you {
+            align-self: flex-start; 
+            background-color: #fff; 
+            color: #333;
+            border: 1px solid #eee;
+            border-bottom-left-radius: 2px;
+        }
+        .chat-time { display: block; font-size: 11px; text-align: right; margin-top: 5px; opacity: 0.7; }
+        .bubble-me .chat-time { color: #e0e0e0; }
+        .bubble-you .chat-time { color: #999; }
+        .fa-check { font-size: 10px; margin-left: 3px; }
+
+        /* INPUT AREA */
+        .input-area {
+            background: #fff; padding: 15px; display: flex; align-items: center; border-top: 1px solid #eee;
+        }
+        .input-box {
+            flex: 1; border: 1px solid #ddd; padding: 12px 15px; border-radius: 30px; outline: none; margin-right: 10px; background: #f8f9fa; transition: 0.3s;
+        }
+        .input-box:focus { border-color: #4e8eff; background: #fff; }
+        .btn-send {
+            background: #4e8eff; color: white; border: none; width: 48px; height: 48px; border-radius: 50%; cursor: pointer; display:flex; align-items:center; justify-content:center; font-size: 18px; transition: 0.3s; box-shadow: 0 2px 5px rgba(78, 142, 255, 0.3);
+        }
+        .btn-send:hover { background: #3b7ddd; transform: translateY(-2px); }
+        
+        /* JIKA KUOTA HABIS */
+        .locked-area {
+            background: #fff; padding: 20px; text-align: center; color: #666; width: 100%; font-size: 14px; border-top: 1px solid #eee;
+        }
+        .btn-upgrade {
+            display: inline-block; background: #f39c12; color: white; border: none; padding: 8px 15px; border-radius: 50px; font-weight: 600; text-decoration: none; margin-top: 10px; font-size: 13px; transition: 0.3s;
+        }
+        .btn-upgrade:hover { background: #e67e22; color: white; text-decoration: none; }
+    </style>
+</head>
+<body>
+
+    <div class="chat-header">
+        <a href="javascript:history.back()" class="btn-back"><i class="fa fa-arrow-left"></i></a>
+        
+        <div class="user-avatar"><i class="fa fa-user"></i></div>
+        <div>
+            <div class="chat-title"><?php echo $nama_lawan; ?></div>
+            <div class="chat-status">
+                <?php echo $is_designer ? 'Pembeli' : 'Desainer'; ?>
+            </div>
+        </div>
+    </div>
+
+    <?php if($is_user && $status_member == 'free') { ?>
+        <div class="quota-bar">
+            <i class="fa fa-info-circle"></i> Kuota Chat Free: <b><?php echo $sisa_kuota; ?></b> / 30 Pesan. 
+            <?php if($sisa_kuota < 5) echo "<span style='color:#d9534f; font-weight:bold;'>Hampir Habis!</span>"; ?>
+        </div>
+    <?php } ?>
+
+    <div class="chat-area" id="chatBox">
+        <?php
+        $q_chat = mysqli_query($koneksi, "SELECT * FROM t_chat 
+            WHERE (id_pengirim='$id_saya' AND id_penerima='$id_lawan') 
+            OR (id_pengirim='$id_lawan' AND id_penerima='$id_saya') 
+            ORDER BY waktu_kirim ASC");
+
+        if(mysqli_num_rows($q_chat) > 0){
+            while($c = mysqli_fetch_assoc($q_chat)) {
+                $posisi = ($c['id_pengirim'] == $id_saya) ? 'bubble-me' : 'bubble-you';
+                $jam = date('H:i', strtotime($c['waktu_kirim']));
+        ?>
+            <div class="bubble <?php echo $posisi; ?>">
+                <?php echo nl2br(htmlspecialchars($c['isi_pesan'])); ?>
+                <span class="chat-time"><?php echo $jam; ?> <?php if($posisi == 'bubble-me') echo '<i class="fa fa-check"></i>'; ?></span>
+            </div>
+        <?php 
+            }
+        } else {
+            echo "<div style='text-align:center; color:#999; margin-top:30px; font-size:14px;'><i class='fa fa-comments-o' style='font-size:40px; margin-bottom:10px; display:block; color:#ddd;'></i>Belum ada percakapan.<br>Mulai chat sekarang!</div>";
+        }
+        ?>
+    </div>
+
+    <?php if ($is_designer || ($bisa_chat == true || $status_member == 'premium')) { ?>
+        
+        <form action="" method="POST" class="input-area">
+            <input type="text" name="isi_pesan" class="input-box" placeholder="Tulis pesan..." required autocomplete="off">
+            <button type="submit" name="kirim_pesan" class="btn-send">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </form>
+
+    <?php } else { ?>
+
+        <div class="locked-area">
+            <i class="fa fa-lock" style="font-size: 24px; color: #f39c12; margin-bottom: 10px;"></i><br>
+            <b>Kuota Chat Gratis Habis!</b><br>
+            Kamu telah mencapai batas 30 pesan.<br>
+            <a href="premium.php" class="btn-upgrade">UPGRADE KE PREMIUM</a>
+        </div>
+
+    <?php } ?>
+
+    <script>
+        var objDiv = document.getElementById("chatBox");
+        objDiv.scrollTop = objDiv.scrollHeight;
+    </script>
+
+</body>
+</html>

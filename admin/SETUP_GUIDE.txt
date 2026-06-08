@@ -1,0 +1,177 @@
+# SETUP SISTEM LUPA PASSWORD - QUICK GUIDE
+
+## ✅ File yang Sudah Dibuat/Diupdate
+
+### File Baru:
+1. **`admin/forgot_password.php`** - Form input email untuk reset password
+2. **`admin/reset_password.php`** - Form reset password dengan validasi token
+3. **`admin/test_password_reset.php`** - Testing page untuk lihat token (tanpa email real)
+4. **`admin/SETUP_PASSWORD_RESET.sql`** - SQL script pembuatan tabel
+5. **`admin/FORGOT_PASSWORD_README.md`** - Dokumentasi lengkap
+
+### File Dimodifikasi:
+- **`admin/index.php`** - Link "Lupa Kata Sandi" sekarang mengarah ke `forgot_password.php`
+
+### Database:
+- **Tabel `t_password_reset`** - Sudah dibuat untuk menyimpan token reset password
+
+---
+
+## 🚀 LANGKAH TESTING
+
+### Testing Mode (Development/Localhost):
+
+#### 1. Lupa Password - Minta Reset Link
+```
+1. Buka: http://localhost/xampp/digi/admin/
+2. Klik: "Lupa Kata Sandi"
+3. Input email admin: ghinsor@gmail.com
+4. Klik: "Kirim Email Reset"
+5. Seharusnya ada pesan: "Email reset password telah dikirim!"
+   (Di localhost, email tidak bisa dikirim real, tapi token sudah disimpan ke database)
+```
+
+#### 2. Lihat Token (untuk Testing)
+```
+1. Login ke admin dulu: http://localhost/xampp/digi/admin/
+   Email: ghinsor@gmail.com
+   Password: bismillah
+
+2. Setelah login, buka: http://localhost/xampp/digi/admin/test_password_reset.php
+   
+3. Di sana Anda bisa lihat:
+   - Semua token yang aktif (belum expired)
+   - Link reset password untuk setiap email
+   - Tombol "Copy Link" dan "Buka di Tab Baru"
+```
+
+#### 3. Reset Password (Testing)
+```
+1. Di halaman test_password_reset.php, klik tombol "Buka di Tab Baru"
+   atau copy link dan buka manual di browser
+
+2. Anda akan dibawa ke: /admin/reset_password.php?token=xxx
+
+3. Halaman akan menampilkan:
+   - Email (tidak bisa diedit)
+   - Input Password Baru
+   - Input Ulangi Password
+
+4. Isi form:
+   - Password Baru: (minimal 6 karakter)
+   - Ulangi Password: (harus sama)
+
+5. Klik: "Reset Password"
+
+6. Jika berhasil, seharusnya ada pesan: "Password berhasil diperbarui!"
+```
+
+#### 4. Login dengan Password Baru
+```
+1. Klik tombol: "Ke Halaman Login"
+2. Buka: http://localhost/xampp/digi/admin/
+3. Input:
+   Email: ghinsor@gmail.com
+   Password: (password baru yang baru saja diset)
+4. Klik: "Masuk"
+5. Seharusnya berhasil login dan redirect ke beranda admin
+```
+
+---
+
+## 📧 Email Configuration (Production)
+
+Untuk production, pastikan email bisa terkirim:
+
+### Option 1: Menggunakan Gmail SMTP
+Edit `admin/forgot_password.php` dan `admin/reset_password.php`:
+- Ganti `mail()` function dengan PHPMailer library
+- Setup SMTP dengan Gmail credentials
+
+### Option 2: Menggunakan Sendmail
+Edit `php.ini`:
+```
+sendmail_path = "/usr/sbin/sendmail -t -i"
+```
+
+### Option 3: Konfigurasi XAMPP Email (Windows)
+Edit `php.ini`:
+```
+[mail function]
+SMTP = smtp.gmail.com
+smtp_port = 587
+sendmail_from = "noreply@digidesain.com"
+
+; Atau bisa menggunakan provider lain seperti:
+; SMTP = smtp.mailtrap.io
+; smtp_port = 2525
+```
+
+---
+
+## 🔒 Keamanan
+
+- Token di-generate menggunakan `random_bytes()` (cryptographically secure)
+- Token berlaku hanya 1 jam
+- Password di-hash dengan BCRYPT (`password_hash()`)
+- SQL Injection protection: input sudah difilter
+- Token otomatis dihapus setelah berhasil reset password
+
+---
+
+## 📝 Database Check
+
+Verifikasi tabel `t_password_reset` sudah ada:
+
+```bash
+# Buka XAMPP Control Panel
+# MySQL: Start
+# Buka phpMyAdmin: http://localhost/phpmyadmin
+
+# Database: dbkarya
+# Tabel: t_password_reset
+
+# Lihat structure:
+DESCRIBE t_password_reset;
+
+# Lihat data:
+SELECT * FROM t_password_reset;
+```
+
+---
+
+## ⚠️ Penting
+
+### Jangan Lupa:
+- [ ] Tabel `t_password_reset` sudah dibuat di database
+- [ ] File `forgot_password.php` sudah ada di `/admin/`
+- [ ] File `reset_password.php` sudah ada di `/admin/`
+- [ ] Link "Lupa Kata Sandi" di `index.php` sudah di-update
+- [ ] Untuk production, setup email SMTP yang proper
+
+### Opsional:
+- [ ] Delete file `test_password_reset.php` setelah production
+- [ ] Delete file `SETUP_PASSWORD_RESET.sql` setelah production
+- [ ] Delete file `FORGOT_PASSWORD_README.md` setelah production
+
+---
+
+## 🆘 Troubleshooting
+
+| Masalah | Solusi |
+|---------|--------|
+| "Email tidak terdaftar" | Pastikan email ada di tabel `t_admin` |
+| "Token tidak valid/kadaluarsa" | Token berlaku 1 jam, buat token baru |
+| "Email tidak terkirim" | Normal di localhost, gunakan `test_password_reset.php` untuk testing |
+| "Password tidak bisa login setelah reset" | Password hash support 3 format, ensure no errors di update |
+| Link reset password error 404 | Pastikan file `reset_password.php` ada di folder `/admin/` |
+
+---
+
+## 📞 Support
+
+Jika ada pertanyaan atau error, check:
+1. `FORGOT_PASSWORD_README.md` - Dokumentasi lengkap
+2. `test_password_reset.php` - Testing page untuk development
+3. Database: Lihat tabel `t_password_reset` apakah data terisi
+

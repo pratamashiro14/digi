@@ -1,0 +1,36 @@
+# Dependencies (hasil composer/npm install — biar ringan, install sendiri)
+/vendor/
+/laravel-app/vendor/
+node_modules/
+/laravel-app/node_modules/
+
+# Laravel environment & runtime
+/laravel-app/.env
+/laravel-app/.env.backup
+/laravel-app/.phpunit.result.cache
+/laravel-app/storage/*.key
+/laravel-app/storage/framework/cache/*
+/laravel-app/storage/framework/sessions/*
+/laravel-app/storage/framework/views/*
+/laravel-app/storage/logs/*
+/laravel-app/bootstrap/cache/*
+/laravel-app/public/storage
+/laravel-app/public/hot
+
+# File upload user (bukan bagian source code)
+/uploads/*
+!/uploads/.gitkeep
+
+# Build / compiled assets
+/laravel-app/public/build
+
+# Log & cache
+*.log
+*.cache
+
+# Editor / OS
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+.DS_Store

@@ -47,22 +47,34 @@ if(!isset($jumlah_item_keranjang)) {
 			<div class="content-topbar flex-sb-m h-full container">
 				<div class="left-top-bar">Pilih Desain Sesuai Standarmu!</div>
 				<div class="right-top-bar flex-w h-full">
-					<a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
                     <?php if (function_exists('is_admin_login') && is_admin_login()) { ?>
 					<a href="admin/" class="flex-c-m trans-04 p-lr-25" style="font-weight: 600; color: #d90429;">Admin</a>
                     <?php } ?>
 
                     <?php if ($is_designer_logged_in) { ?>
-                        <a href="profil_desainer.php" class="flex-c-m trans-04 p-lr-25" title="Profil Saya"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo htmlspecialchars($nama_desainer); ?> (Desainer)</a>
-                        <a href="penjualan.php" class="flex-c-m trans-04 p-lr-25">Penjualan</a>
-                        <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-
+                    <div class="account-dd p-lr-25">
+                        <a href="#" class="account-toggle" onclick="return false;"><i class="zmdi zmdi-account"></i> <?php echo htmlspecialchars($nama_desainer); ?> (Desainer) <i class="zmdi zmdi-caret-down caret"></i></a>
+                        <div class="account-menu">
+                            <a href="profil_desainer.php"><i class="zmdi zmdi-account"></i> Profil Saya</a>
+                            <a href="penjualan.php"><i class="zmdi zmdi-store"></i> Penjualan</a>
+                            <a href="#"><i class="zmdi zmdi-help-outline"></i> Bantuan</a>
+                            <div class="account-divider"></div>
+                            <a href="logout.php"><i class="zmdi zmdi-power"></i> Logout</a>
+                        </div>
+                    </div>
                     <?php } elseif ($is_user_logged_in) { ?>
-                        <a href="profil.php" class="flex-c-m trans-04 p-lr-25" title="Profil Saya"><i class="zmdi zmdi-account"></i>&nbsp;<?php echo htmlspecialchars($nama_user); ?></a>
-                        <a href="riwayat.php" class="flex-c-m trans-04 p-lr-25">Riwayat Pembelian</a>
-                        <a href="logout.php" class="flex-c-m trans-04 p-lr-25">Logout</a>
-
+                    <div class="account-dd p-lr-25">
+                        <a href="#" class="account-toggle" onclick="return false;"><i class="zmdi zmdi-account"></i> <?php echo htmlspecialchars($nama_user); ?> <i class="zmdi zmdi-caret-down caret"></i></a>
+                        <div class="account-menu">
+                            <a href="profil.php"><i class="zmdi zmdi-account"></i> Profil Saya</a>
+                            <a href="riwayat.php"><i class="zmdi zmdi-receipt"></i> Riwayat Pembelian</a>
+                            <a href="#"><i class="zmdi zmdi-help-outline"></i> Bantuan</a>
+                            <div class="account-divider"></div>
+                            <a href="logout.php"><i class="zmdi zmdi-power"></i> Logout</a>
+                        </div>
+                    </div>
                     <?php } else { ?>
+                        <a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
                         <a href="login.php" class="flex-c-m trans-04 p-lr-25">Masuk / Daftar</a>
                     <?php } ?>
 				</div>

@@ -49,7 +49,7 @@ $id_user = current_id();
             JOIN t_design d ON b.id_design = d.id_design
             WHERE b.id_buyer = '$id_user'
             GROUP BY b.id_design
-            ORDER BY b.id_bidding DESC
+            ORDER BY b.id_bid DESC
         ");
 
         if(mysqli_num_rows($query) > 0) {

@@ -1,8 +1,9 @@
+# Config editor Claude Code (tidak perlu ikut ke repo)
+.claude/
+
 # Dependencies (hasil composer/npm install — biar ringan, install sendiri)
 /vendor/
-/laravel-app/vendor/
 node_modules/
-/laravel-app/node_modules/
 
 # Laravel environment & runtime
 /laravel-app/.env

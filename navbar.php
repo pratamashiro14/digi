@@ -125,7 +125,7 @@ if ($is_admin_logged_in) {
 
         <div class="wrap-menu-desktop">
             <nav class="limiter-menu-desktop container">
-                <a href="index.php" class="logo"><img src="images/icons/logo-01.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a>
+                <a href="index.php" class="logo"><img src="images/icons/dens.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a>
                 <div class="menu-desktop">
                     <ul class="main-menu">
                         <?php foreach ($main_menu as $item) { ?>
@@ -150,7 +150,7 @@ if ($is_admin_logged_in) {
     </div>
 
     <div class="wrap-header-mobile">
-        <div class="logo-mobile"><a href="index.php"><img src="images/icons/logo-01.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a></div>
+        <div class="logo-mobile"><a href="index.php"><img src="images/icons/dens.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a></div>
         <div class="wrap-icon-header flex-w flex-r-m m-r-15">
             <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
             <?php if (!$is_admin_logged_in && !$is_designer_logged_in) { ?>

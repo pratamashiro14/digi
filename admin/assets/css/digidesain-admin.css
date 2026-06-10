@@ -45,8 +45,8 @@ body {
 
 .sidebar .logo-header .navbar-brand,
 .main-header-logo .navbar-brand {
-  height: 60px !important;
-  max-height: 60px !important;
+  height: 36px !important;
+  max-height: 36px !important;
   width: auto !important;
   object-fit: contain;
 }

@@ -8,6 +8,20 @@ if(empty($_SESSION['admin'])){
     exit;
 }
 
+// === LOGIKA VERIFIKASI KTP DESAINER ===
+if (isset($_GET['approve_ktp'])) {
+    $id_verif = mysqli_real_escape_string($koneksi, $_GET['approve_ktp']);
+    mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'verified' WHERE id_user = '$id_verif'");
+    header("Location: datapengguna.php");
+    exit;
+}
+if (isset($_GET['reject_ktp'])) {
+    $id_verif = mysqli_real_escape_string($koneksi, $_GET['reject_ktp']);
+    mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'unverified', foto_ktp = NULL WHERE id_user = '$id_verif'");
+    header("Location: datapengguna.php");
+    exit;
+}
+
 // === WAJIB ADA: AMBIL DATA ADMIN UNTUK PROFIL DINAMIS ===
 $id_admin = $_SESSION['admin'];
 $query_admin = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE id_admin = '$id_admin'"); 
@@ -380,6 +394,7 @@ include '../koneksi.php';
             <th scope="col">Peran</th>
             <th scope="col">Premium</th>
             <th scope="col">Status</th>
+            <th scope="col">Verif KTP (Desainer)</th>
             <th scope="col" style="width: 10%">Aksi</th>
           </tr>
         </thead>
@@ -413,6 +428,23 @@ include '../koneksi.php';
               <span class="badge bg-<?= $row['status'] == 'aktif' ? 'success' : 'warning' ?>">
                 <?= ucfirst($row['status']) ?>
               </span>
+            </td>
+            <td>
+              <?php if ($row['role'] == 'designer') : ?>
+                  <?php if ($row['status_verifikasi'] == 'pending') : ?>
+                      <span class="badge bg-warning text-dark">Pending</span>
+                      <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                      <br>
+                      <a href="?approve_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-success mt-1 py-0 px-1" style="font-size:11px;">Terima</a>
+                      <a href="?reject_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-danger mt-1 py-0 px-1" style="font-size:11px;">Tolak</a>
+                  <?php elseif ($row['status_verifikasi'] == 'verified') : ?>
+                      <span class="badge bg-success">Verified</span>
+                  <?php else: ?>
+                      <span class="badge bg-secondary">Unverified</span>
+                  <?php endif; ?>
+              <?php else: ?>
+                  <span class="text-muted">-</span>
+              <?php endif; ?>
             </td>
             <td>
               <a href="datapengguna_edit.php?id=<?= $row['id_user'] ?>" class="text-primary me-2">

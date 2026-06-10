@@ -77,10 +77,10 @@
                 <i class="fa-solid fa-bag-shopping"></i>
                 <strong>Pembeli</strong>
             </button>
-            <button class="role-option" type="button" onclick="showAuthTab('#tab-desainer')">
+            <a class="role-option" href="daftar_desainer.php">
                 <i class="fa-solid fa-paint-brush"></i>
                 <strong>Desainer</strong>
-            </button>
+            </a>
             <a class="role-option" href="admin/">
                 <i class="fa-solid fa-shield-halved"></i>
                 <strong>Admin</strong>
@@ -95,9 +95,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-pembeli" type="button">Daftar Pembeli</button>
             </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-desainer" type="button">Daftar Desainer</button>
-            </li>
+
         </ul>
 
         <div class="tab-content">
@@ -138,25 +136,7 @@
                 </form>
             </div>
 
-            <!-- ===== DAFTAR DESAINER ===== -->
-            <div class="tab-pane fade" id="tab-desainer">
-                <form action="proses_daftar_desainer.php" method="POST">
-                    <div class="text-center mb-3"><span class="badge-role">Akun Desainer</span></div>
-                    <div class="mb-3">
-                        <label class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" name="nama" placeholder="Nama Desainer" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alamat Email</label>
-                        <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kata Sandi</label>
-                        <input type="password" class="form-control" name="password" placeholder="Buat Kata Sandi" required>
-                    </div>
-                    <button type="submit" class="btn-brand">Daftar sebagai Desainer</button>
-                </form>
-            </div>
+
 
         </div>
 

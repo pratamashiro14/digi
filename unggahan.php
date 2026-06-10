@@ -3,7 +3,7 @@ require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
-require_designer();
+require_verified_designer();
 
 $id_desainer = current_id();
 $nama_desainer = current_name();

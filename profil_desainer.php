@@ -36,6 +36,18 @@ if (isset($_POST['simpan_profil'])) {
         $query_pass = ", password = '$pass_hash'";
     }
 
+    // D. Cek Upload KTP
+    $query_ktp = "";
+    if (!empty($_FILES['foto_ktp']['name'])) {
+        $nama_ktp = $id_user . "_KTP_" . time() . "_" . $_FILES['foto_ktp']['name'];
+        $file_tmp_ktp = $_FILES['foto_ktp']['tmp_name'];
+        $folder_simpan_ktp = "admin/uploads/"; 
+        
+        if (move_uploaded_file($file_tmp_ktp, $folder_simpan_ktp . $nama_ktp)) {
+            $query_ktp = ", foto_ktp = '$nama_ktp', status_verifikasi = 'pending'";
+        }
+    }
+
     // C. Update Database
     $sql_update = "UPDATE t_user SET 
                    nama = '$nama_baru', 
@@ -44,6 +56,7 @@ if (isset($_POST['simpan_profil'])) {
                    email = '$email_baru'
                    $query_foto
                    $query_pass
+                   $query_ktp
                    WHERE id_user = '$id_user'";
 
     $run_update = mysqli_query($koneksi, $sql_update);
@@ -76,6 +89,7 @@ $telp = $data['no_telp'] ?? '';
 $alamat = $data['alamat'] ?? '';
 $email = $data['email'] ?? '';
 $foto = $data['foto'] ?? 'default.jpg'; 
+$status_verifikasi = $data['status_verifikasi'] ?? 'unverified';
 $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
 ?>
 
@@ -149,6 +163,24 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
 
                         <div class="col-md-8">
                             <h4 class="mtext-105 cl2 p-b-20" style="text-transform: uppercase; font-weight: 800;">EDIT PROFIL DESAINER</h4>
+
+                            <?php if ($status_verifikasi == 'unverified') : ?>
+                                <div class="alert alert-danger" style="font-size:13px;">
+                                    <strong>Perhatian!</strong> Akun Anda belum diverifikasi. Silakan unggah foto KTP Anda agar dapat mengunggah karya dan berjualan.
+                                </div>
+                                <div class="p-b-15">
+                                    <label class="stext-102 cl3 p-b-5" style="color:red; font-weight:bold;">Unggah Foto KTP</label>
+                                    <input class="custom-input" type="file" name="foto_ktp" accept="image/*" style="padding-top:8px;">
+                                </div>
+                            <?php elseif ($status_verifikasi == 'pending') : ?>
+                                <div class="alert alert-warning" style="font-size:13px;">
+                                    <strong>Status:</strong> Verifikasi KTP sedang diproses oleh Admin. Harap bersabar.
+                                </div>
+                            <?php elseif ($status_verifikasi == 'verified') : ?>
+                                <div class="alert alert-success" style="font-size:13px;">
+                                    <strong>Status:</strong> KTP Terverifikasi. Anda memiliki akses penuh sebagai Desainer.
+                                </div>
+                            <?php endif; ?>
 
                             <div class="p-b-15">
                                 <label class="stext-102 cl3 p-b-5">Nama Desainer</label>

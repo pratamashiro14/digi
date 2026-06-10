@@ -25,7 +25,7 @@ $query_insert = "INSERT INTO t_user (id_user, nama, email, password, role, statu
                  VALUES ('$id_user', '$nama', '$email', '$password_hashed', 'designer', 'aktif', 0, 'default.jpg')";
 
 if (mysqli_query($koneksi, $query_insert)) {
-    redirect_with_alert('Pendaftaran Desainer berhasil! Silakan login sebagai desainer.', 'login.php', 'success', 'Pendaftaran Berhasil!');
+    redirect_with_alert('Pendaftaran Desainer berhasil! Silakan login untuk melengkapi profil dan verifikasi KTP.', 'login.php', 'success', 'Pendaftaran Berhasil!');
 }
 
 sweetalert_back('Terjadi kesalahan sistem. Coba lagi nanti.', 'error', 'Pendaftaran Gagal!');

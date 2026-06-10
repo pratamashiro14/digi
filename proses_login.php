@@ -5,6 +5,11 @@ include 'admin/koneksi.php';
 $email          = $_POST['email'] ?? '';
 $password_input = $_POST['password'] ?? '';
 
+if (empty(trim($email)) || empty(trim($password_input))) {
+    sweetalert_back('Alamat email dan kata sandi wajib diisi!', 'error', 'Login Gagal!');
+    exit;
+}
+
 // Amankan input email untuk query
 $email_safe = mysqli_real_escape_string($koneksi, $email);
 

@@ -84,20 +84,23 @@
 
             <!-- ===== TAB DAFTAR PEMBELI ===== -->
             <div class="tab-pane fade show active" id="tab-pembeli">
-                <form action="proses_daftar.php" method="POST">
+                <form action="proses_daftar.php" method="POST" class="needs-validation" novalidate>
                     <div class="text-center mb-3"><span class="badge-role">Akun Pembeli</span></div>
                     
                     <div class="mb-3">
                         <label class="form-label">Nama Lengkap</label>
                         <input type="text" class="form-control" name="nama" placeholder="Contoh: Budi Santoso" required>
+                        <div class="invalid-feedback">Nama lengkap wajib diisi.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Alamat Email</label>
                         <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
+                        <div class="invalid-feedback">Alamat email wajib diisi dengan format yang benar.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kata Sandi</label>
                         <input type="password" class="form-control" name="password" placeholder="Buat Kata Sandi" required>
+                        <div class="invalid-feedback">Kata sandi wajib dibuat.</div>
                     </div>
                     
                     <button type="submit" class="btn-brand">Daftar sebagai Pembeli</button>
@@ -107,7 +110,7 @@
 
             <!-- ===== TAB DAFTAR DESAINER ===== -->
             <div class="tab-pane fade" id="tab-desainer">
-                <form action="proses_daftar_desainer.php" method="POST" enctype="multipart/form-data">
+                <form action="proses_daftar_desainer.php" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                     <div class="text-center mb-3"><span class="badge-role">Akun Desainer (Kemitraan)</span></div>
                     
                     <div class="form-info-box">
@@ -121,22 +124,27 @@
                     <div class="mb-3">
                         <label class="form-label">Nama Lengkap Sesuai KTP</label>
                         <input type="text" class="form-control" name="nama" placeholder="Contoh: Budi Santoso" required>
+                        <div class="invalid-feedback">Nama sesuai KTP wajib diisi.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Alamat Email</label>
                         <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
+                        <div class="invalid-feedback">Alamat email wajib diisi dengan format yang benar.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kata Sandi</label>
                         <input type="password" class="form-control" name="password" placeholder="Buat Kata Sandi" required>
+                        <div class="invalid-feedback">Kata sandi wajib dibuat.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">NIK (Nomor Induk Kependudukan)</label>
                         <input type="text" class="form-control" name="nik" placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka" required>
+                        <div class="invalid-feedback">NIK wajib diisi dengan format 16 digit angka.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Unggah Foto KTP</label>
                         <input type="file" class="form-control" name="foto_ktp" accept="image/*" required>
+                        <div class="invalid-feedback">Foto KTP wajib diunggah.</div>
                         <div class="form-text text-muted" style="font-size:11px;">Maksimal 4MB (jpg, jpeg, png).</div>
                     </div>
 
@@ -150,5 +158,20 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
 </body>
 </html>

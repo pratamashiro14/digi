@@ -79,14 +79,16 @@
         <h3 class="brand-title">DIGIDESAIN</h3>
         <p class="brand-sub">Marketplace Desain Grafis</p>
 
-        <form action="proses_login.php" method="POST">
+        <form action="proses_login.php" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">
                 <label class="form-label">Alamat Email</label>
                 <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
+                <div class="invalid-feedback">Alamat email wajib diisi dengan format yang benar.</div>
             </div>
             <div class="mb-3">
                 <label class="form-label">Kata Sandi</label>
                 <input type="password" class="form-control" name="password" placeholder="Kata Sandi" required>
+                <div class="invalid-feedback">Kata sandi wajib diisi.</div>
             </div>
             <button type="submit" class="btn-brand">Masuk</button>
             <a href="register.php" class="btn-outline-brand">Registrasi</a>
@@ -97,5 +99,20 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (() => {
+            'use strict'
+            const forms = document.querySelectorAll('.needs-validation')
+            Array.from(forms).forEach(form => {
+                form.addEventListener('submit', event => {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
 </body>
 </html>

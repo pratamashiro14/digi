@@ -20,6 +20,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $pass_input = mysqli_real_escape_string($conn, $_POST['password']);
     $role = 'pelanggan'; // Default role saat daftar sendiri
 
+    if (empty(trim($_POST['nama'] ?? '')) || empty(trim($_POST['email'] ?? '')) || empty(trim($_POST['password'] ?? ''))) {
+        sweetalert_redirect('Semua kolom pendaftaran wajib diisi!', 'register.php', 'error', 'Pendaftaran Gagal!');
+        exit;
+    }
+
     // Cek apakah email sudah ada?
     $check_email = "SELECT * FROM t_user WHERE email = '$email'";
     $result = $conn->query($check_email);

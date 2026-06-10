@@ -1,6 +1,13 @@
-<?php 
-require_once __DIR__ . '/auth.php'; 
-include 'admin/koneksi.php'; 
+<?php
+require_once __DIR__ . '/auth.php';
+
+// Admin tidak perlu lihat halaman publik — langsung ke dashboard admin
+if (is_admin_login()) {
+    header('Location: admin/beranda.php');
+    exit;
+}
+
+include 'admin/koneksi.php';
 
 // 1. Cek Login Desainer
 $is_designer_logged_in = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";

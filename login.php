@@ -7,6 +7,7 @@
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
         :root { --brand: #4e60ff; --brand-dark: #3b4dcc; }
@@ -52,12 +53,14 @@
         .back-home:hover { color: var(--brand); }
         .role-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:22px; }
         .role-option {
-            border:1px solid #e5e7ff; background:#fff; border-radius:10px; padding:10px 8px;
-            color:#333; text-decoration:none; text-align:left; min-height:76px; cursor:pointer;
+            border:1px solid #e5e7ff; background:#fff; border-radius:10px; padding:14px 8px;
+            color:#333; text-decoration:none; text-align:center; cursor:pointer;
+            display:flex; flex-direction:column; align-items:center; gap:6px;
         }
-        .role-option:hover { border-color:var(--brand); color:#333; box-shadow:0 8px 22px rgba(78,96,255,.12); }
-        .role-option strong { display:block; font-size:13px; color:#222; margin-bottom:4px; }
-        .role-option span { display:block; font-size:11px; color:#777; line-height:1.35; }
+        .role-option:hover { border-color:var(--brand); color:var(--brand); box-shadow:0 8px 22px rgba(78,96,255,.12); }
+        .role-option:hover i { color:var(--brand); }
+        .role-option i { font-size:26px; color:#aab0d5; transition:.2s; }
+        .role-option strong { display:block; font-size:12.5px; color:#333; font-weight:600; }
         @media (max-width: 520px) { .role-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -71,16 +74,16 @@
 
         <div class="role-grid">
             <button class="role-option" type="button" onclick="showAuthTab('#tab-pembeli')">
+                <i class="fa-solid fa-bag-shopping"></i>
                 <strong>Pembeli</strong>
-                <span>Belanja, bidding, dan riwayat pembelian.</span>
             </button>
             <button class="role-option" type="button" onclick="showAuthTab('#tab-desainer')">
+                <i class="fa-solid fa-paint-brush"></i>
                 <strong>Desainer</strong>
-                <span>Unggah karya dan pantau penjualan.</span>
             </button>
             <a class="role-option" href="admin/">
+                <i class="fa-solid fa-shield-halved"></i>
                 <strong>Admin</strong>
-                <span>Kelola pengguna, karya, dan transaksi.</span>
             </a>
         </div>
 

@@ -344,7 +344,7 @@ if(empty($_SESSION['admin'])){
                             <h4><?= htmlspecialchars($data_admin['nama_admin']); ?></h4>
                             <p class="text-muted"><?= htmlspecialchars($data_admin['email']); ?></p>
                             <a
-                              href="profile.php"
+                              href="../profile.php"
                               class="btn btn-xs btn-secondary btn-sm"
                               >View Profile</a
                             >

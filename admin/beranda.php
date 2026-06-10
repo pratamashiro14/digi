@@ -442,12 +442,12 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                         <div
                           class="icon-big text-center icon-success bubble-shadow-small"
                         >
-                          <i class="fas fa-crown"></i>
+                          <i class="fas fa-shopping-cart"></i>
                         </div>
                       </div>
                       <div class="col col-stats ms-3 ms-sm-0">
                         <div class="numbers">
-                          <p class="card-category">Pengguna Premium</p>
+                          <p class="card-category">Pembeli Aktif</p>
                           <h4 class="card-title"><?= $total_pelanggan; ?></h4>
                         </div>
                       </div>
@@ -583,6 +583,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   </div>
                 </div>
             </div>
+            </div><!-- end row penjualan + new customers -->
             <div class="row">
               <div class="col-md-6">
                 <div class="card card-round">
@@ -634,7 +635,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
 
     <!-- Kaiadmin DEMO methods, don't include it in your project! -->
     <script src="assets/js/setting-demo.js"></script>
-    <script src="assets/js/demo.js"></script>
     <script src="assets/js/demo.js"></script>
     
     <script>
@@ -743,7 +743,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
     });
     </script>
 
-    <script src="assets/js/demo.js"></script>
     <script>
       $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
         type: "line",

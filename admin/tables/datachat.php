@@ -346,7 +346,7 @@ if(empty($_SESSION['admin'])){
                             <h4>Hizrian</h4>
                             <p class="text-muted">hello@example.com</p>
                             <a
-                              href="profile.php"
+                              href="../profile.php"
                               class="btn btn-xs btn-secondary btn-sm"
                               >View Profile</a
                             >

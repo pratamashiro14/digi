@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 $errors = [];
@@ -26,11 +27,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$uid', '$tp', '$ta', '$tb', '$st')";
 
         if (mysqli_query($koneksi, $sql)) {
-            header('Location: datapremium.php');
-            exit;
+            sweetalert_redirect('Data premium berhasil ditambahkan.', 'datapremium.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
         }
+    }
+
+    if (!empty($errors)) {
+        sweetalert_back(implode("\n", $errors), 'error', 'Data Belum Valid');
     }
 }
 

@@ -24,18 +24,18 @@ $harga_awal = $data_produk['harga_awal'];
 
 // 3. Validasi: Tawaran harus lebih tinggi dari tawaran terakhir & harga awal
 if ($harga_bersih <= $tertinggi_sekarang) {
-    echo "<script>alert('Tawaran Anda harus lebih tinggi dari penawar tertinggi saat ini (Rp ".number_format($tertinggi_sekarang,0,',','.').")!'); window.history.back();</script>";
+    sweetalert_back('Tawaran harus lebih tinggi dari penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ').', 'error', 'Tawaran Ditolak!');
 } elseif ($harga_bersih < $harga_awal) {
-    echo "<script>alert('Tawaran tidak boleh lebih rendah dari harga awal!'); window.history.back();</script>";
+    sweetalert_back('Tawaran tidak boleh lebih rendah dari harga awal.', 'error', 'Tawaran Ditolak!');
 } else {
     // 4. Simpan ke Database (Sesuai kolom tabel kamu: id_buyer, tanggal_bid, status_bid)
     $simpan = mysqli_query($koneksi, "INSERT INTO t_bidding (id_design, id_buyer, harga_tawaran, tanggal_bid, status_bid) 
                                       VALUES ('$id_design', '$id_user', '$harga_bersih', NOW(), 'pending')");
     
     if ($simpan) {
-        echo "<script>alert('Selamat! Penawaran Anda berhasil dikirim.'); window.location.href='index.php';</script>";
+        sweetalert_redirect('Penawaran Anda berhasil dikirim.', 'index.php', 'success', 'Tawaran Berhasil!');
     } else {
-        echo "<script>alert('Gagal menawar: ".mysqli_error($koneksi)."'); window.history.back();</script>";
+        sweetalert_back('Gagal menawar: ' . mysqli_error($koneksi), 'error', 'Tawaran Gagal!');
     }
 }
 ?>

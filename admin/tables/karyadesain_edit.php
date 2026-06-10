@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 session_start();
@@ -45,14 +46,9 @@ if(empty($_SESSION['admin'])){
         ");
 
         if ($update) {
-            echo "<script>
-            alert('Perubahan berhasil disimpan!');
-            window.location='karyadesain.php';
-            </script>";
+            sweetalert_redirect('Perubahan karya berhasil disimpan.', 'karyadesain.php', 'success', 'Berhasil!');
         } else {
-            echo "<script>
-            alert('Gagal menyimpan perubahan: " . mysqli_error($koneksi) . "');
-            </script>";
+            sweetalert_back('Gagal menyimpan perubahan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
         }
     }
 ?>

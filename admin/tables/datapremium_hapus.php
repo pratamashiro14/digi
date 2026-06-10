@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 $id = $_GET['id'];
@@ -7,9 +8,8 @@ $id = $_GET['id'];
 $query = mysqli_query($koneksi, "DELETE FROM t_premium WHERE id_premium = '$id'");
 
 if ($query) {
-    header("Location: datapremium.php");
-    exit;
+    sweetalert_redirect('Data premium berhasil dihapus.', 'datapremium.php', 'success', 'Berhasil Dihapus!');
 } else {
-    echo "Gagal menghapus data: " . mysqli_error($koneksi);
+    sweetalert_redirect('Gagal menghapus data: ' . mysqli_error($koneksi), 'datapremium.php', 'error', 'Gagal!');
 }
 ?>

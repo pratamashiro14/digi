@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 $errors = [];
@@ -53,14 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$judul_q', '$id_desainer', '$kategori_q', '$harga_awal', '$gambar_q', '$status', '$tanggal_upload')";
 
         if (mysqli_query($koneksi, $sql)) {
-            echo "<script>
-                    alert('Karya desain berhasil ditambahkan.');
-                    window.location='karyadesain.php';
-                  </script>";
-            exit;
+            sweetalert_redirect('Karya desain berhasil ditambahkan.', 'karyadesain.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
         }
+    }
+
+    if (!empty($errors)) {
+        sweetalert_back(implode("\n", $errors), 'error', 'Data Belum Valid');
     }
 }
 

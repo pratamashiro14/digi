@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include '../koneksi.php';
 
 session_start();
@@ -31,12 +32,9 @@ if (isset($_POST['simpan'])) {
     ");
 
     if ($update) {
-        echo "<script>
-                alert('Data premium berhasil diperbarui!');
-                window.location.href='datapremium.php';
-              </script>";
+        sweetalert_redirect('Data premium berhasil diperbarui.', 'datapremium.php', 'success', 'Berhasil!');
     } else {
-        echo "<script>alert('Gagal memperbarui data: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal memperbarui data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 }

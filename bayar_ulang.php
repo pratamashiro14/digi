@@ -30,8 +30,7 @@ $result = mysqli_query($koneksi, $query);
 $data = mysqli_fetch_assoc($result);
 
 if (!$data) {
-    echo "<script>alert('Transaksi tidak ditemukan atau sudah lunas!'); window.location='riwayat.php';</script>";
-    exit;
+    sweetalert_redirect('Transaksi tidak ditemukan atau sudah lunas.', 'riwayat.php', 'error', 'Transaksi Tidak Tersedia');
 }
 
 // ============================================================

@@ -24,8 +24,7 @@ if(isset($_SESSION['keranjang'])) {
 
 // Ambil ID dari URL
 if(!isset($_GET['id']) || empty($_GET['id'])){
-    echo "<script>alert('Produk tidak ditemukan!'); window.location.href='index.php';</script>";
-    exit();
+    sweetalert_redirect('Produk tidak ditemukan.', 'index.php', 'error', 'Gagal!');
 }
 $id_produk = $_GET['id'];
 
@@ -37,8 +36,7 @@ $query = mysqli_query($koneksi, "SELECT d.*, u.nama as nama_desainer, u.id_user 
 $d = mysqli_fetch_assoc($query);
 
 if(!$d){
-    echo "<script>alert('Produk tidak ditemukan!'); window.location.href='index.php';</script>";
-    exit();
+    sweetalert_redirect('Produk tidak ditemukan.', 'index.php', 'error', 'Gagal!');
 }
 
 // Ambil Riwayat Bidding

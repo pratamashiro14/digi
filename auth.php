@@ -41,6 +41,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+require_once __DIR__ . '/sweetalert.php';
+
 // ------------------------------------------------------------
 // 2. PENGECEKAN STATUS LOGIN per ROLE
 // ------------------------------------------------------------
@@ -125,11 +127,8 @@ function current_role_home() {
 // ------------------------------------------------------------
 // 4. HELPER REDIRECT + PESAN (pesan jujur, bukan "sesi habis")
 // ------------------------------------------------------------
-function redirect_with_alert($msg, $url) {
-    // json_encode menghindari error kutip pada teks pesan
-    echo "<script>alert(" . json_encode($msg, JSON_UNESCAPED_UNICODE) . ");"
-       . "window.location.href=" . json_encode($url) . ";</script>";
-    exit();
+function redirect_with_alert($msg, $url, $icon = 'info', $title = 'Informasi') {
+    sweetalert_redirect($msg, $url, $icon, $title);
 }
 
 // ------------------------------------------------------------

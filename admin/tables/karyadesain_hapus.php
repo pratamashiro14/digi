@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 $id = $_GET['id'];
 
@@ -6,9 +7,8 @@ $id = $_GET['id'];
 $query = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design = '$id'");
 
 if ($query) {
-    header("Location: karyadesain.php");
-    exit;
+    sweetalert_redirect('Karya desain berhasil dihapus.', 'karyadesain.php', 'success', 'Berhasil Dihapus!');
 } else {
-    echo "Gagal menghapus data: " . mysqli_error($koneksi);
+    sweetalert_redirect('Gagal menghapus karya: ' . mysqli_error($koneksi), 'karyadesain.php', 'error', 'Gagal!');
 }
 ?>

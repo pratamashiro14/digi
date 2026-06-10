@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 $errors = [];
@@ -59,14 +60,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 VALUES ('$n', '$e', '$pw_hash', '$tel', '$al', '$r', '$s', $p, '$foto_q')";
 
         if (mysqli_query($koneksi, $sql)) {
-            echo "<script>
-                    alert('Pengguna berhasil ditambahkan.');
-                    window.location='datapengguna.php';
-                  </script>";
-            exit;
+            sweetalert_redirect('Pengguna berhasil ditambahkan.', 'datapengguna.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
         }
+    }
+
+    if (!empty($errors)) {
+        sweetalert_back(implode("\n", $errors), 'error', 'Data Belum Valid');
     }
 }
 ?>

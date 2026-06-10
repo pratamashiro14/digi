@@ -105,6 +105,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script type="text/javascript"
             src="https://app.sandbox.midtrans.com/snap/snap.js"
             data-client-key="SB-Mid-client-6m0YatujRuhkkQ1w"></script> 
+    <script src="/digi/vendor/sweetalert/sweetalert.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 50px; }
         .btn-pay {
@@ -132,15 +133,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     window.location.href = "cek_status.php?order_id=<?php echo $order_id; ?>";
                 },
                 onPending: function(result){
-                    alert("Menunggu pembayaran!");
-                    window.location.href = "riwayat.php";
+                    swal('Menunggu Pembayaran', 'Pembayaran belum selesai.', 'info').then(function () {
+                        window.location.href = "riwayat.php";
+                    });
                 },
                 onError: function(result){
-                    alert("Pembayaran gagal!");
-                    window.location.href = "riwayat.php";
+                    swal('Pembayaran Gagal!', 'Pembayaran tidak dapat diproses.', 'error').then(function () {
+                        window.location.href = "riwayat.php";
+                    });
                 },
                 onClose: function(){
-                    alert('Anda menutup popup tanpa menyelesaikan pembayaran');
+                    swal('Pembayaran Belum Selesai', 'Anda menutup popup tanpa menyelesaikan pembayaran.', 'warning');
                 }
             });
         };

@@ -420,7 +420,7 @@ include '../koneksi.php';
               </a>
               <a href="datapengguna_hapus.php?id=<?= $row['id_user'] ?>" 
                  class="text-danger"
-                 onclick="return confirm('Yakin ingin menghapus pengguna ini?')">
+                 data-swal-confirm="Data pengguna ini akan dihapus permanen.">
                 <i class="fas fa-trash-alt"></i>
               </a>
             </td>
@@ -509,5 +509,7 @@ include '../koneksi.php';
         setInterval(updateNotificationDropdown, 30000); // Update setiap 30 detik
     });
     </script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

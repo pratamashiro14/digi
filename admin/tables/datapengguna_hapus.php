@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 $id = $_GET['id'];
@@ -7,9 +8,8 @@ $id = $_GET['id'];
 $query = mysqli_query($koneksi, "DELETE FROM t_user WHERE id_user = '$id'");
 
 if ($query) {
-    header("Location: datapengguna.php");
-    exit;
+    sweetalert_redirect('Data pengguna berhasil dihapus.', 'datapengguna.php', 'success', 'Berhasil Dihapus!');
 } else {
-    echo "Gagal menghapus data: " . mysqli_error($koneksi);
+    sweetalert_redirect('Gagal menghapus data: ' . mysqli_error($koneksi), 'datapengguna.php', 'error', 'Gagal!');
 }
 ?>

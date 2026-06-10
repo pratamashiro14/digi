@@ -435,7 +435,7 @@ include "../koneksi.php";
                 <i class="fas fa-pencil-alt"></i>
               </a>
               <a href="databidding_hapus.php?id=<?= $data['id_bid']; ?>" 
-                 class="text-danger" onclick="return confirm('Yakin mau hapus penawaran ini?')">
+                 class="text-danger" data-swal-confirm="Penawaran ini akan dihapus permanen.">
                 <i class="fas fa-trash-alt"></i>
               </a>
             </td>
@@ -499,7 +499,7 @@ include "../koneksi.php";
               <i class="fas fa-eye"></i>
             </a>
             <a href="databidding_hapus.php?id=<?= $data['id_design']; ?>" 
-               class="text-danger" onclick="return confirm('Yakin mau hapus penawaran ini?')" title="Hapus">
+               class="text-danger" data-swal-confirm="Penawaran ini akan dihapus permanen." title="Hapus">
               <i class="fas fa-trash-alt"></i>
             </a>
           </td>
@@ -560,5 +560,7 @@ include "../koneksi.php";
         });
       });
     </script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

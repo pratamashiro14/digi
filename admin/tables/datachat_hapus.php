@@ -1,4 +1,5 @@
 <?php 
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
 session_start();
@@ -19,8 +20,8 @@ $id_chat = mysqli_real_escape_string($koneksi, $_GET['id']);
 $hapus = mysqli_query($koneksi, "DELETE FROM t_chat WHERE id_chat = '$id_chat'");
 
 if($hapus){
-  header('location:datachat.php?hapus=berhasil');
+  sweetalert_redirect('Pesan berhasil dihapus.', 'datachat.php', 'success', 'Berhasil Dihapus!');
 } else {
-  header('location:datachat.php?hapus=gagal');
+  sweetalert_redirect('Pesan gagal dihapus.', 'datachat.php', 'error', 'Gagal!');
 }
 ?>

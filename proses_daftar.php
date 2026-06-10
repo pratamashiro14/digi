@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/sweetalert.php';
+
 // 1. Koneksi Database
 $servername = "localhost:3306";
 $username = "root";
@@ -23,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $conn->query($check_email);
 
     if ($result->num_rows > 0) {
-        echo "<script>alert('Email sudah terdaftar! Silakan gunakan email lain atau Login.'); window.location='index.php';</script>";
+        sweetalert_redirect('Email sudah terdaftar. Silakan gunakan email lain atau login.', 'login.php', 'error', 'Pendaftaran Gagal!');
     } else {
         // 3. Enkripsi Password (Hashing)
         // Ini SANGAT PENTING supaya password_verify di login bekerja
@@ -41,7 +43,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 VALUES ('$id_user', '$nama', '$email', '$password_hashed', '$role', 'aktif', 0, 'default.jpg')";
 
         if ($conn->query($sql) === TRUE) {
-            echo "<script>alert('Pendaftaran Pembeli berhasil! Silakan login dengan akun baru Anda.'); window.location='index.php';</script>";
+            sweetalert_redirect('Pendaftaran Pembeli berhasil. Silakan login dengan akun baru Anda.', 'login.php', 'success', 'Pendaftaran Berhasil!');
         } else {
             echo "Error: " . $sql . "<br>" . $conn->error;
         }

@@ -434,7 +434,7 @@ if (!$data_admin) {
                 <i class="fas fa-pencil-alt"></i>
               </a>
               <a href="karyadesain_hapus.php?id=<?= $data['id_design']; ?>" 
-                 onclick="return confirm('Yakin mau hapus karya ini?')" 
+                 data-swal-confirm="Karya desain ini akan dihapus permanen."
                  class="text-danger">
                 <i class="fas fa-trash-alt"></i>
               </a>
@@ -521,5 +521,7 @@ if (!$data_admin) {
         setInterval(updateNotificationDropdown, 30000); // Update setiap 30 detik
     });
     </script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

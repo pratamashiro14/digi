@@ -54,12 +54,9 @@ if (isset($_POST['simpan_profil'])) {
         // Update Session Nama supaya Header langsung berubah
         $_SESSION['nama'] = $nama_baru;
 
-        echo "<script>
-            alert('Profil Berhasil Diperbarui!');
-            window.location.href='profil.php'; 
-        </script>";
+        sweetalert_redirect('Profil berhasil diperbarui.', 'profil.php', 'success', 'Berhasil!');
     } else {
-        echo "<script>alert('Gagal update: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal memperbarui profil: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 

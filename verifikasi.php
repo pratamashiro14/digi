@@ -22,7 +22,7 @@ if (isset($_POST['upload_ktp'])) {
     $update = mysqli_query($koneksi, "UPDATE t_user SET foto_ktp='$nama_baru', status_verifikasi='pending' WHERE id_user='$id_user'");
     
     if ($update) {
-        echo "<script>alert('Foto KTP berhasil diupload! Tunggu verifikasi admin ya.'); window.location.href='product.php';</script>";
+        sweetalert_redirect('Foto identitas berhasil diunggah. Tunggu verifikasi admin.', 'product.php', 'success', 'Verifikasi Terkirim!');
     }
 }
 ?>

@@ -1,4 +1,5 @@
 <?php 
+require_once __DIR__ . '/../sweetalert.php';
 include "koneksi.php";
 session_start();
 
@@ -82,14 +83,16 @@ if ($mode === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['u
         $update_query = "UPDATE t_admin SET " . implode(', ', $update_fields) . " WHERE id_admin = '$id_admin'";
         
         if (mysqli_query($koneksi, $update_query)) {
-            $message = "Profil berhasil diperbarui!";
-            header("Location: profile.php?status=success");
-            exit;
+            sweetalert_redirect('Profil admin berhasil diperbarui.', 'profile.php', 'success', 'Berhasil!');
         } else {
             $error = "Gagal menyimpan perubahan: " . mysqli_error($koneksi);
         }
     } elseif (empty($error)) {
-         $message = "Tidak ada perubahan yang disimpan.";
+         sweetalert_redirect('Tidak ada perubahan yang disimpan.', 'profile.php', 'info', 'Informasi');
+    }
+
+    if (!empty($error)) {
+        sweetalert_back($error, 'error', 'Gagal!');
     }
     
     // Ambil ulang data (jika ada error)

@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include '../koneksi.php';
 
 session_start();
@@ -18,12 +19,9 @@ if (isset($_POST['simpan'])) {
     ");
 
     if ($insert) {
-        echo "<script>
-                alert('Data bidding berhasil ditambahkan!');
-                window.location.href='databidding.php';
-              </script>";
+        sweetalert_redirect('Data bidding berhasil ditambahkan.', 'databidding.php', 'success', 'Berhasil!');
     } else {
-        echo "<script>alert('Gagal menambahkan data: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal menambahkan data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 }

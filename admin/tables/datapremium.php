@@ -436,7 +436,7 @@ include "../koneksi.php";
                 <i class="fas fa-pencil-alt"></i>
               </a>
               <a href="datapremium_hapus.php?id=<?= $data['id_premium']; ?>" 
-                 class="text-danger" onclick="return confirm('Yakin mau hapus data ini?')">
+                 class="text-danger" data-swal-confirm="Data premium ini akan dihapus permanen.">
                 <i class="fas fa-trash-alt"></i>
               </a>
             </td>
@@ -491,5 +491,7 @@ include "../koneksi.php";
         });
       });
     </script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

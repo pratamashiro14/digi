@@ -441,7 +441,7 @@ $query = mysqli_query($koneksi, "
                                     </a>
                                     <a href="datachat_hapus.php?id=<?= $data['id_chat']; ?>" 
                                         class="text-danger" 
-                                        onclick="return confirm('Yakin mau hapus pesan ini?')"
+                                        data-swal-confirm="Pesan ini akan dihapus permanen."
                                         title="Hapus Pesan">
                                         <i class="fas fa-trash-alt"></i>
                                     </a>
@@ -470,5 +470,7 @@ $query = mysqli_query($koneksi, "
     <script src="../assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <!-- Kaiadmin JS -->
     <script src="../assets/js/kaiadmin.min.js"></script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

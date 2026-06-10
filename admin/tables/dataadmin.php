@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 session_start();
 
@@ -40,21 +41,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_admin'])) {
         if (mysqli_num_rows($check_query) > 0) {
             $errors[] = 'Email sudah terdaftar. Gunakan email lain.';
         } else {
-            // == START PERUBAHAN KRITIS: HAPUS HASHING ==
-            
-            // Password sekarang disimpan dalam bentuk teks biasa (plaintext) - TIDAK AMAN!
-            $pw_hash = mysqli_real_escape_string($koneksi, $password); 
+            $pw_hash = mysqli_real_escape_string($koneksi, password_hash($password, PASSWORD_DEFAULT));
 
             $sql = "INSERT INTO t_admin (nama_admin, email, password)
                     VALUES ('$n', '$e', '$pw_hash')";
 
             if (mysqli_query($koneksi, $sql)) {
-                $success = "Admin baru berhasil ditambahkan! Password disimpan dalam teks biasa.";
+                sweetalert_redirect('Admin baru berhasil ditambahkan.', 'dataadmin.php', 'success', 'Berhasil!');
             } else {
                 $errors[] = "Gagal menambahkan admin: " . mysqli_error($koneksi);
             }
-            // == END PERUBAHAN KRITIS ==
         }
+    }
+
+    if (!empty($errors)) {
+        sweetalert_back(implode("\n", $errors), 'error', 'Data Belum Valid');
     }
 }
 

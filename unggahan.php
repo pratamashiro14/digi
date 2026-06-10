@@ -33,7 +33,7 @@ if (isset($_GET['hapus'])) {
     $delete = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
     
     if($delete){
-        echo "<script>window.location.href='unggahan.php?pesan=hapus_sukses';</script>";
+        sweetalert_redirect('Karya dan riwayat lelang berhasil dihapus.', 'unggahan.php', 'success', 'Berhasil Dihapus!');
     }
 }
 
@@ -71,9 +71,9 @@ if (isset($_POST['simpan_karya'])) {
         ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
 
     if (mysqli_query($koneksi, $query_insert)) {
-        echo "<script>window.location.href='unggahan.php?pesan=upload_sukses';</script>";
+        sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php', 'success', 'Upload Berhasil!');
     } else {
-        echo "<script>alert('Gagal: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal mengunggah karya: ' . mysqli_error($koneksi), 'error', 'Upload Gagal!');
     }
 }
 ?>
@@ -248,7 +248,7 @@ if (isset($_POST['simpan_karya'])) {
                                     <td>Rp <?php echo number_format($k['harga_awal'],0,',','.'); ?></td>
                                     <td style="color: #e74c3c; font-weight: 500;"><?php echo $deadline; ?></td>
                                     <td>
-                                        <a href="unggahan.php?hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" onclick="return confirm('Hapus lelang ini?')"><i class="fa fa-trash"></i> Hapus</a>
+                                        <a href="unggahan.php?hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" data-swal-confirm="Karya dan riwayat lelang ini akan dihapus permanen."><i class="fa fa-trash"></i> Hapus</a>
                                     </td>
                                 </tr>
                                 <?php 
@@ -270,6 +270,7 @@ if (isset($_POST['simpan_karya'])) {
     <script src="vendor/animsition/js/animsition.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="vendor/sweetalert/sweetalert.min.js"></script>
+    <script src="js/sweetalert-confirm.js"></script>
     <script src="js/main.js"></script>
 
     <script>

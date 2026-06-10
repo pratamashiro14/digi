@@ -29,13 +29,12 @@ if (isset($_POST['login'])) {
 
         if ($pw_ok) {
             login_as_admin($data['id_admin']);
-            header("Location: beranda.php");
-            exit;
+            sweetalert_redirect('Selamat datang di dashboard admin.', 'beranda.php', 'success', 'Login Berhasil!');
         } else {
-            $error = "Email atau password salah!";
+            sweetalert_back('Email atau password salah.', 'error', 'Login Admin Gagal!');
         }
     } else {
-        $error = "Email atau password salah!";
+        sweetalert_back('Email atau password salah.', 'error', 'Login Admin Gagal!');
     }
 }
 ?>

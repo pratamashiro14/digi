@@ -138,13 +138,14 @@ $query = mysqli_query($koneksi, "SELECT email, token, expiry FROM t_password_res
         </div>
     </div>
 
+    <script src="assets/js/plugin/sweetalert/sweetalert.min.js"></script>
     <script>
         function copyToClipboard(elementId) {
             const element = document.getElementById(elementId);
             const text = element.innerText;
             
             navigator.clipboard.writeText(text).then(() => {
-                alert('Link berhasil dicopy ke clipboard!');
+                swal('Berhasil!', 'Link berhasil disalin ke clipboard.', 'success');
             }).catch(() => {
                 // Fallback untuk browser lama
                 const textarea = document.createElement('textarea');
@@ -153,7 +154,7 @@ $query = mysqli_query($koneksi, "SELECT email, token, expiry FROM t_password_res
                 textarea.select();
                 document.execCommand('copy');
                 document.body.removeChild(textarea);
-                alert('Link berhasil dicopy ke clipboard!');
+                swal('Berhasil!', 'Link berhasil disalin ke clipboard.', 'success');
             });
         }
     </script>

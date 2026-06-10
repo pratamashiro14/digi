@@ -27,17 +27,17 @@ if ($cek_email > 0) {
 
         if ($role === 'designer' || $role === 'desainer') {
             login_as_designer($data['id_user'], $data['nama'], $data['email']);
-            redirect_with_alert('Login berhasil sebagai Desainer! Selamat datang, ' . $data['nama'] . '.', 'profil_desainer.php');
+            redirect_with_alert('Login berhasil sebagai Desainer! Selamat datang, ' . $data['nama'] . '.', 'profil_desainer.php', 'success', 'Login Berhasil!');
         } else {
             login_as_user($data['id_user'], $data['nama'], $data['email']);
-            redirect_with_alert('Login berhasil sebagai Pembeli! Selamat datang, ' . $data['nama'] . '.', 'product.php');
+            redirect_with_alert('Login berhasil sebagai Pembeli! Selamat datang, ' . $data['nama'] . '.', 'product.php', 'success', 'Login Berhasil!');
         }
     } else {
         // Password salah
-        echo "<script>alert('Password salah! (Pastikan Capslock mati)'); window.history.back();</script>";
+        sweetalert_back('Password salah! Pastikan Caps Lock tidak aktif.', 'error', 'Login Gagal!');
     }
 } else {
     // Email tidak ditemukan
-    echo "<script>alert('Email tidak terdaftar! Silakan daftar dulu.'); window.history.back();</script>";
+    sweetalert_back('Email tidak terdaftar. Silakan daftar terlebih dahulu.', 'error', 'Login Gagal!');
 }
 ?>

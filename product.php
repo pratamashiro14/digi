@@ -803,13 +803,13 @@ $result = $conn->query($sql);
 			
 			if(bidAmount < minBidValue) {
 				e.preventDefault();
-				alert('Penawaran minimum adalah ' + formatRupiah(minBidValue) + '!');
+				swal('Tawaran Ditolak!', 'Penawaran minimum adalah ' + formatRupiah(minBidValue) + '.', 'error');
 				return false;
 			}
 			
 			if(bidAmount <= 0) {
 				e.preventDefault();
-				alert('Masukkan jumlah penawaran yang valid!');
+				swal('Tawaran Ditolak!', 'Masukkan jumlah penawaran yang valid.', 'error');
 				return false;
 			}
 		});

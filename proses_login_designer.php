@@ -22,13 +22,9 @@ if($cek > 0){
     if ($cocok) {
         login_as_designer($data['id_user'], $data['nama'], $data['email']);
 
-        redirect_with_alert('Halo Desainer! Login berhasil.', 'profil_desainer.php');
+        redirect_with_alert('Halo Desainer! Login berhasil.', 'profil_desainer.php', 'success', 'Login Berhasil!');
     }
 }
 
-echo "<script>
-    alert('Login gagal! Akun tidak ditemukan, bukan akun desainer, atau password salah.');
-    window.history.back();
-</script>";
-exit();
+sweetalert_back('Akun tidak ditemukan, bukan akun desainer, atau password salah.', 'error', 'Login Gagal!');
 ?>

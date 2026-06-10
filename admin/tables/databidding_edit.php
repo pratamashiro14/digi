@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include '../koneksi.php';
 
 session_start();
@@ -30,8 +31,7 @@ $query = mysqli_query($koneksi, "
 $data = mysqli_fetch_assoc($query);
 
 if (!$data) {
-    echo "<script>alert('Data bidding tidak ditemukan!'); window.location.href='databidding.php';</script>";
-    exit;
+    sweetalert_redirect('Data bidding tidak ditemukan.', 'databidding.php', 'error', 'Gagal!');
 }
 
 if (isset($_POST['simpan'])) {
@@ -43,17 +43,13 @@ if (isset($_POST['simpan'])) {
         // PERBAIKAN TYPO: Mengikat $status_bid
         $stmt->bind_param("si", $status_bid, $id); 
         if ($stmt->execute()) {
-            echo "<script>
-                    alert('Data bidding berhasil diperbarui!');
-                    window.location.href='databidding.php';
-                  </script>";
-            exit;
+            sweetalert_redirect('Data bidding berhasil diperbarui.', 'databidding.php', 'success', 'Berhasil!');
         } else {
-            echo "<script>alert('Gagal memperbarui data: " . mysqli_error($koneksi) . "');</script>";
+            sweetalert_back('Gagal memperbarui data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
         }
         $stmt->close();
     } else {
-        echo "<script>alert('Prepare failed: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal menyiapkan perubahan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 ?>

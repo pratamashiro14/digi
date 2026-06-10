@@ -24,10 +24,7 @@ if($id_design) {
     }
     
     // Redirect balik ke halaman sebelumnya (index)
-    echo "<script>
-        alert('Produk berhasil ditambahkan ke keranjang!');
-        window.history.back();
-    </script>";
+    sweetalert_back('Produk berhasil ditambahkan ke keranjang.', 'success', 'Berhasil!');
 } else {
     echo "<script>window.history.back();</script>";
 }

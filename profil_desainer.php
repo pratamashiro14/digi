@@ -56,12 +56,9 @@ if (isset($_POST['simpan_profil'])) {
         $_SESSION['email'] = $email_baru;
         $_SESSION['email_designer'] = $email_baru;
 
-        echo "<script>
-            alert('Profil Berhasil Diperbarui!');
-            window.location.href='profil_desainer.php'; // Refresh halaman
-        </script>";
+        sweetalert_redirect('Profil desainer berhasil diperbarui.', 'profil_desainer.php', 'success', 'Berhasil!');
     } else {
-        echo "<script>alert('Gagal update: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal memperbarui profil: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 // ==========================================================

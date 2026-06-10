@@ -7,16 +7,12 @@ $email = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
 $password_input = $_POST['password'] ?? '';
 
 if ($nama === '' || $email === '' || $password_input === '') {
-    redirect_with_alert('Lengkapi nama, email, dan kata sandi desainer.', 'index.php');
+    redirect_with_alert('Lengkapi nama, email, dan kata sandi desainer.', 'index.php', 'error', 'Pendaftaran Gagal!');
 }
 
 $cek_email = mysqli_query($koneksi, "SELECT id_user FROM t_user WHERE email = '$email'");
 if ($cek_email && mysqli_num_rows($cek_email) > 0) {
-    echo "<script>
-        alert('Gagal daftar! Email sudah digunakan. Silakan gunakan email lain.');
-        window.history.back();
-    </script>";
-    exit();
+    sweetalert_back('Email sudah digunakan. Silakan gunakan email lain.', 'error', 'Pendaftaran Gagal!');
 }
 
 $password_hashed = password_hash($password_input, PASSWORD_DEFAULT);
@@ -29,11 +25,8 @@ $query_insert = "INSERT INTO t_user (id_user, nama, email, password, role, statu
                  VALUES ('$id_user', '$nama', '$email', '$password_hashed', 'designer', 'aktif', 0, 'default.jpg')";
 
 if (mysqli_query($koneksi, $query_insert)) {
-    redirect_with_alert('Pendaftaran Desainer berhasil! Silakan login sebagai desainer.', 'index.php');
+    redirect_with_alert('Pendaftaran Desainer berhasil! Silakan login sebagai desainer.', 'login.php', 'success', 'Pendaftaran Berhasil!');
 }
 
-echo "<script>
-    alert('Terjadi kesalahan sistem. Coba lagi nanti.');
-    window.history.back();
-</script>";
+sweetalert_back('Terjadi kesalahan sistem. Coba lagi nanti.', 'error', 'Pendaftaran Gagal!');
 ?>

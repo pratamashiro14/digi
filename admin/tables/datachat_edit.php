@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include '../koneksi.php';
 
 session_start();
@@ -18,14 +19,13 @@ if (isset($_GET['delete'])) {
             $stmt->bind_param("i", $id_chat);
             if ($stmt->execute()) {
                 $stmt->close();
-                header("Location: datachat_edit.php?id=$id&success=1");
-                exit;
+                sweetalert_redirect('Pesan berhasil dihapus.', "datachat_edit.php?id=$id", 'success', 'Berhasil Dihapus!');
             } else {
-                echo "<script>alert('Gagal menghapus pesan: " . mysqli_error($koneksi) . "');</script>";
+                sweetalert_back('Gagal menghapus pesan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
             }
             $stmt->close();
         } else {
-            echo "<script>alert('Prepare failed: " . mysqli_error($koneksi) . "');</script>";
+            sweetalert_back('Gagal menyiapkan penghapusan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
         }
     }
 }
@@ -42,11 +42,7 @@ $data = mysqli_fetch_assoc($query);
 
 // Check if data exists
 if (!$data) {
-    echo "<script>
-            alert('Chat tidak ditemukan!');
-            window.location.href='datachat.php';
-          </script>";
-    exit;
+    sweetalert_redirect('Chat tidak ditemukan.', 'datachat.php', 'error', 'Gagal!');
 }
 
 // Get full conversation
@@ -69,12 +65,9 @@ if (isset($_POST['simpan'])) {
     ");
 
     if ($update) {
-        echo "<script>
-                alert('Data chat berhasil diperbarui!');
-                window.location.href='datachat.php';
-              </script>";
+        sweetalert_redirect('Data chat berhasil diperbarui.', 'datachat.php', 'success', 'Berhasil!');
     } else {
-        echo "<script>alert('Gagal memperbarui data: " . mysqli_error($koneksi) . "');</script>";
+        sweetalert_back('Gagal memperbarui data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }
 }
 }
@@ -394,7 +387,7 @@ if (isset($_POST['simpan'])) {
                                 <div class='message-time'>" . date('d M H:i', strtotime($chat['waktu_kirim'])) . "</div>
                               </div>
                               <a href='datachat_edit.php?id=$id&delete=" . $chat['id_chat'] . "' 
-                                 class='delete-btn' onclick=\"return confirm('Hapus pesan ini?')\">
+                                 class='delete-btn' data-swal-confirm='Pesan ini akan dihapus permanen.'>
                                 <i class='fas fa-trash'></i>
                               </a>
                             </div>
@@ -435,5 +428,7 @@ if (isset($_POST['simpan'])) {
     <script src="../assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
     <script src="../assets/js/kaiadmin.min.js"></script>
     <script src="../assets/js/setting-demo2.js"></script>
+    <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
+    <script src="../../js/sweetalert-confirm.js"></script>
   </body>
 </html>

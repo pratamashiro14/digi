@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../../sweetalert.php';
 include '../koneksi.php';
 
 session_start();
@@ -44,12 +45,9 @@ if(empty($_SESSION['admin'])){
         ");
 
         if ($update) {
-            echo "<script>
-                    alert('Data pengguna berhasil diperbarui!');
-                    window.location.href='datapengguna.php';
-                  </script>";
+            sweetalert_redirect('Data pengguna berhasil diperbarui.', 'datapengguna.php', 'success', 'Berhasil!');
         } else {
-            echo "<script>alert('Gagal memperbarui data: " . mysqli_error($koneksi) . "');</script>";
+            sweetalert_back('Gagal memperbarui data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
         }
     }
 ?>

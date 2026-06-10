@@ -31,8 +31,7 @@ if(isset($_SESSION['keranjang'])) {
 // Jika user belum login dan ada action checkout, redirect ke login
 if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
     if (isset($_POST['checkout']) || isset($_POST['proses_bayar'])) {
-        echo "<script>alert('Silakan login terlebih dahulu untuk melakukan pembayaran'); window.location.href='login.php';</script>";
-        exit;
+        sweetalert_redirect('Silakan login terlebih dahulu untuk melakukan pembayaran.', 'login.php', 'info', 'Login Diperlukan');
     }
     // Tapi biar bisa lihat halaman shopping-cart (tanpa membayar), kita tidak exit di sini
 }
@@ -111,15 +110,13 @@ if (isset($_GET['id_bidding'])) {
     // Kalau user gak login ATAU gak punya history bidding yang belum dibayar
     if (empty($row)) {
        // KITA UBAH SEDIKIT: Jangan ambil data dummy, tapi lempar ke halaman riwayat atau tampilkan pesan
-       echo "<script>alert('Keranjang belanja kosong atau semua tagihan sudah dibayar!'); window.location='riwayat.php';</script>";
-       exit;
+       sweetalert_redirect('Keranjang belanja kosong atau semua tagihan sudah dibayar.', 'riwayat.php', 'info', 'Informasi');
     }
 }
 
 // --- VALIDASI AKHIR ---
 if (!$row) {
-    echo "<script>alert('Data tidak ditemukan!'); window.location='index.php';</script>";
-    exit;
+    sweetalert_redirect('Data tidak ditemukan.', 'index.php', 'error', 'Gagal!');
 }
 
 // --- PERSIAPAN TAMPILAN ---

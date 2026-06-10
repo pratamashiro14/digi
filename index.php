@@ -134,7 +134,7 @@ if(isset($_SESSION['keranjang'])) {
         $panel = $role_panels[$role_home] ?? null;
     ?>
         <?php if ($panel) { ?>
-            <section class="bg0 p-t-90">
+            <section class="role-context-section">
                 <div class="container">
                     <div class="role-home-panel">
                         <div class="role-home-panel__inner">
@@ -330,9 +330,17 @@ if(isset($_SESSION['keranjang'])) {
                         </div>
                     </div>
                 </div>
-                <?php } } else { echo "<p class='p-l-15'>Belum ada produk.</p>"; } ?>
+                <?php } } ?>
 			</div>
-            <div class="flex-c-m flex-w w-full p-t-45">
+            <div class="market-empty-state" aria-live="polite">
+                <div class="market-empty-icon"><i class="zmdi zmdi-collection-image-o"></i></div>
+                <h3>Belum ada karya di kategori ini</h3>
+                <p>Coba pilih kategori lain atau tampilkan semua karya yang tersedia.</p>
+                <button type="button" class="market-empty-action" data-empty-reset>
+                    <i class="zmdi zmdi-refresh"></i> Lihat Semua Karya
+                </button>
+            </div>
+            <div class="market-load-more flex-c-m flex-w w-full p-t-45">
 				<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">Lihat Lebih Banyak</a>
 			</div>
 		</div>

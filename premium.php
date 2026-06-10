@@ -36,6 +36,7 @@ if(isset($_SESSION['keranjang'])) {
 	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
 	<link rel="stylesheet" type="text/css" href="css/util.css">
 	<link rel="stylesheet" type="text/css" href="css/main.css">
+	<link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         .premium-section { padding: 60px 0; background-color: #fff; }
@@ -76,7 +77,7 @@ if(isset($_SESSION['keranjang'])) {
         }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition membership-page">
 	
 	<?php 
 	$active_page = 'premium'; 
@@ -94,7 +95,12 @@ if(isset($_SESSION['keranjang'])) {
 		
 	<section class="premium-section">
 		<div class="container">
+            <div class="membership-header">
+                <h1>Pilih Paket yang Sesuai</h1>
+                <p>Tingkatkan pengalaman sebagai pembeli atau desainer dengan fitur tambahan yang benar-benar mendukung aktivitasmu.</p>
+            </div>
 			
+            <?php if (!$is_designer_logged_in) { ?>
             <div class="premium-card">
                 <div class="card-left">
                     <h2 class="premium-title">Premium Pengguna</h2>
@@ -111,11 +117,13 @@ if(isset($_SESSION['keranjang'])) {
                     <form action="proses_beli_premium.php" method="POST">
                         <input type="hidden" name="tipe_premium" value="pengguna">
                         <input type="hidden" name="harga" value="25000">
-                        <button type="submit" class="btn-beli">BELI</button>
+                        <button type="submit" class="btn-beli">Pilih Paket Pembeli</button>
                     </form>
                 </div>
             </div>
+            <?php } ?>
 
+            <?php if (!$is_user_logged_in) { ?>
             <div class="premium-card">
                 <div class="card-left">
                     <h2 class="premium-title">Premium Desainer</h2>
@@ -132,66 +140,17 @@ if(isset($_SESSION['keranjang'])) {
                     <form action="proses_beli_premium.php" method="POST">
                         <input type="hidden" name="tipe_premium" value="desainer">
                         <input type="hidden" name="harga" value="28000">
-                        <button type="submit" class="btn-beli">BELI</button>
+                        <button type="submit" class="btn-beli">Pilih Paket Desainer</button>
                     </form>
                 </div>
             </div>
+            <?php } ?>
 
 		</div>
 	</section>
 
-	<footer class="bg3 p-t-75 p-b-32">
-		<div class="container">
-			<div class="row">
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">Categories</h4>
-					<ul>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Women</a></li>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Men</a></li>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Shoes</a></li>
-					</ul>
-				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">Help</h4>
-					<ul>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Track Order</a></li>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Returns</a></li>
-						<li class="p-b-10"><a href="#" class="stext-107 cl7 hov-cl1 trans-04">Shipping</a></li>
-					</ul>
-				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">GET IN TOUCH</h4>
-					<p class="stext-107 cl7 size-201">
-						Any questions? Let us know in store at 8th floor, 379 Hudson St, New York, NY 10018 or call us on (+1) 96 716 6879
-					</p>
-					<div class="p-t-27">
-						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16"><i class="fa fa-facebook"></i></a>
-						<a href="#" class="fs-18 cl7 hov-cl1 trans-04 m-r-16"><i class="fa fa-instagram"></i></a>
-					</div>
-				</div>
-
-				<div class="col-sm-6 col-lg-3 p-b-50">
-					<h4 class="stext-301 cl0 p-b-30">Newsletter</h4>
-					<form>
-						<div class="wrap-input1 w-full p-b-4">
-							<input class="input1 bg-none plh1 stext-107 cl7" type="text" name="email" placeholder="email@example.com">
-							<div class="focus-input1 trans-04"></div>
-						</div>
-						<div class="p-t-18">
-							<button class="flex-c-m stext-101 cl0 size-103 bg1 bor1 hov-btn2 p-lr-15 trans-04">Subscribe</button>
-						</div>
-					</form>
-				</div>
-			</div>
-
-			<div class="p-t-40">
-				<p class="stext-107 cl6 txt-center">
-Copyright &copy;<script>document.write(new Date().getFullYear());</script> All rights reserved | Made with <i class="fa fa-heart-o" aria-hidden="true"></i> by <a href="https://colorlib.com" target="_blank">Colorlib</a>
-				</p>
-			</div>
-		</div>
+	<footer class="membership-footer">
+        <div class="container">DIGIDESAIN Premium membantu pembeli dan desainer bekerja lebih nyaman.</div>
 	</footer>
 
 	<div class="btn-back-to-top" id="myBtn">

@@ -152,7 +152,33 @@
                     columnWidth: '.isotope-item'
                 }
             });
+
+            updateMarketEmptyState($(this));
+            $(this).on('arrangeComplete', function () {
+                updateMarketEmptyState($(this));
+            });
         });
+    });
+
+    function updateMarketEmptyState($grid) {
+        var isotope = $grid.data('isotope');
+        var visibleCount = isotope ? isotope.filteredItems.length : $grid.find('.isotope-item').length;
+        var $section = $grid.closest('section, .bg0, .container').first();
+        var $emptyState = $section.find('.market-empty-state').first();
+        var $loadMore = $section.find('.market-load-more').first();
+
+        $emptyState.toggleClass('is-visible', visibleCount === 0);
+        $loadMore.toggle(visibleCount > 0);
+    }
+
+    $(document).on('click', '[data-empty-reset]', function () {
+        var $section = $(this).closest('section, .bg0, .container').first();
+        var $grid = $section.find('.isotope-grid').first();
+        var $allButton = $section.find('.filter-tope-group button[data-filter="*"]').first();
+
+        $grid.isotope({ filter: '*' });
+        $section.find('.filter-tope-group button').removeClass('how-active1');
+        $allButton.addClass('how-active1');
     });
 
     var isotopeButton = $('.filter-tope-group button');

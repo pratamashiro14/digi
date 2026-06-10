@@ -142,6 +142,7 @@ $total_bayar = $harga_barang + $biaya_layanan;
     <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         .box-checkout {
@@ -198,7 +199,7 @@ $total_bayar = $harga_barang + $biaya_layanan;
         }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page customer-checkout">
     
     <?php
     $active_page = 'cart';

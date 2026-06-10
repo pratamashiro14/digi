@@ -92,6 +92,7 @@ if (isset($_POST['simpan_karya'])) {
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
     
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
@@ -129,28 +130,32 @@ if (isset($_POST['simpan_karya'])) {
         .btn-hapus:hover { background: #d00000; color: #fff; }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'designer-uploads';
     include 'navbar.php';
     ?>
 
-    <div class="container p-t-50 p-b-80">
-        <div class="row">
+    <div class="container account-shell">
+        <div class="row account-layout">
             
-            <div class="col-md-3 col-lg-3 p-b-30 border-right-custom">
-                <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Desainer</h4>
+            <div class="col-md-3 col-lg-3 p-b-30">
+                <aside class="account-sidebar">
+                <h4 class="account-sidebar-title">Menu Desainer</h4>
                 <ul class="sidebar-menu">
                     <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
                     <li><a href="unggahan.php" class="active"><i class="fa fa-cloud-upload"></i> Unggahan & Lelang</a></li>
                     <li><a href="penjualan.php"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
                     <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
                 </ul>
+                </aside>
             </div>
 
-            <div class="col-md-9 col-lg-9 p-l-40 p-l-15-lg">
-                <p class="mtext-105 cl2 p-b-20">Mulai Lelang Karya Baru</p>
+            <div class="col-md-9 col-lg-9 account-content">
+                <div class="account-page-header">
+                    <div><h1>Unggahan & Lelang</h1><p>Publikasikan karya baru dan kelola lelang yang sedang berjalan.</p></div>
+                </div>
                 
                 <form id="formUpload" action="" method="POST" enctype="multipart/form-data" class="upload-container">
                     
@@ -164,7 +169,7 @@ if (isset($_POST['simpan_karya'])) {
                                     <span style="color:#999; font-size:12px;">Klik Upload Cover</span>
                                 </div>
                                 <img id="preview" class="preview-img" src="#">
-                                <input type="file" name="gambar" id="fileInput" style="display: none;" onchange="previewImage(this)" required>
+                                <input type="file" name="gambar" id="fileInput" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="previewImage(this)" required>
                             </div>
                             <div class="upload-hint">Gambar ini akan tampil di katalog</div>
                         </div>
@@ -205,7 +210,7 @@ if (isset($_POST['simpan_karya'])) {
 
                             <div class="m-b-15" style="background: #f8f9fa; padding: 12px; border: 1px dashed #ccc; border-radius: 6px;">
                                 <label class="stext-102 cl3 p-b-5">Upload File Master (ZIP/RAR/PSD)</label>
-                                <input type="file" name="file_master" class="form-control-file" style="font-size: 13px;">
+                                <input type="file" name="file_master" accept=".zip,.rar,.psd,.ai,.fig" class="form-control-file" style="font-size: 13px;">
                                 <div style="font-size: 11px; color: #888; margin-top: 5px;">
                                     <i class="fa fa-lock"></i> File ini aman. Hanya bisa didownload oleh pemenang lelang setelah membayar.
                                 </div>
@@ -218,7 +223,7 @@ if (isset($_POST['simpan_karya'])) {
 
                 <div class="p-t-20">
                     <h5 class="list-karya-title">Karya & Lelang Saya</h5>
-                    <div style="overflow-x:auto;">
+                    <div class="table-responsive-account">
                         <table class="table-karya">
                             <thead>
                                 <tr>

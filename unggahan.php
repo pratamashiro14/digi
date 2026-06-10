@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/designer_layout.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
@@ -7,6 +8,10 @@ require_verified_designer();
 
 $id_desainer = current_id();
 $nama_desainer = current_name();
+$works_view = $_GET['view'] ?? 'auction-create';
+if (!in_array($works_view, ['all', 'auction-create', 'active'], true)) {
+    $works_view = 'auction-create';
+}
 
 // 2. LOGIKA HAPUS KARYA
 if (isset($_GET['hapus'])) {
@@ -33,7 +38,7 @@ if (isset($_GET['hapus'])) {
     $delete = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
     
     if($delete){
-        sweetalert_redirect('Karya dan riwayat lelang berhasil dihapus.', 'unggahan.php', 'success', 'Berhasil Dihapus!');
+        sweetalert_redirect('Karya dan riwayat lelang berhasil dihapus.', 'unggahan.php?view=all#daftar-karya', 'success', 'Berhasil Dihapus!');
     }
 }
 
@@ -71,7 +76,7 @@ if (isset($_POST['simpan_karya'])) {
         ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
 
     if (mysqli_query($koneksi, $query_insert)) {
-        sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php', 'success', 'Upload Berhasil!');
+        sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php?view=active#daftar-karya', 'success', 'Upload Berhasil!');
     } else {
         sweetalert_back('Gagal mengunggah karya: ' . mysqli_error($koneksi), 'error', 'Upload Gagal!');
     }
@@ -96,15 +101,6 @@ if (isset($_POST['simpan_karya'])) {
     
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
-
-        /* SIDEBAR */
-        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li { margin-bottom: 12px; }
-        .sidebar-menu a { display: flex; align-items: center; font-size: 16px; color: #555; text-decoration: none; font-weight: 500; padding: 10px 15px; border-radius: 8px; transition: 0.2s; }
-        .sidebar-menu a i { width: 30px; font-size: 18px; margin-right: 5px; color: #888; text-align: center; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: #f5f5f5; color: #333; font-weight: 700; }
-        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: #333; }
-        @media (min-width: 768px) { .border-right-custom { border-right: 1px solid #eee; } }
 
         /* FORM */
         .upload-container { border: 1px solid #e0e0e0; padding: 30px; border-radius: 8px; position: relative; margin-bottom: 50px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
@@ -138,25 +134,18 @@ if (isset($_POST['simpan_karya'])) {
     ?>
 
     <div class="container account-shell">
-        <div class="row account-layout">
-            
-            <div class="col-md-3 col-lg-3 p-b-30">
-                <aside class="account-sidebar">
-                <h4 class="account-sidebar-title">Menu Desainer</h4>
-                <ul class="sidebar-menu">
-                    <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
-                    <li><a href="unggahan.php" class="active"><i class="fa fa-cloud-upload"></i> Unggahan & Lelang</a></li>
-                    <li><a href="penjualan.php"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
-                    <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
-                </ul>
-                </aside>
-            </div>
+        <div class="designer-layout-grid">
+            <?php render_designer_section_sidebar('works', $works_view); ?>
 
-            <div class="col-md-9 col-lg-9 account-content">
+            <main class="designer-section-content">
                 <div class="account-page-header">
-                    <div><h1>Unggahan & Lelang</h1><p>Publikasikan karya baru dan kelola lelang yang sedang berjalan.</p></div>
+                    <div>
+                        <h1><?php echo $works_view === 'auction-create' ? 'Buat Lelang' : ($works_view === 'active' ? 'Lelang Aktif' : 'Semua Karya'); ?></h1>
+                        <p><?php echo $works_view === 'auction-create' ? 'Publikasikan karya baru dan tentukan detail lelang.' : 'Kelola koleksi dan status karya yang sudah kamu unggah.'; ?></p>
+                    </div>
                 </div>
-                
+
+                <?php if ($works_view === 'auction-create') { ?>
                 <form id="formUpload" action="" method="POST" enctype="multipart/form-data" class="upload-container">
                     
                     <input type="hidden" name="simpan_karya" value="yes">
@@ -220,9 +209,11 @@ if (isset($_POST['simpan_karya'])) {
                         </div>
                     </div>
                 </form>
+                <?php } ?>
 
-                <div class="p-t-20">
-                    <h5 class="list-karya-title">Karya & Lelang Saya</h5>
+                <?php if ($works_view !== 'auction-create') { ?>
+                <div id="daftar-karya">
+                    <h5 class="list-karya-title"><?php echo $works_view === 'active' ? 'Lelang yang Sedang Berjalan' : 'Seluruh Karya Saya'; ?></h5>
                     <div class="table-responsive-account">
                         <table class="table-karya">
                             <thead>
@@ -238,7 +229,8 @@ if (isset($_POST['simpan_karya'])) {
                             <tbody>
                                 <?php 
                                 $no = 1;
-                                $q_karya = mysqli_query($koneksi, "SELECT * FROM t_design WHERE id_designer = '$id_desainer' ORDER BY id_design DESC");
+                                $work_filter = $works_view === 'active' ? " AND status = 'approved' AND waktu_berakhir > NOW()" : "";
+                                $q_karya = mysqli_query($koneksi, "SELECT * FROM t_design WHERE id_designer = '$id_desainer' $work_filter ORDER BY id_design DESC");
                                 if(mysqli_num_rows($q_karya) > 0){
                                     while($k = mysqli_fetch_assoc($q_karya)){
                                         $deadline = ($k['waktu_berakhir']) ? date('d M Y, H:i', strtotime($k['waktu_berakhir'])) : '-';
@@ -259,15 +251,16 @@ if (isset($_POST['simpan_karya'])) {
                                 <?php 
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6' style='padding:30px;'>Belum ada karya yang diunggah. Yuk mulai lelang!</td></tr>";
+                                    echo "<tr><td colspan='6' style='padding:30px;'>" . ($works_view === 'active' ? 'Tidak ada lelang yang sedang aktif.' : 'Belum ada karya yang diunggah.') . "</td></tr>";
                                 }
                                 ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
+                <?php } ?>
 
-            </div>
+            </main>
         </div>
     </div>
 

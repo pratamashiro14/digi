@@ -120,15 +120,10 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
-        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li { margin-bottom: 12px; }
-        .sidebar-menu a { display: flex; align-items: center; font-size: 16px; color: #555; text-decoration: none; font-weight: 500; padding: 10px 15px; border-radius: 8px; transition: 0.2s; }
-        .sidebar-menu a i { width: 30px; font-size: 18px; margin-right: 5px; color: #888; text-align: center; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: #f5f5f5; color: #333; font-weight: 700; }
-        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: #333; }
         .photo-circle { width: 150px; height: 150px; border-radius: 50%; background-color: #e6e6e6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 4px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
         .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
         .btn-edit-foto { background-color: #888; color: #fff; border: none; padding: 6px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; transition:0.3s; font-weight: 600; }
@@ -140,31 +135,21 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
         .portfolio-box { width: 100%; height: 150px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fafafa; }
         .portfolio-box:hover { border-color: #4e8eff; background: #f0f8ff; }
         .plus-icon { font-size: 40px; color: #ccc; }
-        @media (min-width: 768px) { .border-right-custom { border-right: 1px solid #eee; } }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'designer-profile';
     include 'navbar.php';
     ?>
 
-    <div class="container p-t-50 p-b-80">
-        <div class="row">
-            
-            <div class="col-md-3 col-lg-3 p-b-30 border-right-custom">
-                <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Desainer</h4>
-                <ul class="sidebar-menu">
-                    <li><a href="profil_desainer.php" class="active"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
-                    <li><a href="unggahan.php"><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
-                    <li><a href="penjualan.php"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
-                    <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
-                </ul>
+    <div class="container account-shell">
+        <main class="designer-full-content">
+            <div class="account-page-header">
+                <div><h1>Profil Desainer</h1><p>Kelola identitas publik, verifikasi, dan keamanan akunmu.</p></div>
             </div>
-
-            <div class="col-md-9 col-lg-9 p-l-40 p-l-15-lg">
-                <form action="" method="POST" enctype="multipart/form-data">
+            <form action="" method="POST" enctype="multipart/form-data" class="account-panel profile-form">
                     <div class="row">
                         <div class="col-md-4 text-center p-b-30">
                             <div class="photo-circle">
@@ -228,10 +213,8 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
                             <button type="submit" name="simpan_profil" class="btn-save">Simpan Perubahan</button>
                         </div>
                     </div>
-                </form>
-            </div>
-
-        </div>
+            </form>
+        </main>
     </div>
 
     <script src="vendor/jquery/jquery-3.2.1.min.js"></script>

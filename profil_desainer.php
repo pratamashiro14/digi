@@ -93,6 +93,7 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
@@ -116,40 +117,45 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
         @media (min-width: 768px) { .border-right-custom { border-right: 1px solid #eee; } }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'designer-profile';
     include 'navbar.php';
     ?>
 
-    <div class="container p-t-50 p-b-80">
-        <div class="row">
+    <div class="container account-shell">
+        <div class="row account-layout">
             
-            <div class="col-md-3 col-lg-3 p-b-30 border-right-custom">
-                <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Desainer</h4>
+            <div class="col-md-3 col-lg-3 p-b-30">
+                <aside class="account-sidebar">
+                <h4 class="account-sidebar-title">Menu Desainer</h4>
                 <ul class="sidebar-menu">
                     <li><a href="profil_desainer.php" class="active"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
                     <li><a href="unggahan.php"><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
                     <li><a href="penjualan.php"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
                     <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
                 </ul>
+                </aside>
             </div>
 
-            <div class="col-md-9 col-lg-9 p-l-40 p-l-15-lg">
-                <form action="" method="POST" enctype="multipart/form-data">
+            <div class="col-md-9 col-lg-9 account-content">
+                <div class="account-page-header">
+                    <div><h1>Profil Desainer</h1><p>Perbarui identitas dan informasi profesionalmu.</p></div>
+                </div>
+                <form action="" method="POST" enctype="multipart/form-data" class="account-panel profile-form">
                     <div class="row">
                         <div class="col-md-4 text-center p-b-30">
+                            <div class="profile-photo-panel">
                             <div class="photo-circle">
                                 <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.$foto : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
                             </div>
                             <button type="button" class="btn-edit-foto m-t-10" onclick="document.getElementById('inputFoto').click()">Edit Foto</button>
-                            <input type="file" name="foto" id="inputFoto" style="display: none;" onchange="tampilkanPreview(this)">
+                            <input type="file" name="foto" id="inputFoto" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="tampilkanPreview(this)">
+                            </div>
                         </div>
 
                         <div class="col-md-8">
-                            <h4 class="mtext-105 cl2 p-b-20" style="text-transform: uppercase; font-weight: 800;">EDIT PROFIL DESAINER</h4>
-
                             <div class="p-b-15">
                                 <label class="stext-102 cl3 p-b-5">Nama Desainer</label>
                                 <input class="custom-input" type="text" name="nama" value="<?php echo $nama; ?>">
@@ -171,11 +177,6 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
                                 <input class="custom-input" type="password" name="password" placeholder="(Kosongkan jika tidak ubah)">
                             </div>
                             
-                            <div class="p-t-10">
-                                <label class="stext-102 cl3 p-b-5" style="font-weight:600;">Portofolio</label>
-                                <div class="portfolio-box"><span class="plus-icon">+</span></div>
-                            </div>
-
                             <button type="submit" name="simpan_profil" class="btn-save">Simpan Perubahan</button>
                         </div>
                     </div>

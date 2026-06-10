@@ -64,7 +64,7 @@ if ($id_lawan) {
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Pesan Desainer</title>
+    <title>Pesan - DIGIDESAIN</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     
@@ -75,6 +75,7 @@ if ($id_lawan) {
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
@@ -125,19 +126,20 @@ if ($id_lawan) {
         .empty-chat i { font-size: 60px; margin-bottom: 15px; color: #ddd; }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'messages';
     include 'navbar.php';
     ?>
 
-    <div class="container p-t-50 p-b-80">
-        <div class="row">
+    <div class="container account-shell">
+        <div class="row account-layout">
             
-            <div class="col-md-3 col-lg-3 p-b-30 border-right-custom">
+            <div class="col-md-3 col-lg-3 p-b-30">
+                <aside class="account-sidebar">
                 <?php if (current_role() === 'designer') { ?>
-                    <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Desainer</h4>
+                    <h4 class="account-sidebar-title">Menu Desainer</h4>
                     <ul class="sidebar-menu">
                         <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
                         <li><a href="unggahan.php"><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
@@ -145,7 +147,7 @@ if ($id_lawan) {
                         <li><a href="pesan.php" class="active"><i class="fa fa-comments"></i> Pesan</a></li>
                     </ul>
                 <?php } else { ?>
-                    <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Pembeli</h4>
+                    <h4 class="account-sidebar-title">Menu Pembeli</h4>
                     <ul class="sidebar-menu">
                         <li><a href="profil.php"><i class="fa fa-user-circle"></i> Profil Saya</a></li>
                         <li><a href="riwayat.php"><i class="fa fa-shopping-bag"></i> Riwayat Pembelian</a></li>
@@ -153,10 +155,13 @@ if ($id_lawan) {
                         <li><a href="pesan.php" class="active"><i class="fa fa-comments"></i> Pesan</a></li>
                     </ul>
                 <?php } ?>
+                </aside>
             </div>
 
-            <div class="col-md-9 col-lg-9 p-l-40 p-l-15-lg">
-                <p class="mtext-105 cl2 p-b-20">Pesan Masuk</p>
+            <div class="col-md-9 col-lg-9 account-content">
+                <div class="account-page-header">
+                    <div><h1>Pesan</h1><p>Kelola percakapan antara pembeli dan desainer.</p></div>
+                </div>
                 
                 <div class="chat-container">
                     
@@ -187,13 +192,13 @@ if ($id_lawan) {
                         <?php if ($id_lawan) { ?>
                             
                             <div class="chat-header">
-                                <i class="fa fa-user-circle"></i> <?php echo $nama_lawan; ?>
+                                <i class="fa fa-user-circle"></i> <?php echo htmlspecialchars($nama_lawan); ?>
                             </div>
 
                             <div class="chat-box" id="chatBox">
                                 <?php foreach ($chat_history as $msg) { 
                                     // Tentukan CSS bubble (Punya sendiri atau Lawan)
-                                    $bubble_class = ($msg['id_pengirim'] == $id_desainer) ? 'msg-me' : 'msg-you';
+                                    $bubble_class = ($msg['id_pengirim'] == $id_user) ? 'msg-me' : 'msg-you';
                                     $waktu = date('H:i', strtotime($msg['waktu_kirim']));
                                 ?>
                                     <div class="msg <?php echo $bubble_class; ?>">
@@ -206,7 +211,7 @@ if ($id_lawan) {
                             <form action="" method="POST" class="chat-input">
                                 <input type="hidden" name="id_penerima" value="<?php echo $id_lawan; ?>">
                                 <input type="text" name="isi_pesan" class="input-field" placeholder="Tulis pesan..." autocomplete="off" required>
-                                <button type="submit" name="kirim_pesan" class="btn-send"><i class="fa fa-paper-plane"></i></button>
+                                <button type="submit" name="kirim_pesan" class="btn-send" title="Kirim pesan" aria-label="Kirim pesan"><i class="fa fa-paper-plane"></i></button>
                             </form>
 
                         <?php } else { ?>

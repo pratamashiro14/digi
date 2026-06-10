@@ -49,6 +49,7 @@ $total_pemasukan = 0;
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
@@ -75,30 +76,35 @@ $total_pemasukan = 0;
         .total-amount { font-size: 24px; font-weight: 800; color: #333; margin-right: 20px; }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'designer-sales';
     include 'navbar.php';
     ?>
 
-    <div class="container p-t-50 p-b-80">
-        <div class="row">
+    <div class="container account-shell">
+        <div class="row account-layout">
             
-            <div class="col-md-3 col-lg-3 p-b-30 border-right-custom">
-                <h4 class="mtext-105 cl2 p-b-30" style="font-size: 18px;">Menu Desainer</h4>
+            <div class="col-md-3 col-lg-3 p-b-30">
+                <aside class="account-sidebar">
+                <h4 class="account-sidebar-title">Menu Desainer</h4>
                 <ul class="sidebar-menu">
                     <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
                     <li><a href="unggahan.php" ><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
                     <li><a href="penjualan.php" class="active"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
                     <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
                 </ul>
+                </aside>
             </div>
 
-            <div class="col-md-9 col-lg-9 p-l-40 p-l-15-lg">
-                <p class="mtext-105 cl2 p-b-20">Penjualan</p>
+            <div class="col-md-9 col-lg-9 account-content">
+                <div class="account-page-header">
+                    <div><h1>Penjualan</h1><p>Pantau transaksi dan total pemasukan dari karya yang terjual.</p></div>
+                </div>
                 
                 <div class="sales-container">
+                    <div class="table-responsive-account">
                     <table class="table table-sales">
                         <thead>
                             <tr>
@@ -139,6 +145,7 @@ $total_pemasukan = 0;
                             <?php } ?>
                         </tbody>
                     </table>
+                    </div>
 
                     <div class="sales-footer">
                         <div class="total-label">TOTAL PEMASUKAN :</div>

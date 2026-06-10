@@ -36,6 +36,7 @@ if (!$result) {
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
     <style>
         .container-riwayat { width: 90%; max-width: 1000px; margin: 50px auto; font-family: 'Poppins', sans-serif; }
@@ -67,16 +68,19 @@ if (!$result) {
         .product-price { font-size: 15px; color: #007bff; font-weight: 600; }
     </style>
 </head>
-<body class="animsition">
+<body class="animsition account-page">
 
     <?php
     $active_page = 'cart';
     include 'navbar.php';
     ?>
 
-    <div class="container-riwayat">
-        <h3 class="mtext-105 cl2 txt-center p-b-40">Riwayat Pembelian & File Saya</h3>
-        
+    <div class="container account-shell">
+        <div class="account-page-header">
+            <div><h1>Riwayat Pembelian</h1><p>Pantau status transaksi dan unduh file karya yang sudah lunas.</p></div>
+            <a href="product.php" class="role-action is-primary">Cari Desain</a>
+        </div>
+        <div class="table-responsive-account">
         <table class="table-riwayat">
             <thead>
                 <tr>
@@ -159,6 +163,7 @@ if (!$result) {
                 <?php endif; ?>
             </tbody>
         </table>
+        </div>
     </div>
 
     <script src="vendor/jquery/jquery-3.2.1.min.js"></script>

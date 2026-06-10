@@ -22,7 +22,7 @@ if($cek > 0){
     if ($cocok) {
         login_as_designer($data['id_user'], $data['nama'], $data['email']);
 
-        redirect_with_alert('Halo Desainer! Login berhasil.', 'profil_desainer.php', 'success', 'Login Berhasil!');
+        redirect_with_alert('Halo Desainer! Login berhasil.', 'index.php', 'success', 'Login Berhasil!');
     }
 }
 

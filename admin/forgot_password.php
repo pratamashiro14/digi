@@ -175,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 </head>
 <body>
     <div class="reset-card">
-        <img src="assets/img/digidesain.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
         <h4>Lupa Password?</h4>
         <p>Masukkan email Anda untuk menerima link reset password</p>
 

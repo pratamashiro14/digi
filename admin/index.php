@@ -113,7 +113,7 @@ if (isset($_POST['login'])) {
 </head>
 <body>
     <div class="login-card">
-        <img src="assets/img/digidesain.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
         <h4>Admin</h4>
         <?php if (!empty($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
         <form method="post">

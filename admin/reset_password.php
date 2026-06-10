@@ -150,7 +150,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
 </head>
 <body>
     <div class="reset-card">
-        <img src="assets/img/digidesain.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
         <h4>Reset Password</h4>
         <p>Masukkan password baru Anda</p>
 

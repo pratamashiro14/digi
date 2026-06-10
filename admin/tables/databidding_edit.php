@@ -105,10 +105,10 @@ if (isset($_POST['simpan'])) {
           <div class="logo-header" data-background-color="dark">
              <a href="../beranda.php" class="logo">
               <img
-                src="../assets/img/digidesain.png"
+                src="../assets/img/dens.png"
                 alt="navbar brand"
                 class="navbar-brand"
-                style="height: 150px !important; width: auto !important;"
+                
               />
             </a>
             <div class="nav-toggle">
@@ -191,7 +191,7 @@ if (isset($_POST['simpan'])) {
             <div class="logo-header" data-background-color="dark">
               <a href="../beranda.php" class="logo">
                 <img
-                  src="../assets/img/digidesain.png"
+                  src="../assets/img/dens.png"
                   alt="navbar brand"
                   class="navbar-brand"
                   style="height: 40px !important; width: auto !important;"

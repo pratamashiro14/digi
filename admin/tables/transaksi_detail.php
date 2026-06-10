@@ -139,7 +139,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
         <div class="sidebar-logo">
             <div class="logo-header" data-background-color="dark">
                 <a href="../beranda.php" class="logo">
-                    <img src="../assets/img/digidesain.png" alt="DIGIDESAIN" class="navbar-brand" />
+                    <img src="../assets/img/dens.png" alt="DIGIDESAIN" class="navbar-brand" />
                 </a>
                 <div class="nav-toggle">
                     <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
@@ -170,7 +170,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
             <div class="main-header-logo">
                 <div class="logo-header" data-background-color="dark">
                     <a href="../beranda.php" class="logo">
-                        <img src="../assets/img/digidesain.png" alt="DIGIDESAIN" class="navbar-brand" />
+                        <img src="../assets/img/dens.png" alt="DIGIDESAIN" class="navbar-brand" />
                     </a>
                     <div class="nav-toggle">
                         <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>

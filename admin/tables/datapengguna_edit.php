@@ -33,6 +33,12 @@ if(empty($_SESSION['admin'])){
         $role = strtolower($_POST['role']); // Convert to lowercase
         $premium = $_POST['premium'];
 
+        $nik = isset($_POST['nik']) ? mysqli_real_escape_string($koneksi, $_POST['nik']) : '';
+        $nik_update = "";
+        if ($role === 'designer') {
+            $nik_update = ", nik='$nik'";
+        }
+
         $update = mysqli_query($koneksi, "UPDATE t_user SET 
             nama='$nama',
             email='$email',
@@ -41,6 +47,7 @@ if(empty($_SESSION['admin'])){
             alamat='$alamat',
             role='$role',
             premium='$premium'
+            $nik_update
             WHERE id_user='$id'
         ");
 
@@ -426,10 +433,15 @@ if(empty($_SESSION['admin'])){
 
             <div class="mb-3">
               <label class="form-label fw-bold">Peran</label>
-              <select name="role" class="form-select" required>
+              <select name="role" id="roleSelect" class="form-select" required onchange="toggleNikField()">
                 <option value="designer" <?= $data['role']=='designer'?'selected':''; ?>>Designer</option>
                 <option value="pelanggan" <?= $data['role']=='pelanggan'?'selected':''; ?>>Pelanggan</option>
               </select>
+            </div>
+
+            <div class="mb-3" id="nikField" style="<?= $data['role']=='designer'?'':'display:none;'; ?>">
+              <label class="form-label fw-bold">NIK (Nomor Induk Kependudukan)</label>
+              <input type="text" name="nik" class="form-control" value="<?= htmlspecialchars($data['nik'] ?? ''); ?>" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka">
             </div>
 
             <div class="mb-3">
@@ -488,6 +500,16 @@ if(empty($_SESSION['admin'])){
                 $('#notification-content-container').html('<div class="p-3 text-center text-danger">Gagal memuat notifikasi.</div>');
             }
         });
+    }
+
+    function toggleNikField() {
+        var role = document.getElementById('roleSelect').value;
+        var nikField = document.getElementById('nikField');
+        if (role === 'designer') {
+            nikField.style.display = 'block';
+        } else {
+            nikField.style.display = 'none';
+        }
     }
 
     // Panggil segera dan ulangi setiap 30 detik

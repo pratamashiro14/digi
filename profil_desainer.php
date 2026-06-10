@@ -7,6 +7,11 @@ require_designer();
 
 $id_user = current_id();
 
+// Ambil status verifikasi saat ini dari DB sebelum memproses POST
+$query_verif = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user = '$id_user'");
+$data_verif = mysqli_fetch_assoc($query_verif);
+$status_verifikasi_awal = $data_verif['status_verifikasi'] ?? 'unverified';
+
 // ==========================================================
 // 2. LOGIKA UPDATE DATA (DIGABUNG DI SINI)
 // ==========================================================
@@ -16,6 +21,13 @@ if (isset($_POST['simpan_profil'])) {
     $alamat_baru = mysqli_real_escape_string($koneksi, $_POST['alamat'] ?? '');
     $email_baru = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
     $pass_baru = $_POST['password'];
+
+    // B. Cek NIK (hanya diupdate jika belum terverifikasi)
+    $query_nik = "";
+    if ($status_verifikasi_awal !== 'verified' && isset($_POST['nik'])) {
+        $nik_baru = mysqli_real_escape_string($koneksi, $_POST['nik'] ?? '');
+        $query_nik = ", nik = '$nik_baru'";
+    }
 
     // A. Cek Upload Foto
     $query_foto = "";
@@ -54,6 +66,7 @@ if (isset($_POST['simpan_profil'])) {
                    no_telp = '$telp_baru', 
                    alamat = '$alamat_baru', 
                    email = '$email_baru'
+                   $query_nik
                    $query_foto
                    $query_pass
                    $query_ktp
@@ -185,6 +198,10 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
                             <div class="p-b-15">
                                 <label class="stext-102 cl3 p-b-5">Nama Desainer</label>
                                 <input class="custom-input" type="text" name="nama" value="<?php echo $nama; ?>">
+                            </div>
+                            <div class="p-b-15">
+                                <label class="stext-102 cl3 p-b-5">NIK (Nomor Induk Kependudukan)</label>
+                                <input class="custom-input" type="text" name="nik" value="<?php echo htmlspecialchars($data['nik'] ?? ''); ?>" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka" <?php echo ($status_verifikasi == 'verified') ? 'readonly' : ''; ?> required>
                             </div>
                             <div class="p-b-15">
                                 <label class="stext-102 cl3 p-b-5">No. WhatsApp</label>

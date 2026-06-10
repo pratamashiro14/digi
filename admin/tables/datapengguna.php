@@ -433,14 +433,24 @@ include '../koneksi.php';
               <?php if ($row['role'] == 'designer') : ?>
                   <?php if ($row['status_verifikasi'] == 'pending') : ?>
                       <span class="badge bg-warning text-dark">Pending</span>
-                      <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                      <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
+                      <?php if (!empty($row['foto_ktp'])): ?>
+                          <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                      <?php endif; ?>
                       <br>
                       <a href="?approve_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-success mt-1 py-0 px-1" style="font-size:11px;">Terima</a>
                       <a href="?reject_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-danger mt-1 py-0 px-1" style="font-size:11px;">Tolak</a>
                   <?php elseif ($row['status_verifikasi'] == 'verified') : ?>
                       <span class="badge bg-success">Verified</span>
+                      <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
+                      <?php if (!empty($row['foto_ktp'])): ?>
+                          <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                      <?php endif; ?>
                   <?php else: ?>
                       <span class="badge bg-secondary">Unverified</span>
+                      <?php if (!empty($row['nik'])): ?>
+                          <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik']) ?></small>
+                      <?php endif; ?>
                   <?php endif; ?>
               <?php else: ?>
                   <span class="text-muted">-</span>

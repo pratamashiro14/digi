@@ -25,7 +25,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $result = $conn->query($check_email);
 
     if ($result->num_rows > 0) {
-        sweetalert_redirect('Email sudah terdaftar. Silakan gunakan email lain atau login.', 'login.php', 'error', 'Pendaftaran Gagal!');
+        sweetalert_redirect('Email sudah terdaftar. Silakan gunakan email lain atau login.', 'register.php', 'error', 'Pendaftaran Gagal!');
     } else {
         // 3. Enkripsi Password (Hashing)
         // Ini SANGAT PENTING supaya password_verify di login bekerja

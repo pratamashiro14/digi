@@ -45,7 +45,14 @@
         }
         .btn-brand:hover { background: var(--brand-dark); color: #fff; }
 
-        .hint { font-size: 12.5px; color: #999; text-align: center; margin-top: 8px; }
+        .btn-outline-brand {
+            background: transparent; color: var(--brand); font-weight: 600; font-size: 16px;
+            border-radius: 50px; padding: 11px; width: 100%; border: 2px solid var(--brand); transition: .25s; margin-top: 12px;
+            display: inline-block; text-align: center; text-decoration: none; box-sizing: border-box;
+        }
+        .btn-outline-brand:hover { background: var(--brand); color: #fff; }
+
+        .hint { font-size: 12.5px; color: #999; text-align: center; margin-top: 16px; }
         .admin-link { display:block; text-align:center; margin-top:22px; font-size:13px; color:#888; text-decoration:none; }
         .admin-link:hover { color: var(--brand); }
         .badge-role { font-size: 11px; background:#eef1ff; color:var(--brand); padding:3px 9px; border-radius:50px; }
@@ -72,85 +79,23 @@
         <h3 class="brand-title">DIGIDESAIN</h3>
         <p class="brand-sub">Marketplace Desain Grafis</p>
 
-        <div class="role-grid">
-            <button class="role-option" type="button" onclick="showAuthTab('#tab-pembeli')">
-                <i class="fa-solid fa-bag-shopping"></i>
-                <strong>Pembeli</strong>
-            </button>
-            <a class="role-option" href="daftar_desainer.php">
-                <i class="fa-solid fa-paint-brush"></i>
-                <strong>Desainer</strong>
-            </a>
-            <a class="role-option" href="admin/">
-                <i class="fa-solid fa-shield-halved"></i>
-                <strong>Admin</strong>
-            </a>
-        </div>
-
-        <!-- TAB HEADER -->
-        <ul class="nav nav-pills nav-justified" id="authTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-masuk" type="button">Masuk</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-pembeli" type="button">Daftar Pembeli</button>
-            </li>
-
-        </ul>
-
-        <div class="tab-content">
-
-            <!-- ===== MASUK (otomatis sesuai role) ===== -->
-            <div class="tab-pane fade show active" id="tab-masuk">
-                <form action="proses_login.php" method="POST">
-                    <div class="mb-3">
-                        <label class="form-label">Alamat Email</label>
-                        <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kata Sandi</label>
-                        <input type="password" class="form-control" name="password" placeholder="Kata Sandi" required>
-                    </div>
-                    <button type="submit" class="btn-brand">Masuk</button>
-                    <p class="hint">Sistem akan mengarahkan otomatis sesuai role akunmu (Pembeli / Desainer).</p>
-                </form>
+        <form action="proses_login.php" method="POST">
+            <div class="mb-3">
+                <label class="form-label">Alamat Email</label>
+                <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
             </div>
-
-            <!-- ===== DAFTAR PEMBELI ===== -->
-            <div class="tab-pane fade" id="tab-pembeli">
-                <form action="proses_daftar.php" method="POST">
-                    <div class="text-center mb-3"><span class="badge-role">Akun Pembeli</span></div>
-                    <div class="mb-3">
-                        <label class="form-label">Nama Lengkap</label>
-                        <input type="text" class="form-control" name="nama" placeholder="Nama Lengkap" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Alamat Email</label>
-                        <input type="email" class="form-control" name="email" placeholder="email@contoh.com" required>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Kata Sandi</label>
-                        <input type="password" class="form-control" name="password" placeholder="Buat Kata Sandi" required>
-                    </div>
-                    <button type="submit" class="btn-brand">Daftar sebagai Pembeli</button>
-                </form>
+            <div class="mb-3">
+                <label class="form-label">Kata Sandi</label>
+                <input type="password" class="form-control" name="password" placeholder="Kata Sandi" required>
             </div>
-
-
-
-        </div>
+            <button type="submit" class="btn-brand">Masuk</button>
+            <a href="register.php" class="btn-outline-brand">Registrasi</a>
+            <p class="hint">Sistem akan mengarahkan otomatis sesuai role akunmu (Pembeli / Desainer).</p>
+        </form>
 
         <a href="admin/" class="admin-link">Masuk sebagai Admin &rarr;</a>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function showAuthTab(target) {
-            const trigger = document.querySelector('[data-bs-target="' + target + '"]');
-            if (trigger) {
-                bootstrap.Tab.getOrCreateInstance(trigger).show();
-            }
-        }
-    </script>
 </body>
 </html>

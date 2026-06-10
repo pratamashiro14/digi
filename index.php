@@ -249,10 +249,10 @@ function render_designer_stat_card($stat) {
                             <p>Pantau performa karya dan kelola aktivitas penjualanmu dari satu tempat.</p>
                         </div>
                         <div class="designer-dashboard-actions">
-                            <a href="unggahan.php#formUpload" class="designer-dashboard-button is-primary">
+                            <a href="unggahan.php?view=auction-create#formUpload" class="designer-dashboard-button is-primary">
                                 <i class="zmdi zmdi-plus" aria-hidden="true"></i> Unggah Karya
                             </a>
-                            <a href="unggahan.php" class="designer-dashboard-button">
+                            <a href="unggahan.php?view=all#daftar-karya" class="designer-dashboard-button">
                                 Kelola Karya
                             </a>
                         </div>
@@ -275,7 +275,7 @@ function render_designer_stat_card($stat) {
                                 <span>Koleksi Saya</span>
                                 <h2>Karya Terbaru</h2>
                             </div>
-                            <a href="unggahan.php">Lihat Semua <i class="zmdi zmdi-arrow-right"></i></a>
+                            <a href="unggahan.php?view=all#daftar-karya">Lihat Semua <i class="zmdi zmdi-arrow-right"></i></a>
                         </header>
 
                         <?php if (!empty($designer_recent_works)) { ?>
@@ -305,7 +305,7 @@ function render_designer_stat_card($stat) {
                                 <i class="zmdi zmdi-collection-image-o"></i>
                                 <strong>Belum ada karya</strong>
                                 <p>Unggah karya pertamamu untuk mulai membangun koleksi.</p>
-                                <a href="unggahan.php#formUpload">Unggah Karya</a>
+                                <a href="unggahan.php?view=auction-create#formUpload">Unggah Karya</a>
                             </div>
                         <?php } ?>
                     </article>
@@ -340,7 +340,7 @@ function render_designer_stat_card($stat) {
                                 <i class="zmdi zmdi-chart"></i>
                                 <strong>Belum ada penjualan</strong>
                                 <p>Aktivitas pembelian atas karyamu akan muncul di sini.</p>
-                                <a href="unggahan.php">Kelola Karya</a>
+                                <a href="unggahan.php?view=all#daftar-karya">Kelola Karya</a>
                             </div>
                         <?php } ?>
                     </article>

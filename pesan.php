@@ -136,17 +136,9 @@ if ($id_lawan) {
     <div class="container account-shell">
         <div class="row account-layout">
             
+            <?php if (current_role() !== 'designer') { ?>
             <div class="col-md-3 col-lg-3 p-b-30">
                 <aside class="account-sidebar">
-                <?php if (current_role() === 'designer') { ?>
-                    <h4 class="account-sidebar-title">Menu Desainer</h4>
-                    <ul class="sidebar-menu">
-                        <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
-                        <li><a href="unggahan.php"><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
-                        <li><a href="penjualan.php"><i class="fa fa-shopping-basket"></i> Penjualan</a></li>
-                        <li><a href="pesan.php" class="active"><i class="fa fa-comments"></i> Pesan</a></li>
-                    </ul>
-                <?php } else { ?>
                     <h4 class="account-sidebar-title">Menu Pembeli</h4>
                     <ul class="sidebar-menu">
                         <li><a href="profil.php"><i class="fa fa-user-circle"></i> Profil Saya</a></li>
@@ -154,11 +146,11 @@ if ($id_lawan) {
                         <li><a href="premium.php"><i class="fa fa-star"></i> Fitur Unggulan</a></li>
                         <li><a href="pesan.php" class="active"><i class="fa fa-comments"></i> Pesan</a></li>
                     </ul>
-                <?php } ?>
                 </aside>
             </div>
+            <?php } ?>
 
-            <div class="col-md-9 col-lg-9 account-content">
+            <div class="<?php echo current_role() === 'designer' ? 'col-12 designer-full-content' : 'col-md-9 col-lg-9 account-content'; ?>">
                 <div class="account-page-header">
                     <div><h1>Pesan</h1><p>Kelola percakapan antara pembeli dan desainer.</p></div>
                 </div>

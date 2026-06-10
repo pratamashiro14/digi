@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/designer_layout.php';
 include 'admin/koneksi.php';
 
 // 1. CEK LOGIN DESAINER
@@ -7,6 +8,15 @@ require_designer();
 
 $id_desainer = current_id();
 $nama_desainer = current_name();
+$sales_view = $_GET['view'] ?? 'all';
+if (!in_array($sales_view, ['all', 'processing', 'history'], true)) {
+    $sales_view = 'all';
+}
+$sales_filter = [
+    'all' => '',
+    'processing' => " AND t_transaksi.status_pembayaran = 'pending'",
+    'history' => " AND t_transaksi.status_pembayaran IN ('berhasil', 'gagal')",
+][$sales_view];
 
 // 2. QUERY PENJUALAN (SESUAI GAMBAR DATABASE)
 // - t_transaksi menggunakan 'id_buyer' untuk join ke t_user
@@ -22,7 +32,8 @@ $query_penjualan = "SELECT
                     FROM t_transaksi 
                     JOIN t_design ON t_transaksi.id_design = t_design.id_design 
                     JOIN t_user ON t_transaksi.id_buyer = t_user.id_user 
-                    WHERE t_design.id_designer = '$id_desainer' 
+                    WHERE t_design.id_designer = '$id_desainer'
+                    $sales_filter
                     ORDER BY t_transaksi.id_transaksi DESC";
 
 $result_penjualan = mysqli_query($koneksi, $query_penjualan);
@@ -54,15 +65,6 @@ $total_pemasukan = 0;
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }
 
-        /* STYLE SIDEBAR */
-        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li { margin-bottom: 12px; }
-        .sidebar-menu a { display: flex; align-items: center; font-size: 16px; color: #555; text-decoration: none; font-weight: 500; padding: 10px 15px; border-radius: 8px; transition: 0.2s; }
-        .sidebar-menu a i { width: 30px; font-size: 18px; margin-right: 5px; color: #888; text-align: center; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: #f5f5f5; color: #333; font-weight: 700; }
-        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: #333; }
-        @media (min-width: 768px) { .border-right-custom { border-right: 1px solid #eee; } }
-
         /* STYLE TABEL PENJUALAN */
         .sales-container { border: 1px solid #e0e0e0; padding: 30px; border-radius: 4px; }
         .table-sales { width: 100%; margin-bottom: 0; }
@@ -84,23 +86,15 @@ $total_pemasukan = 0;
     ?>
 
     <div class="container account-shell">
-        <div class="row account-layout">
-            
-            <div class="col-md-3 col-lg-3 p-b-30">
-                <aside class="account-sidebar">
-                <h4 class="account-sidebar-title">Menu Desainer</h4>
-                <ul class="sidebar-menu">
-                    <li><a href="profil_desainer.php"><i class="fa fa-user-circle"></i> Profil Desainer</a></li>
-                    <li><a href="unggahan.php" ><i class="fa fa-cloud-upload"></i> Unggahan</a></li>
-                    <li><a href="penjualan.php" class="active"><i class="fa fa-shopping-basket"></i> Penjualan</a></li> 
-                    <li><a href="pesan.php"><i class="fa fa-comments"></i> Pesan</a></li>
-                </ul>
-                </aside>
-            </div>
+        <div class="designer-layout-grid">
+            <?php render_designer_section_sidebar('sales', $sales_view); ?>
 
-            <div class="col-md-9 col-lg-9 account-content">
+            <main class="designer-section-content">
                 <div class="account-page-header">
-                    <div><h1>Penjualan</h1><p>Pantau transaksi dan total pemasukan dari karya yang terjual.</p></div>
+                    <div>
+                        <h1><?php echo $sales_view === 'processing' ? 'Sedang Diproses' : ($sales_view === 'history' ? 'Riwayat Penjualan' : 'Semua Penjualan'); ?></h1>
+                        <p>Pantau transaksi dan total pemasukan dari karya yang terjual.</p>
+                    </div>
                 </div>
                 
                 <div class="sales-container">
@@ -153,7 +147,7 @@ $total_pemasukan = 0;
                     </div>
                 </div>
 
-            </div>
+            </main>
 
         </div>
     </div>

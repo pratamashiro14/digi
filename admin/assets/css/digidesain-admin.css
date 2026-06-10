@@ -68,7 +68,7 @@ body {
   margin: 2px 0;
   padding: 11px 13px !important;
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: #111827 !important;
 }
 
 .sidebar .nav > .nav-item > a p {
@@ -78,16 +78,16 @@ body {
 }
 
 .sidebar .nav > .nav-item > a i {
-  color: rgba(255, 255, 255, 0.75) !important;
+  color: #111827 !important;
 }
 
 .sidebar .nav > .nav-item > a:hover {
-  background: rgba(0, 0, 0, 0.15) !important;
-  color: #fff !important;
+  background: rgba(0, 0, 0, 0.12) !important;
+  color: #000 !important;
 }
 
 .sidebar .nav > .nav-item > a:hover i {
-  color: #fff !important;
+  color: #000 !important;
 }
 
 .sidebar .nav > .nav-item.active > a {

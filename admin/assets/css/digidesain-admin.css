@@ -45,8 +45,8 @@ body {
 
 .sidebar .logo-header .navbar-brand,
 .main-header-logo .navbar-brand {
-  height: 42px !important;
-  max-height: 42px !important;
+  height: 60px !important;
+  max-height: 60px !important;
   width: auto !important;
   object-fit: contain;
 }
@@ -63,7 +63,7 @@ body {
   margin: 0 10px;
 }
 
-.sidebar .nav > .nav-item > a {
+.sidebar[data-background-color="dark"] .nav > .nav-item > a {
   min-height: 44px;
   margin: 2px 0;
   padding: 11px 13px !important;
@@ -71,36 +71,34 @@ body {
   color: #111827 !important;
 }
 
-.sidebar .nav > .nav-item > a p {
-  color: inherit !important;
+.sidebar[data-background-color="dark"] .nav > .nav-item > a p {
+  color: #111827 !important;
   font-weight: 600;
   letter-spacing: 0;
 }
 
-.sidebar .nav > .nav-item > a i {
+.sidebar[data-background-color="dark"] .nav > .nav-item > a i {
   color: #111827 !important;
 }
 
-.sidebar .nav > .nav-item > a:hover {
+.sidebar[data-background-color="dark"] .nav > .nav-item > a:hover {
   background: rgba(0, 0, 0, 0.12) !important;
   color: #000 !important;
 }
 
-.sidebar .nav > .nav-item > a:hover i {
+.sidebar[data-background-color="dark"] .nav > .nav-item > a:hover p,
+.sidebar[data-background-color="dark"] .nav > .nav-item > a:hover i {
   color: #000 !important;
 }
 
-.sidebar .nav > .nav-item.active > a {
+.sidebar[data-background-color="dark"] .nav > .nav-item.active > a {
   background: #fff !important;
   color: var(--dd-admin-sidebar) !important;
   box-shadow: 0 4px 18px rgba(0, 0, 0, 0.18);
 }
 
-.sidebar .nav > .nav-item.active > a p {
-  color: var(--dd-admin-sidebar) !important;
-}
-
-.sidebar .nav > .nav-item.active > a i {
+.sidebar[data-background-color="dark"] .nav > .nav-item.active > a p,
+.sidebar[data-background-color="dark"] .nav > .nav-item.active > a i {
   color: var(--dd-admin-sidebar) !important;
 }
 

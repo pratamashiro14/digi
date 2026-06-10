@@ -1,9 +1,20 @@
-<?php include "../koneksi.php";
+<?php
+include "../koneksi.php";
 
 session_start();
-if(empty($_SESSION['admin'])){
-  header('location:../logout.php');
-} else 
+if (empty($_SESSION['admin'])) {
+    header('location:../logout.php');
+    exit;
+}
+
+$id_admin = $_SESSION['admin'];
+$query_admin = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE id_admin = '$id_admin'");
+$data_admin = mysqli_fetch_assoc($query_admin);
+
+if (!$data_admin) {
+    header('location:../logout.php');
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">

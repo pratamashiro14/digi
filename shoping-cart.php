@@ -6,7 +6,7 @@ require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php'; 
 
 if (is_designer_login()) {
-    redirect_with_alert('Halaman pembelian khusus pembeli. Anda sedang login sebagai Desainer.', 'profil_desainer.php');
+    redirect_with_alert('Halaman pembelian khusus pembeli. Anda sedang login sebagai Desainer.', 'index.php');
 }
 if (is_admin_login()) {
     redirect_with_alert('Halaman pembelian khusus pembeli. Anda sedang login sebagai Admin.', 'admin/beranda.php');

@@ -116,7 +116,7 @@ function current_role_home() {
         case 'admin':
             return 'admin/beranda.php';
         case 'designer':
-            return 'profil_desainer.php';
+            return 'index.php';
         case 'pelanggan':
             return 'product.php';
         default:
@@ -146,7 +146,7 @@ function require_login($redirect = 'login.php') {
 function require_user($redirect = 'login.php') {
     if (is_user_login()) return;
     if (is_designer_login()) {
-        redirect_with_alert('Halaman ini khusus pembeli. Anda sedang login sebagai Desainer.', 'profil_desainer.php');
+        redirect_with_alert('Halaman ini khusus pembeli. Anda sedang login sebagai Desainer.', 'index.php');
     }
     redirect_with_alert('Silakan login sebagai user terlebih dahulu.', $redirect);
 }

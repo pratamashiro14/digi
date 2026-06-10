@@ -24,6 +24,95 @@ if(isset($_SESSION['keranjang'])) {
         $jumlah_item_keranjang += $jml;
     }
 }
+
+$designer_dashboard_stats = [];
+$designer_recent_works = [];
+$designer_recent_sales = [];
+if ($is_designer_logged_in) {
+    $id_designer_dashboard = (int) current_id();
+    $designer_metrics = [
+        'total_karya' => 0,
+        'lelang_aktif' => 0,
+        'pesanan' => 0,
+        'total_penjualan' => 0,
+    ];
+
+    $design_metrics_query = mysqli_query(
+        $koneksi,
+        "SELECT
+            COUNT(*) AS total_karya,
+            SUM(CASE WHEN status = 'approved' AND waktu_berakhir > NOW() THEN 1 ELSE 0 END) AS lelang_aktif
+         FROM t_design
+         WHERE id_designer = '$id_designer_dashboard'"
+    );
+    if ($design_metrics_query && $design_metrics_data = mysqli_fetch_assoc($design_metrics_query)) {
+        $designer_metrics['total_karya'] = (int) ($design_metrics_data['total_karya'] ?? 0);
+        $designer_metrics['lelang_aktif'] = (int) ($design_metrics_data['lelang_aktif'] ?? 0);
+    }
+
+    $sales_metrics_query = mysqli_query(
+        $koneksi,
+        "SELECT
+            COUNT(t.id_transaksi) AS pesanan,
+            SUM(CASE WHEN t.status_pembayaran IN ('berhasil', 'settlement', 'capture') THEN t.harga_final ELSE 0 END) AS total_penjualan
+         FROM t_transaksi t
+         JOIN t_design d ON t.id_design = d.id_design
+         WHERE d.id_designer = '$id_designer_dashboard'"
+    );
+    if ($sales_metrics_query && $sales_metrics_data = mysqli_fetch_assoc($sales_metrics_query)) {
+        $designer_metrics['pesanan'] = (int) ($sales_metrics_data['pesanan'] ?? 0);
+        $designer_metrics['total_penjualan'] = (float) ($sales_metrics_data['total_penjualan'] ?? 0);
+    }
+
+    $designer_dashboard_stats = [
+        ['label' => 'Total Karya', 'value' => number_format($designer_metrics['total_karya'], 0, ',', '.'), 'icon' => 'zmdi-collection-image-o'],
+        ['label' => 'Lelang Aktif', 'value' => number_format($designer_metrics['lelang_aktif'], 0, ',', '.'), 'icon' => 'zmdi-time'],
+        ['label' => 'Pesanan', 'value' => number_format($designer_metrics['pesanan'], 0, ',', '.'), 'icon' => 'zmdi-receipt'],
+        ['label' => 'Total Penjualan', 'value' => 'Rp' . number_format($designer_metrics['total_penjualan'], 0, ',', '.'), 'icon' => 'zmdi-balance-wallet'],
+    ];
+
+    $recent_works_query = mysqli_query(
+        $koneksi,
+        "SELECT id_design, judul, kategori, harga_awal, gambar, status, waktu_berakhir
+         FROM t_design
+         WHERE id_designer = '$id_designer_dashboard'
+         ORDER BY id_design DESC
+         LIMIT 4"
+    );
+    if ($recent_works_query) {
+        while ($work = mysqli_fetch_assoc($recent_works_query)) {
+            $designer_recent_works[] = $work;
+        }
+    }
+
+    $recent_sales_query = mysqli_query(
+        $koneksi,
+        "SELECT t.harga_final, t.status_pembayaran, t.tanggal_transaksi, d.judul, u.nama AS nama_pembeli
+         FROM t_transaksi t
+         JOIN t_design d ON t.id_design = d.id_design
+         JOIN t_user u ON t.id_buyer = u.id_user
+         WHERE d.id_designer = '$id_designer_dashboard'
+         ORDER BY t.id_transaksi DESC
+         LIMIT 4"
+    );
+    if ($recent_sales_query) {
+        while ($sale = mysqli_fetch_assoc($recent_sales_query)) {
+            $designer_recent_sales[] = $sale;
+        }
+    }
+}
+
+function render_designer_stat_card($stat) {
+    ?>
+    <article class="designer-stat-card">
+        <i class="zmdi <?php echo htmlspecialchars($stat['icon']); ?>" aria-hidden="true"></i>
+        <div>
+            <strong><?php echo htmlspecialchars($stat['value']); ?></strong>
+            <span><?php echo htmlspecialchars($stat['label']); ?></span>
+        </div>
+    </article>
+    <?php
+}
 ?>
 
 <!DOCTYPE html>
@@ -99,7 +188,7 @@ if(isset($_SESSION['keranjang'])) {
 
     <?php
     $role_home = current_role();
-    if ($role_home !== 'guest') {
+    if ($role_home !== 'guest' && $role_home !== 'designer') {
         $role_panels = [
             'admin' => [
                 'eyebrow' => 'Mode Admin',
@@ -108,16 +197,6 @@ if(isset($_SESSION['keranjang'])) {
                 'actions' => [
                     ['label' => 'Buka Dashboard', 'href' => 'admin/beranda.php', 'primary' => true],
                     ['label' => 'Kelola Transaksi', 'href' => 'admin/tables/transaksi.php', 'primary' => false],
-                ],
-            ],
-            'designer' => [
-                'eyebrow' => 'Dashboard Desainer',
-                'title' => 'Kelola karya dan penjualanmu',
-                'text' => 'Unggah karya baru, pantau lelang berjalan, dan lihat performa penjualan dari menu desainer.',
-                'actions' => [
-                    ['label' => 'Unggah Karya', 'href' => 'unggahan.php', 'primary' => true],
-                    ['label' => 'Lihat Penjualan', 'href' => 'penjualan.php', 'primary' => false],
-                    ['label' => 'Profil Desainer', 'href' => 'profil_desainer.php', 'primary' => false],
                 ],
             ],
             'pelanggan' => [
@@ -157,6 +236,120 @@ if(isset($_SESSION['keranjang'])) {
         <?php } ?>
     <?php } ?>
 
+    <?php if ($role_home === 'designer') { ?>
+        <section class="designer-dashboard-section" aria-labelledby="designer-dashboard-title">
+            <div class="container">
+                <article class="designer-dashboard-card">
+                    <div class="designer-dashboard-top">
+                        <div class="designer-dashboard-copy">
+                            <span class="designer-dashboard-label">Dashboard Desainer</span>
+                            <h1 id="designer-dashboard-title">
+                                Selamat datang kembali, <?php echo htmlspecialchars(current_name()); ?> 👋
+                            </h1>
+                            <p>Pantau performa karya dan kelola aktivitas penjualanmu dari satu tempat.</p>
+                        </div>
+                        <div class="designer-dashboard-actions">
+                            <a href="unggahan.php#formUpload" class="designer-dashboard-button is-primary">
+                                <i class="zmdi zmdi-plus" aria-hidden="true"></i> Unggah Karya
+                            </a>
+                            <a href="unggahan.php" class="designer-dashboard-button">
+                                Kelola Karya
+                            </a>
+                        </div>
+                    </div>
+                    <div class="designer-stats-grid" aria-label="Ringkasan performa desainer">
+                        <?php foreach ($designer_dashboard_stats as $stat) {
+                            render_designer_stat_card($stat);
+                        } ?>
+                    </div>
+                </article>
+            </div>
+        </section>
+
+        <section class="designer-workspace-section" aria-label="Aktivitas desainer">
+            <div class="container">
+                <div class="designer-workspace-grid">
+                    <article class="designer-workspace-panel">
+                        <header class="designer-panel-header">
+                            <div>
+                                <span>Koleksi Saya</span>
+                                <h2>Karya Terbaru</h2>
+                            </div>
+                            <a href="unggahan.php">Lihat Semua <i class="zmdi zmdi-arrow-right"></i></a>
+                        </header>
+
+                        <?php if (!empty($designer_recent_works)) { ?>
+                            <div class="designer-work-list">
+                                <?php foreach ($designer_recent_works as $work) {
+                                    $work_status = strtolower($work['status'] ?? 'pending');
+                                    $status_labels = [
+                                        'approved' => 'Tayang',
+                                        'pending' => 'Menunggu',
+                                        'rejected' => 'Ditolak',
+                                        'sold' => 'Terjual',
+                                    ];
+                                    $status_label = $status_labels[$work_status] ?? ucfirst($work_status);
+                                ?>
+                                    <div class="designer-work-item">
+                                        <img src="admin/uploads/<?php echo htmlspecialchars($work['gambar']); ?>" alt="<?php echo htmlspecialchars($work['judul']); ?>">
+                                        <div class="designer-work-info">
+                                            <strong><?php echo htmlspecialchars($work['judul']); ?></strong>
+                                            <span><?php echo htmlspecialchars(ucfirst($work['kategori'])); ?> &middot; Rp<?php echo number_format($work['harga_awal'], 0, ',', '.'); ?></span>
+                                        </div>
+                                        <span class="designer-status is-<?php echo htmlspecialchars($work_status); ?>"><?php echo htmlspecialchars($status_label); ?></span>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        <?php } else { ?>
+                            <div class="designer-panel-empty">
+                                <i class="zmdi zmdi-collection-image-o"></i>
+                                <strong>Belum ada karya</strong>
+                                <p>Unggah karya pertamamu untuk mulai membangun koleksi.</p>
+                                <a href="unggahan.php#formUpload">Unggah Karya</a>
+                            </div>
+                        <?php } ?>
+                    </article>
+
+                    <article class="designer-workspace-panel">
+                        <header class="designer-panel-header">
+                            <div>
+                                <span>Aktivitas Bisnis</span>
+                                <h2>Penjualan Terbaru</h2>
+                            </div>
+                            <a href="penjualan.php">Lihat Semua <i class="zmdi zmdi-arrow-right"></i></a>
+                        </header>
+
+                        <?php if (!empty($designer_recent_sales)) { ?>
+                            <div class="designer-sales-list">
+                                <?php foreach ($designer_recent_sales as $sale) { ?>
+                                    <div class="designer-sale-item">
+                                        <div class="designer-sale-icon"><i class="zmdi zmdi-receipt"></i></div>
+                                        <div class="designer-sale-info">
+                                            <strong><?php echo htmlspecialchars($sale['judul']); ?></strong>
+                                            <span><?php echo htmlspecialchars($sale['nama_pembeli']); ?> &middot; <?php echo date('d M Y', strtotime($sale['tanggal_transaksi'])); ?></span>
+                                        </div>
+                                        <div class="designer-sale-value">
+                                            <strong>Rp<?php echo number_format($sale['harga_final'], 0, ',', '.'); ?></strong>
+                                            <span><?php echo htmlspecialchars(ucfirst($sale['status_pembayaran'])); ?></span>
+                                        </div>
+                                    </div>
+                                <?php } ?>
+                            </div>
+                        <?php } else { ?>
+                            <div class="designer-panel-empty">
+                                <i class="zmdi zmdi-chart"></i>
+                                <strong>Belum ada penjualan</strong>
+                                <p>Aktivitas pembelian atas karyamu akan muncul di sini.</p>
+                                <a href="unggahan.php">Kelola Karya</a>
+                            </div>
+                        <?php } ?>
+                    </article>
+                </div>
+            </div>
+        </section>
+    <?php } ?>
+
+    <?php if ($role_home !== 'designer') { ?>
 	<div class="wrap-header-cart js-panel-cart">
 		<div class="s-full js-hide-cart"></div>
 		<div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -345,6 +538,7 @@ if(isset($_SESSION['keranjang'])) {
 			</div>
 		</div>
 	</section>
+    <?php } ?>
 
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">

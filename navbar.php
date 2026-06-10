@@ -42,11 +42,11 @@ if ($is_admin_logged_in) {
     ];
 } elseif ($is_designer_logged_in) {
     $main_menu = [
-        ['href' => 'index.php', 'label' => 'Beranda', 'active' => 'beranda'],
-        ['href' => 'product.php', 'label' => 'Pasar Desain', 'active' => 'product'],
-        ['href' => 'unggahan.php', 'label' => 'Unggahan', 'active' => 'designer-uploads'],
+        ['href' => 'index.php', 'label' => 'Dashboard', 'active' => 'beranda'],
+        ['href' => 'unggahan.php', 'label' => 'Karya Saya', 'active' => 'designer-uploads'],
         ['href' => 'penjualan.php', 'label' => 'Penjualan', 'active' => 'designer-sales'],
         ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages'],
+        ['href' => 'profil_desainer.php', 'label' => 'Profil', 'active' => 'designer-profile'],
     ];
 } else {
     $main_menu = [
@@ -137,7 +137,9 @@ if ($is_admin_logged_in) {
                 </div>
 
                 <div class="wrap-icon-header flex-w flex-r-m">
-                    <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
+                    <?php if (!$is_admin_logged_in && !$is_designer_logged_in) { ?>
+                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
+                    <?php } ?>
                     <?php if (!$is_admin_logged_in && !$is_designer_logged_in) { ?>
                         <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart"
                              data-notify="<?php echo $jumlah_item_keranjang; ?>">
@@ -152,7 +154,9 @@ if ($is_admin_logged_in) {
     <div class="wrap-header-mobile">
         <div class="logo-mobile"><a href="index.php"><img src="images/icons/dens.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a></div>
         <div class="wrap-icon-header flex-w flex-r-m m-r-15">
-            <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
+            <?php if (!$is_admin_logged_in && !$is_designer_logged_in) { ?>
+                <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 js-show-modal-search"><i class="zmdi zmdi-search"></i></div>
+            <?php } ?>
             <?php if (!$is_admin_logged_in && !$is_designer_logged_in) { ?>
                 <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="<?php echo $jumlah_item_keranjang; ?>">
                     <i class="zmdi zmdi-shopping-cart"></i>

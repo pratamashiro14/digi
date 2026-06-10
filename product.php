@@ -1,6 +1,11 @@
 <?php 
-require_once __DIR__ . '/auth.php'; 
-include 'admin/koneksi.php'; 
+require_once __DIR__ . '/auth.php';
+
+if (is_designer_login()) {
+    redirect_with_alert('Pasar Desain dan pemesanan hanya tersedia untuk pembeli.', 'index.php', 'info', 'Mode Desainer');
+}
+
+include 'admin/koneksi.php';
 
 // Cek Login
 $is_designer_logged_in = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";

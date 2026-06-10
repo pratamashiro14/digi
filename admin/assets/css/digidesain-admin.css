@@ -90,6 +90,10 @@ body {
   box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
 }
 
+.sidebar .nav > .nav-item.active > a p {
+  color: #111827 !important;
+}
+
 .sidebar .nav > .nav-item.active > a i {
   color: var(--dd-admin-accent) !important;
 }

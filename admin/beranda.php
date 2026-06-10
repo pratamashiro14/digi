@@ -134,12 +134,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item active">
-                <a href="beranda.php"
-                  data-bs-toggle="collapse"
-                  href="#dashboard"
-                  class="collapsed"
-                  aria-expanded="false"
-                >
+                <a href="beranda.php">
                   <i class="fas fa-home"></i>
                   <p>Beranda</p>
                 </a>

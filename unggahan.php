@@ -49,6 +49,7 @@ if (isset($_POST['simpan_karya'])) {
     $kategori = $_POST['kategori']; 
     $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
     $harga = $_POST['harga'];
+    $harga_beli_langsung = empty($_POST['harga_beli_langsung']) ? 0 : $_POST['harga_beli_langsung'];
     $waktu_berakhir = $_POST['waktu_berakhir'];
 
     // Upload Gambar
@@ -71,9 +72,9 @@ if (isset($_POST['simpan_karya'])) {
 
     // Simpan ke Database
     $query_insert = "INSERT INTO t_design 
-        (id_designer, judul, deskripsi, kategori, harga_awal, gambar, tanggal_upload, status, waktu_berakhir, file_master) 
+        (id_designer, judul, deskripsi, kategori, harga_awal, harga_beli_langsung, gambar, tanggal_upload, status, waktu_berakhir, file_master) 
         VALUES 
-        ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
+        ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$harga_beli_langsung', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
 
     if (mysqli_query($koneksi, $query_insert)) {
         sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php?view=active#daftar-karya', 'success', 'Upload Berhasil!');
@@ -187,11 +188,15 @@ if (isset($_POST['simpan_karya'])) {
                             </div>
 
                             <div class="row m-b-15">
-                                <div class="col-md-6">
+                                <div class="col-md-4">
                                     <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#4e8eff;">Harga Awal (Open Bid)</label>
                                     <input type="number" name="harga" class="form-input-custom" placeholder="Rp 0" required>
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#f39c12;">Harga Beli Langsung</label>
+                                    <input type="number" name="harga_beli_langsung" class="form-input-custom" placeholder="Opsional (Rp)">
+                                </div>
+                                <div class="col-md-4">
                                     <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#e74c3c;">Batas Waktu Lelang</label>
                                     <input type="datetime-local" name="waktu_berakhir" class="form-input-custom" required>
                                 </div>
@@ -222,6 +227,7 @@ if (isset($_POST['simpan_karya'])) {
                                     <th>Cover</th>
                                     <th>Info Karya</th>
                                     <th>Harga Awal</th>
+                                    <th>Beli Langsung</th>
                                     <th>Deadline</th>
                                     <th>Aksi</th>
                                 </tr>
@@ -243,6 +249,7 @@ if (isset($_POST['simpan_karya'])) {
                                         <span class="badge badge-light"><?php echo $k['kategori']; ?></span>
                                     </td>
                                     <td>Rp <?php echo number_format($k['harga_awal'],0,',','.'); ?></td>
+                                    <td><?php echo $k['harga_beli_langsung'] > 0 ? 'Rp ' . number_format($k['harga_beli_langsung'],0,',','.') : '-'; ?></td>
                                     <td style="color: #e74c3c; font-weight: 500;"><?php echo $deadline; ?></td>
                                     <td>
                                         <a href="unggahan.php?hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" data-swal-confirm="Karya dan riwayat lelang ini akan dihapus permanen."><i class="fa fa-trash"></i> Hapus</a>

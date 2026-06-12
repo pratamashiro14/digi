@@ -50,8 +50,24 @@ $id_user_login = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
 // LOGIKA PENCARIAN DATA (PRIORITAS 1 -> 2 -> 3)
 // ==========================================================
 
+// --- SKENARIO 0: AKSES BELI LANGSUNG (?id_design=...&beli_langsung=1) ---
+if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
+    $id_design = $_GET['id_design'];
+    $asal_transaksi = "beli_langsung";
+
+    $query = "SELECT * FROM t_design WHERE id_design = '$id_design'";
+    $result = mysqli_query($koneksi, $query);
+    $row = mysqli_fetch_assoc($result);
+    if ($row) {
+        $harga_barang = $row['harga_beli_langsung'];
+        if ($harga_barang <= 0) {
+            sweetalert_redirect('Fitur Beli Langsung tidak tersedia untuk karya ini.', 'index.php', 'error', 'Tidak Tersedia');
+            exit;
+        }
+    }
+
 // --- SKENARIO 1: AKSES DARI LINK KHUSUS (?id_bidding=...) ---
-if (isset($_GET['id_bidding'])) {
+} elseif (isset($_GET['id_bidding'])) {
     $id_bidding = $_GET['id_bidding'];
     $asal_transaksi = "lelang";
 
@@ -61,7 +77,26 @@ if (isset($_GET['id_bidding'])) {
     
     $result = mysqli_query($koneksi, $query);
     $row = mysqli_fetch_assoc($result);
-    if ($row) $harga_barang = $row['harga_tawaran'];
+    if ($row) {
+        // Cek apakah ini bid tertinggi
+        $id_design = $row['id_design'];
+        $query_max = "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design = '$id_design'";
+        $res_max = mysqli_query($koneksi, $query_max);
+        $d_max = mysqli_fetch_assoc($res_max);
+        
+        if ($row['harga_tawaran'] < $d_max['max_bid']) {
+            sweetalert_redirect('Penawaran Anda sudah tersusul. Anda tidak dapat melakukan pembayaran.', 'riwayat.php', 'error', 'Tersusul');
+            exit;
+        }
+
+        // Cek apakah waktu lelang sudah berakhir
+        if (!empty($row['waktu_berakhir']) && strtotime($row['waktu_berakhir']) > time()) {
+            sweetalert_redirect('Waktu lelang belum berakhir. Checkout hanya bisa dilakukan setelah lelang ditutup.', 'riwayat.php', 'info', 'Lelang Berjalan');
+            exit;
+        }
+
+        $harga_barang = $row['harga_tawaran'];
+    }
 
 // --- SKENARIO 2: AKSES BELI BIASA (?id_design=...) ---
 } elseif (isset($_GET['id_design'])) {
@@ -87,23 +122,36 @@ if (isset($_GET['id_bidding'])) {
         $data_auto = mysqli_fetch_assoc($result_auto);
 
         if ($data_auto) {
-            // --- [UPDATE BARU] CEK KE DATABASE TRANSAKSI ---
-            // Kita cek: Apakah desain ini sudah pernah dibayar (settlement) atau sedang proses (pending)?
             $id_design_cek = $data_auto['id_design'];
             
-            $cek_transaksi = mysqli_query($koneksi, "SELECT * FROM t_transaksi 
-                             WHERE id_buyer = '$id_user_login' 
-                             AND id_design = '$id_design_cek'
-                             AND (status_pembayaran = 'settlement' OR status_pembayaran = 'pending')");
+            // Cek apakah bid tersebut adalah yang tertinggi
+            $query_max = "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design = '$id_design_cek'";
+            $res_max = mysqli_query($koneksi, $query_max);
+            $d_max = mysqli_fetch_assoc($res_max);
             
-            // Jika BELUM ADA di tabel transaksi (artinya belum dibayar), baru kita tampilkan tagihannya
-            if(mysqli_num_rows($cek_transaksi) == 0) {
-                $row = $data_auto;
-                $id_bidding = $row['id_bid']; 
-                $harga_barang = $row['harga_tawaran'];
-                $asal_transaksi = "lelang"; 
+            if ($data_auto['harga_tawaran'] >= $d_max['max_bid']) {
+                // --- [UPDATE BARU] CEK KE DATABASE TRANSAKSI ---
+                // Kita cek: Apakah desain ini sudah pernah dibayar (settlement) atau sedang proses (pending)?
+                $cek_transaksi = mysqli_query($koneksi, "SELECT * FROM t_transaksi 
+                                 WHERE id_buyer = '$id_user_login' 
+                                 AND id_design = '$id_design_cek'
+                                 AND (status_pembayaran = 'settlement' OR status_pembayaran = 'pending')");
+                
+                // Jika BELUM ADA di tabel transaksi (artinya belum dibayar), baru kita tampilkan tagihannya
+                if(mysqli_num_rows($cek_transaksi) == 0) {
+                    $row = $data_auto;
+                    $id_bidding = $row['id_bid']; 
+                    $harga_barang = $row['harga_tawaran'];
+                    $asal_transaksi = "lelang"; 
+                    
+                    // Cek apakah waktu lelang sudah berakhir
+                    if (!empty($row['waktu_berakhir']) && strtotime($row['waktu_berakhir']) > time()) {
+                        // Jika belum berakhir, kosongkan row agar tidak muncul di keranjang (karena belum bisa dibayar)
+                        $row = [];
+                    }
+                }
+                // Jika sudah ada (num_rows > 0), biarkan $row kosong supaya dianggap tidak ada tagihan
             }
-            // Jika sudah ada (num_rows > 0), biarkan $row kosong supaya dianggap tidak ada tagihan
         }
     }
 

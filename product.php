@@ -424,10 +424,19 @@ $result = $conn->query($sql);
             $gambar2 = "admin/uploads/" . $row['gambar']; 
             $kategori = $row['kategori'];
             $waktu_berakhir = isset($row['waktu_berakhir']) ? $row['waktu_berakhir'] : '';
+            $harga_beli_langsung = isset($row['harga_beli_langsung']) ? $row['harga_beli_langsung'] : 0;
     ?>
 
     <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo $kategori; ?>">
         
+        <?php
+            // Get highest bid for this design
+            $sql_bid = "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design = '$id'";
+            $res_bid = $conn->query($sql_bid);
+            $d_bid = $res_bid->fetch_assoc();
+            $current_max_bid = ($d_bid && $d_bid['max_bid']) ? $d_bid['max_bid'] : $harga_awal;
+        ?>
+
         <div class="block2">
             <div class="block2-pic hov-img0" style="position: relative;">
                 
@@ -445,8 +454,10 @@ $result = $conn->query($sql);
                    data-id="<?php echo $id; ?>"
                    data-judul="<?php echo htmlspecialchars($judul); ?>"
                    data-harga="<?php echo $harga_awal; ?>"
+                   data-highest-bid="<?php echo $current_max_bid; ?>"
                    data-img="<?php echo $gambar2; ?>"
-                   data-endtime="<?php echo $waktu_berakhir; ?>">
+                   data-endtime="<?php echo $waktu_berakhir; ?>"
+                   data-beli-langsung="<?php echo $harga_beli_langsung; ?>">
                     Quick View
                 </a>
             </div>
@@ -729,6 +740,7 @@ $result = $conn->query($sql);
 								</div>
 
 								<button type="submit" class="btn-auction-action btn-gradient-blue" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Pasang Penawaran</button>
+								<a href="#" id="btn-modal-beli-langsung" class="btn-auction-action" style="display: none; width: 100%; text-align: center; padding: 12px; background: linear-gradient(90deg, #2ecc71, #27ae60); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);"><i class="fa fa-flash"></i> Beli Langsung</a>
 								<a href="product-detail.php" id="btn-detail-lengkap" class="btn-auction-action btn-grey-outline" style="display: block; text-align: center; padding: 12px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 8px; font-size: 1rem; font-weight: 600; border: 1px solid #ddd;">Lihat Detail Lengkap</a>
 							</form>
 
@@ -833,19 +845,33 @@ $result = $conn->query($sql);
 			var id = $(this).data('id');
 			var judul = $(this).data('judul');
 			var harga = $(this).data('harga'); 
+			var highestBid = $(this).data('highest-bid');
 			var img = $(this).data('img');
 			var endtime = $(this).data('endtime');
+			var beliLangsung = $(this).data('beli-langsung');
 
 			$('.modal-title').text(judul);
-			$('.modal-price').text("Start: " + formatRupiah(harga));
+			if (highestBid > harga) {
+				$('.modal-price').text("Highest Bid: " + formatRupiah(highestBid));
+			} else {
+				$('.modal-price').text("Start: " + formatRupiah(harga));
+			}
 			
 			$('.modal-img').attr('src', img);
 
 			$('#input-id-design').val(id);
 			$('#btn-detail-lengkap').attr('href', 'product-detail.php?id=' + id);
 
+			if (beliLangsung && parseInt(beliLangsung) > 0) {
+				$('#btn-modal-beli-langsung').show();
+				$('#btn-modal-beli-langsung').attr('href', 'shoping-cart.php?id_design=' + id + '&beli_langsung=1');
+				$('#btn-modal-beli-langsung').html('<i class="fa fa-flash"></i> Beli Langsung Rp ' + formatRupiah(beliLangsung));
+			} else {
+				$('#btn-modal-beli-langsung').hide();
+			}
+
 			// Set minimum bid value
-			minBidValue = parseInt(harga) + 10000;
+			minBidValue = parseInt(highestBid) + 10000;
 			currentBidValue = minBidValue;
 			updateBidInput();
 

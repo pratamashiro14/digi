@@ -45,6 +45,10 @@ $q_history = mysqli_query($koneksi, "SELECT b.*, u.nama FROM t_bidding b
                                      WHERE b.id_design='$id_produk' 
                                      ORDER BY b.harga_tawaran DESC LIMIT 5");
 
+$q_max_bid = mysqli_query($koneksi, "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design='$id_produk'");
+$d_max_bid = mysqli_fetch_assoc($q_max_bid);
+$highest_bid_detail = ($d_max_bid && $d_max_bid['max_bid']) ? $d_max_bid['max_bid'] : $d['harga_awal'];
+
 // Cek Status Verifikasi User
 $status_verifikasi = 'unverified'; // Default
 if(isset($_SESSION['id_user'])){
@@ -207,13 +211,19 @@ if(isset($_SESSION['id_user'])){
                                         <label class="stext-102 cl3" style="font-weight:600;">Tawaran Anda:</label>
                                         <div class="bid-control">
                                             <button type="button" class="btn-bid-qty" onclick="changeBid(-10000)">-</button>
-                                            <input type="text" name="harga_tawaran" id="inputBid" class="input-bid-val" value="Rp <?php echo number_format($d['harga_awal']+10000,0,',','.'); ?>" readonly>
+                                            <input type="text" name="harga_tawaran" id="inputBid" class="input-bid-val" value="Rp <?php echo number_format($highest_bid_detail+10000,0,',','.'); ?>" readonly>
                                             <button type="button" class="btn-bid-qty" onclick="changeBid(10000)">+</button>
                                         </div>
-                                        <input type="hidden" name="angka_tawaran_asli" id="inputBidAsli" value="<?php echo $d['harga_awal']+10000; ?>">
+                                        <input type="hidden" name="angka_tawaran_asli" id="inputBidAsli" value="<?php echo $highest_bid_detail+10000; ?>">
                                     </div>
                                     <button type="submit" class="btn-lelang">AJUKAN TAWARAN</button>
                                 </form>
+                                <?php if(isset($d['harga_beli_langsung']) && $d['harga_beli_langsung'] > 0) { ?>
+                                    <hr style="margin: 20px 0;">
+                                    <a href="shoping-cart.php?id_design=<?php echo $id_produk; ?>&beli_langsung=1" class="btn-verif" style="background: linear-gradient(90deg, #2ecc71, #27ae60); box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); text-align: center; border: none; font-size: 14px; padding: 12px;">
+                                        <i class="fa fa-flash"></i> BELI LANGSUNG RP <?php echo number_format($d['harga_beli_langsung'],0,',','.'); ?>
+                                    </a>
+                                <?php } ?>
 
                             <?php } else if($status_verifikasi == 'pending') { ?>
 
@@ -385,10 +395,10 @@ if(isset($_SESSION['id_user'])){
         }
 
         // LOGIKA INPUT BID
-        var currentBid = <?php echo $d['harga_awal'] + 10000; ?>;
+        var currentBid = <?php echo $highest_bid_detail + 10000; ?>;
         function changeBid(amount) {
             var newBid = currentBid + amount;
-            if(newBid >= <?php echo $d['harga_awal']; ?>) {
+            if(newBid > <?php echo $highest_bid_detail; ?>) {
                 currentBid = newBid;
                 updateView();
             }

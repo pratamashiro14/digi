@@ -33,6 +33,16 @@ $topbar_text = [
     'guest' => 'Pilih desain sesuai standarmu.',
 ][$role] ?? 'Pilih desain sesuai standarmu.';
 
+// Hitung pesan belum dibaca (harus sebelum $main_menu dibuat)
+$unread_count = 0;
+if (($is_user_logged_in || $is_designer_logged_in) && !empty($koneksi)) {
+    $uid = function_exists('current_id') ? current_id() : null;
+    if ($uid) {
+        $q_unread = mysqli_query($koneksi, "SELECT COUNT(*) as c FROM t_chat WHERE id_penerima=" . intval($uid) . " AND is_read=0");
+        if ($q_unread) $unread_count = (int)(mysqli_fetch_assoc($q_unread)['c'] ?? 0);
+    }
+}
+
 if ($is_admin_logged_in) {
     $main_menu = [
         ['href' => 'admin/beranda.php', 'label' => 'Dashboard', 'active' => 'admin-dashboard'],
@@ -45,7 +55,7 @@ if ($is_admin_logged_in) {
         ['href' => 'index.php', 'label' => 'Dashboard', 'active' => 'beranda'],
         ['href' => 'unggahan.php?view=all#daftar-karya', 'label' => 'Karya Saya', 'active' => 'designer-uploads'],
         ['href' => 'penjualan.php', 'label' => 'Penjualan', 'active' => 'designer-sales'],
-        ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages'],
+        ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages', 'badge' => $unread_count],
         ['href' => 'profil_desainer.php', 'label' => 'Profil', 'active' => 'designer-profile'],
     ];
 } else {
@@ -72,7 +82,7 @@ if ($is_admin_logged_in) {
         ['href' => 'profil_desainer.php', 'icon' => 'zmdi-account', 'label' => 'Profil Desainer'],
         ['href' => 'unggahan.php?view=auction-create#formUpload', 'icon' => 'zmdi-cloud-upload', 'label' => 'Buat Lelang'],
         ['href' => 'penjualan.php', 'icon' => 'zmdi-store', 'label' => 'Penjualan'],
-        ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan'],
+        ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan', 'badge' => $unread_count],
         ['divider' => true],
         ['href' => 'logout.php', 'icon' => 'zmdi-power', 'label' => 'Logout'],
     ];
@@ -80,13 +90,63 @@ if ($is_admin_logged_in) {
     $account_links = [
         ['href' => 'profil.php', 'icon' => 'zmdi-account', 'label' => 'Profil Saya'],
         ['href' => 'riwayat.php', 'icon' => 'zmdi-receipt', 'label' => 'Riwayat Pembelian'],
-        ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan'],
+        ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan', 'badge' => $unread_count],
         ['href' => 'premium.php', 'icon' => 'zmdi-star', 'label' => 'Upgrade Premium'],
         ['divider' => true],
         ['href' => 'logout.php', 'icon' => 'zmdi-power', 'label' => 'Logout'],
     ];
 }
 ?>
+
+<?php
+// Cek apakah perlu tampilkan toast notif
+$_show_toast = false;
+$_cur = basename($_SERVER['PHP_SELF'] ?? '');
+if ($unread_count > 0 && !in_array($_cur, ['pesan.php', 'detail_chat.php'])) {
+    $_last = $_SESSION['msg_toast_count'] ?? -1;
+    if ($unread_count !== (int)$_last) {
+        $_show_toast = true;
+        $_SESSION['msg_toast_count'] = $unread_count;
+    }
+}
+if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
+?>
+
+<style>
+.msg-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: #e53935; color: #fff; font-size: 10px; font-weight: 700;
+    min-width: 17px; height: 17px; border-radius: 50px; padding: 0 4px;
+    margin-left: 5px; vertical-align: middle; line-height: 1;
+}
+#msgToast {
+    position: fixed; top: 80px; right: 20px; z-index: 99999;
+    background: #fff; border-radius: 14px; padding: 14px 16px 14px 18px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.13); display: flex; align-items: center;
+    gap: 12px; max-width: 290px; border-left: 4px solid #4e8eff;
+    animation: toastSlide .35s ease;
+}
+@keyframes toastSlide { from { transform:translateX(120px); opacity:0; } to { transform:translateX(0); opacity:1; } }
+#msgToast .toast-close { background:none; border:none; cursor:pointer; color:#bbb; font-size:20px; padding:0; line-height:1; margin-left:auto; }
+#msgToast .toast-close:hover { color:#555; }
+</style>
+
+<?php if ($_show_toast) { ?>
+<div id="msgToast">
+    <div style="font-size:26px; flex-shrink:0;">💬</div>
+    <div>
+        <div style="font-weight:700; color:#333; font-size:13.5px;">Pesan Baru!</div>
+        <div style="color:#888; font-size:12px; margin:2px 0 6px;">
+            <b><?php echo $unread_count; ?></b> pesan belum dibaca
+        </div>
+        <a href="pesan.php" style="font-size:12px; color:#4e8eff; font-weight:600; text-decoration:none;">
+            Lihat Sekarang →
+        </a>
+    </div>
+    <button class="toast-close" onclick="document.getElementById('msgToast').style.display='none'">×</button>
+</div>
+<script>setTimeout(function(){ var t=document.getElementById('msgToast'); if(t) t.style.display='none'; }, 6000);</script>
+<?php } ?>
 
 <header class="header-v4 role-<?php echo htmlspecialchars($role); ?>">
     <div class="container-menu-desktop">
@@ -110,6 +170,9 @@ if ($is_admin_logged_in) {
                                         <a href="<?php echo htmlspecialchars($link['href']); ?>">
                                             <i class="zmdi <?php echo htmlspecialchars($link['icon']); ?>"></i>
                                             <?php echo htmlspecialchars($link['label']); ?>
+                                            <?php if (!empty($link['badge'])) { ?>
+                                                <span class="msg-badge"><?php echo $link['badge']; ?></span>
+                                            <?php } ?>
                                         </a>
                                     <?php } ?>
                                 <?php } ?>
@@ -130,7 +193,12 @@ if ($is_admin_logged_in) {
                     <ul class="main-menu">
                         <?php foreach ($main_menu as $item) { ?>
                             <li <?php echo ($active_page === $item['active']) ? 'class="active-menu"' : ''; ?>>
-                                <a href="<?php echo htmlspecialchars($item['href']); ?>"><?php echo htmlspecialchars($item['label']); ?></a>
+                                <a href="<?php echo htmlspecialchars($item['href']); ?>" style="position:relative;">
+                                    <?php echo htmlspecialchars($item['label']); ?>
+                                    <?php if (!empty($item['badge'])) { ?>
+                                        <span class="msg-badge"><?php echo $item['badge']; ?></span>
+                                    <?php } ?>
+                                </a>
                             </li>
                         <?php } ?>
                     </ul>

@@ -12,17 +12,30 @@ $id_saya = current_id();
 
 // 2. TANGKAP ID LAWAN BICARA
 if (isset($_GET['tujuan'])) {
-    $id_lawan = $_GET['tujuan'];
+    $id_lawan = intval($_GET['tujuan']);
 } else {
-    // Kalau gak ada tujuan, balik ke halaman sebelumnya
     echo "<script>window.history.back();</script>";
     exit();
 }
 
-// Ambil Nama Lawan Bicara
-$q_lawan = mysqli_query($koneksi, "SELECT nama FROM t_user WHERE id_user='$id_lawan'");
+// Cegah self-message
+if ($id_lawan == $id_saya) {
+    echo "<script>alert('Tidak bisa chat dengan diri sendiri.'); window.history.back();</script>";
+    exit();
+}
+
+// Tandai pesan masuk dari lawan bicara sebagai sudah dibaca
+mysqli_query($koneksi, "UPDATE t_chat SET is_read=1 WHERE id_pengirim=$id_lawan AND id_penerima=$id_saya AND is_read=0");
+
+// Ambil Nama & Role Lawan Bicara
+$q_lawan = mysqli_query($koneksi, "SELECT nama, role FROM t_user WHERE id_user='$id_lawan'");
 $data_lawan = mysqli_fetch_assoc($q_lawan);
-$nama_lawan = $data_lawan['nama'] ?? 'Pengguna';
+if (!$data_lawan) {
+    echo "<script>alert('Pengguna tidak ditemukan.'); window.history.back();</script>";
+    exit();
+}
+$nama_lawan = $data_lawan['nama'];
+$role_lawan = $data_lawan['role'];
 
 // 3. LOGIKA KUOTA CHAT (Khusus untuk User Biasa)
 $status_member = 'free'; // Default
@@ -134,6 +147,28 @@ if (isset($_POST['kirim_pesan'])) {
         }
         .btn-send:hover { background: #3b7ddd; transform: translateY(-2px); }
         
+        /* TEMPLATE CHAT STARTER */
+        .chat-starter {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 30px 20px; text-align: center;
+        }
+        .chat-starter-icon { font-size: 48px; color: #ddd; margin-bottom: 12px; }
+        .chat-starter-title { font-size: 15px; color: #444; margin-bottom: 4px; }
+        .chat-starter-sub { font-size: 12.5px; color: #aaa; margin-bottom: 20px; }
+        .template-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr);
+            gap: 10px; width: 100%; max-width: 420px;
+        }
+        .template-btn {
+            display: flex; align-items: center; gap: 8px;
+            background: #fff; border: 1.5px solid #e5e7ff;
+            border-radius: 10px; padding: 10px 12px;
+            font-size: 13px; color: #444; cursor: pointer;
+            text-align: left; transition: 0.2s; font-family: inherit;
+        }
+        .template-btn:hover { border-color: #4e8eff; color: #4e8eff; background: #f0f4ff; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(78,142,255,.12); }
+        .template-icon { font-size: 18px; flex-shrink: 0; }
+
         /* JIKA KUOTA HABIS */
         .locked-area {
             background: #fff; padding: 20px; text-align: center; color: #666; width: 100%; font-size: 14px; border-top: 1px solid #eee;
@@ -153,7 +188,10 @@ if (isset($_POST['kirim_pesan'])) {
         <div>
             <div class="chat-title"><?php echo $nama_lawan; ?></div>
             <div class="chat-status">
-                <?php echo $is_designer ? 'Pembeli' : 'Desainer'; ?>
+                <?php
+                $role_labels = ['designer' => 'Desainer', 'desainer' => 'Desainer', 'pelanggan' => 'Pembeli', 'buyer' => 'Pembeli'];
+                echo $role_labels[$role_lawan] ?? ucfirst($role_lawan);
+                ?>
             </div>
         </div>
     </div>
@@ -172,7 +210,8 @@ if (isset($_POST['kirim_pesan'])) {
             OR (id_pengirim='$id_lawan' AND id_penerima='$id_saya') 
             ORDER BY waktu_kirim ASC");
 
-        if(mysqli_num_rows($q_chat) > 0){
+        $jumlah_chat = mysqli_num_rows($q_chat);
+        if($jumlah_chat > 0){
             while($c = mysqli_fetch_assoc($q_chat)) {
                 $posisi = ($c['id_pengirim'] == $id_saya) ? 'bubble-me' : 'bubble-you';
                 $jam = date('H:i', strtotime($c['waktu_kirim']));
@@ -181,10 +220,45 @@ if (isset($_POST['kirim_pesan'])) {
                 <?php echo nl2br(htmlspecialchars($c['isi_pesan'])); ?>
                 <span class="chat-time"><?php echo $jam; ?> <?php if($posisi == 'bubble-me') echo '<i class="fa fa-check"></i>'; ?></span>
             </div>
-        <?php 
+        <?php
             }
         } else {
-            echo "<div style='text-align:center; color:#999; margin-top:30px; font-size:14px;'><i class='fa fa-comments-o' style='font-size:40px; margin-bottom:10px; display:block; color:#ddd;'></i>Belum ada percakapan.<br>Mulai chat sekarang!</div>";
+            // Kosong: tampilkan template hanya untuk pembeli
+            if ($is_user) { ?>
+                <div class="chat-starter">
+                    <div class="chat-starter-icon"><i class="fa fa-comments-o"></i></div>
+                    <p class="chat-starter-title">Mulai percakapan dengan <strong><?php echo htmlspecialchars($nama_lawan); ?></strong></p>
+                    <p class="chat-starter-sub">Pilih template atau tulis pesanmu sendiri</p>
+                    <div class="template-grid">
+                        <button class="template-btn" onclick="pakai('Halo kak <?php echo htmlspecialchars($nama_lawan); ?>, saya tertarik dengan karya desain Anda 😊')">
+                            <span class="template-icon">👋</span>
+                            <span>Sapa desainer</span>
+                        </button>
+                        <button class="template-btn" onclick="pakai('Berapa harga untuk custom desain? Boleh saya tahu estimasinya?')">
+                            <span class="template-icon">💰</span>
+                            <span>Tanya harga</span>
+                        </button>
+                        <button class="template-btn" onclick="pakai('Apakah bisa request desain sesuai keinginan saya? Saya punya referensi yang bisa saya kirim.')">
+                            <span class="template-icon">🎨</span>
+                            <span>Request custom</span>
+                        </button>
+                        <button class="template-btn" onclick="pakai('Boleh minta contoh portofolio lainnya kak? Ingin melihat lebih banyak karya Anda.')">
+                            <span class="template-icon">📁</span>
+                            <span>Lihat portofolio</span>
+                        </button>
+                        <button class="template-btn" onclick="pakai('Berapa lama estimasi waktu pengerjaan desainnya kak?')">
+                            <span class="template-icon">⏱️</span>
+                            <span>Tanya waktu</span>
+                        </button>
+                        <button class="template-btn" onclick="pakai('Apakah file desain yang diberikan bisa diedit sendiri? Format apa yang tersedia?')">
+                            <span class="template-icon">📦</span>
+                            <span>Tanya format file</span>
+                        </button>
+                    </div>
+                </div>
+            <?php } else {
+                echo "<div style='text-align:center; color:#999; margin-top:30px; font-size:14px;'><i class='fa fa-comments-o' style='font-size:40px; margin-bottom:10px; display:block; color:#ddd;'></i>Belum ada percakapan.</div>";
+            }
         }
         ?>
     </div>
@@ -212,6 +286,14 @@ if (isset($_POST['kirim_pesan'])) {
     <script>
         var objDiv = document.getElementById("chatBox");
         objDiv.scrollTop = objDiv.scrollHeight;
+
+        function pakai(teks) {
+            var input = document.querySelector('input[name="isi_pesan"]');
+            if (input) {
+                input.value = teks;
+                input.focus();
+            }
+        }
     </script>
 
 </body>

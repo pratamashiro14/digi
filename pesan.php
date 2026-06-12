@@ -23,22 +23,28 @@ if (isset($_POST['kirim_pesan'])) {
     }
 }
 
-// 3. LOGIKA MENGAMBIL DAFTAR KONTAK (Orang yang pernah chat)
-// Kita cari ID unik dari kolom pengirim/penerima yang berhubungan dengan user ini
+// 3. TANDAI SEBAGAI DIBACA (sebelum query apapun agar badge langsung update)
+$id_lawan = isset($_GET['lawan']) ? intval($_GET['lawan']) : null;
+if ($id_lawan) {
+    mysqli_query($koneksi, "UPDATE t_chat SET is_read=1 WHERE id_pengirim=$id_lawan AND id_penerima=" . intval($id_user) . " AND is_read=0");
+}
+
+// 4. LOGIKA MENGAMBIL DAFTAR KONTAK
 $list_kontak = [];
 $q_kontak = mysqli_query($koneksi, "
-    SELECT DISTINCT u.id_user, u.nama, u.foto_profil 
-    FROM t_user u 
+    SELECT DISTINCT u.id_user, u.nama, u.foto_profil,
+        (SELECT COUNT(*) FROM t_chat WHERE id_pengirim=u.id_user AND id_penerima='$id_user' AND is_read=0) as unread_count
+    FROM t_user u
     JOIN t_chat c ON (u.id_user = c.id_pengirim OR u.id_user = c.id_penerima)
-    WHERE (c.id_pengirim = '$id_user' OR c.id_penerima = '$id_user') 
+    WHERE (c.id_pengirim = '$id_user' OR c.id_penerima = '$id_user')
     AND u.id_user != '$id_user'
+    ORDER BY unread_count DESC
 ");
 while ($row = mysqli_fetch_assoc($q_kontak)) {
     $list_kontak[] = $row;
 }
 
-// 4. LOGIKA MENGAMBIL ISI CHAT (Jika ada lawan bicara yang dipilih)
-$id_lawan = isset($_GET['lawan']) ? $_GET['lawan'] : null;
+// 5. LOGIKA MENGAMBIL ISI CHAT
 $chat_history = [];
 $nama_lawan = "";
 
@@ -168,9 +174,16 @@ if ($id_lawan) {
                             ?>
                                 <a href="pesan.php?lawan=<?php echo $kontak['id_user']; ?>" class="contact-item <?php echo $active_class; ?>">
                                     <img src="<?php echo $foto_k; ?>" class="contact-avatar">
-                                    <div class="contact-info">
-                                        <span class="contact-name"><?php echo $kontak['nama']; ?></span>
-                                        <span class="contact-preview">Klik untuk chat</span>
+                                    <div class="contact-info" style="display:flex; align-items:center; justify-content:space-between;">
+                                        <div>
+                                            <span class="contact-name"><?php echo htmlspecialchars($kontak['nama']); ?></span>
+                                            <span class="contact-preview">Klik untuk chat</span>
+                                        </div>
+                                        <?php if ($kontak['unread_count'] > 0) { ?>
+                                            <span style="background:#e53935; color:#fff; font-size:11px; font-weight:700; min-width:20px; height:20px; border-radius:50px; display:inline-flex; align-items:center; justify-content:center; padding:0 5px; flex-shrink:0;">
+                                                <?php echo $kontak['unread_count']; ?>
+                                            </span>
+                                        <?php } ?>
                                     </div>
                                 </a>
                             <?php } 

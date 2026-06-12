@@ -32,7 +32,7 @@ if ($id_lawan) {
 // 4. LOGIKA MENGAMBIL DAFTAR KONTAK
 $list_kontak = [];
 $q_kontak = mysqli_query($koneksi, "
-    SELECT DISTINCT u.id_user, u.nama, u.foto_profil,
+    SELECT DISTINCT u.id_user, u.nama, u.foto,
         (SELECT COUNT(*) FROM t_chat WHERE id_pengirim=u.id_user AND id_penerima='$id_user' AND is_read=0) as unread_count
     FROM t_user u
     JOIN t_chat c ON (u.id_user = c.id_pengirim OR u.id_user = c.id_penerima)
@@ -170,7 +170,7 @@ if ($id_lawan) {
                                 foreach ($list_kontak as $kontak) {
                                     $active_class = ($id_lawan == $kontak['id_user']) ? 'active' : '';
                                     // Cek foto profil (kalau kosong pakai default)
-                                    $foto_k = !empty($kontak['foto_profil']) ? 'admin/uploads/'.$kontak['foto_profil'] : 'images/icons/icon-header-01.png';
+                                    $foto_k = !empty($kontak['foto']) ? 'admin/uploads/'.$kontak['foto'] : 'images/icons/icon-header-01.png';
                             ?>
                                 <a href="pesan.php?lawan=<?php echo $kontak['id_user']; ?>" class="contact-item <?php echo $active_class; ?>">
                                     <img src="<?php echo $foto_k; ?>" class="contact-avatar">

@@ -86,7 +86,10 @@
                 <div class="invalid-feedback">Alamat email wajib diisi dengan format yang benar.</div>
             </div>
             <div class="mb-3">
-                <label class="form-label">Kata Sandi</label>
+                <label class="form-label d-flex justify-content-between align-items-center">
+                    Kata Sandi
+                    <a href="forgot_password.php" style="font-size:12px;font-weight:500;color:var(--brand);text-decoration:none;">Lupa password?</a>
+                </label>
                 <input type="password" class="form-control" name="password" placeholder="Kata Sandi" required>
                 <div class="invalid-feedback">Kata sandi wajib diisi.</div>
             </div>

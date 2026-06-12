@@ -729,7 +729,7 @@ $result = $conn->query($sql);
 								</div>
 
 								<button type="submit" class="btn-auction-action btn-gradient-blue" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Pasang Penawaran</button>
-								<a href="product-detail.php" class="btn-auction-action btn-grey-outline" style="display: block; text-align: center; padding: 12px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 8px; font-size: 1rem; font-weight: 600; border: 1px solid #ddd;">Lihat Detail Lengkap</a>
+								<a href="product-detail.php" id="btn-detail-lengkap" class="btn-auction-action btn-grey-outline" style="display: block; text-align: center; padding: 12px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 8px; font-size: 1rem; font-weight: 600; border: 1px solid #ddd;">Lihat Detail Lengkap</a>
 							</form>
 
 							<div class="bid-history-list" id="modal-bid-history" style="margin-top: 25px; max-height: 250px; overflow-y: auto;">
@@ -842,6 +842,7 @@ $result = $conn->query($sql);
 			$('.modal-img').attr('src', img);
 
 			$('#input-id-design').val(id);
+			$('#btn-detail-lengkap').attr('href', 'product-detail.php?id=' + id);
 
 			// Set minimum bid value
 			minBidValue = parseInt(harga) + 10000;

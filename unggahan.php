@@ -198,8 +198,8 @@ if (isset($_POST['simpan_karya'])) {
                             </div>
 
                             <div class="m-b-15" style="background: #f8f9fa; padding: 12px; border: 1px dashed #ccc; border-radius: 6px;">
-                                <label class="stext-102 cl3 p-b-5">Upload File Master (ZIP/RAR/PSD)</label>
-                                <input type="file" name="file_master" accept=".zip,.rar,.psd,.ai,.fig" class="form-control-file" style="font-size: 13px;">
+                                <label class="stext-102 cl3 p-b-5">Upload File Master (ZIP/RAR/PSD/Gambar)</label>
+                                <input type="file" name="file_master" accept=".zip,.rar,.psd,.ai,.fig,.png,.jpg,.jpeg,.webp" class="form-control-file" style="font-size: 13px;">
                                 <div style="font-size: 11px; color: #888; margin-top: 5px;">
                                     <i class="fa fa-lock"></i> File ini aman. Hanya bisa didownload oleh pemenang lelang setelah membayar.
                                 </div>

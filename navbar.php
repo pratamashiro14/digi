@@ -123,12 +123,90 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
     position: fixed; top: 80px; right: 20px; z-index: 99999;
     background: #fff; border-radius: 14px; padding: 14px 16px 14px 18px;
     box-shadow: 0 8px 30px rgba(0,0,0,0.13); display: flex; align-items: center;
-    gap: 12px; max-width: 290px; border-left: 4px solid #4e8eff;
+    gap: 12px; max-width: 290px; border-left: 4px solid #1591DC;
     animation: toastSlide .35s ease;
 }
 @keyframes toastSlide { from { transform:translateX(120px); opacity:0; } to { transform:translateX(0); opacity:1; } }
 #msgToast .toast-close { background:none; border:none; cursor:pointer; color:#bbb; font-size:20px; padding:0; line-height:1; margin-left:auto; }
 #msgToast .toast-close:hover { color:#555; }
+
+/* THEME ALIGNMENT WITH ADMIN (OVERRIDE) */
+.top-bar {
+    background-color: #1591DC !important;
+}
+.left-top-bar,
+.right-top-bar > a,
+.account-dd .account-toggle {
+    color: #ffffff !important;
+}
+.account-menu a {
+    color: #333333 !important;
+}
+.account-menu a:hover {
+    color: #1591DC !important;
+    background: #f3f4ff !important;
+}
+.main-menu > li.active-menu > a {
+    background-color: #1591DC !important;
+    box-shadow: 0 10px 22px rgba(21, 145, 220, 0.18) !important;
+}
+.bg3 {
+    background-color: #f6f7fb !important;
+    border-top: 1px solid #e5e7eb !important;
+}
+.bg3 h4 {
+    color: #111827 !important;
+}
+.bg3 a {
+    color: #667085 !important;
+    transition: color 0.2s ease !important;
+}
+.bg3 a:hover {
+    color: #1591DC !important;
+}
+.bg3 p, .bg3 span {
+    color: #667085 !important;
+}
+.bg3 .input1 {
+    border-bottom: 2px solid #e5e7eb !important;
+    color: #111827 !important;
+    background: transparent !important;
+}
+.bg3 .focus-input1 {
+    display: none !important;
+}
+.bg3 button, .bg3 .flex-c-m {
+    background-color: #1591DC !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+}
+.bg3 button:hover, .bg3 .flex-c-m:hover {
+    background-color: #1178b8 !important;
+    color: #ffffff !important;
+}
+.bg3 .p-t-40 {
+    border-top: 1px solid #e5e7eb !important;
+}
+.btn-pay-black {
+    background: #1591DC !important;
+}
+.btn-pay-black:hover {
+    background: #1178b8 !important;
+}
+.btn-back-to-top {
+    background-color: #1591DC !important;
+}
+.btn-back-to-top:hover {
+    background-color: #1178b8 !important;
+}
+.icon-header-item:hover {
+    background-color: #1591DC !important;
+    color: #ffffff !important;
+}
+.role-pelanggan .role-chip {
+    background: rgba(21, 145, 220, 0.24) !important;
+    color: #e0f2fe !important;
+}
 </style>
 
 <?php if ($_show_toast) { ?>

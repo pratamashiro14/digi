@@ -115,7 +115,7 @@ $id_user = current_id();
 
             <div class="p-l-20">
                 <?php if($status_lelang == 'win') { ?>
-                    <a href="checkout.php?id_design=<?php echo $id_design; ?>&harga=<?php echo $tawaran_saya; ?>" class="btn-bayar">
+                    <a href="shoping-cart.php?id_bidding=<?php echo $row['id_bid']; ?>" class="btn-bayar">
                         BAYAR SEKARANG <i class="fa fa-chevron-right"></i>
                     </a>
                 <?php } else if($status_lelang == 'running') { ?>

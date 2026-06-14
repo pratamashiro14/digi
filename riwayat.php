@@ -107,9 +107,9 @@ if (!$result) {
                             $badge_class = "bg-sukses";
                             $status_text = "Lunas";
                             
-                            // Tombol Download
-                            $link_file = "admin/uploads/" . $row['file_master'];
-                            $tombol_aksi = '<a href="'.$link_file.'" class="btn-aksi btn-download" download>
+                            // Tombol Download (Aman melewati download.php)
+                            $link_file = "download.php?id=" . $row['id_transaksi'];
+                            $tombol_aksi = '<a href="'.$link_file.'" class="btn-aksi btn-download">
                                                 <i class="fa fa-download"></i> Download File
                                             </a>';
                         
@@ -118,9 +118,8 @@ if (!$result) {
                             $badge_class = "bg-pending";
                             $status_text = "Menunggu Bayar";
                             
-                            // Tombol Bayar (Arahkan ke URL snap atau logic bayar kamu)
-                            // Jika kamu pakai Snap Midtrans, idealnya simpan snap_token di DB, tapi ini contoh link bayar ulang
-                            $tombol_aksi = '<a href="https://simulator.sandbox.midtrans.com/bca/va/payment" target="_blank" class="btn-aksi btn-bayar">
+                            // Tombol Bayar (Arahkan ke bayar_ulang.php untuk memunculkan Snap popup)
+                            $tombol_aksi = '<a href="bayar_ulang.php?id=' . $row['id_transaksi'] . '" class="btn-aksi btn-bayar">
                                                 <i class="fa fa-credit-card"></i> Bayar Sekarang
                                             </a>'; 
 

@@ -188,53 +188,7 @@ function render_designer_stat_card($stat) {
 
     <?php
     $role_home = current_role();
-    if ($role_home !== 'guest' && $role_home !== 'designer') {
-        $role_panels = [
-            'admin' => [
-                'eyebrow' => 'Mode Admin',
-                'title' => 'Kontrol operasional DIGIDESAIN',
-                'text' => 'Pantau data pengguna, transaksi, karya, dan aktivitas platform dari area admin.',
-                'actions' => [
-                    ['label' => 'Buka Dashboard', 'href' => 'admin/beranda.php', 'primary' => true],
-                    ['label' => 'Kelola Transaksi', 'href' => 'admin/tables/transaksi.php', 'primary' => false],
-                ],
-            ],
-            'pelanggan' => [
-                'eyebrow' => 'Area Pembeli',
-                'title' => 'Temukan desain dan pantau pembelian',
-                'text' => 'Jelajahi pasar desain, lanjutkan checkout, dan cek riwayat pembelian dari area pembeli.',
-                'actions' => [
-                    ['label' => 'Belanja Desain', 'href' => 'product.php', 'primary' => true],
-                    ['label' => 'Riwayat Pembelian', 'href' => 'riwayat.php', 'primary' => false],
-                    ['label' => 'Profil Saya', 'href' => 'profil.php', 'primary' => false],
-                ],
-            ],
-        ];
-        $panel = $role_panels[$role_home] ?? null;
     ?>
-        <?php if ($panel) { ?>
-            <section class="role-context-section">
-                <div class="container">
-                    <div class="role-home-panel">
-                        <div class="role-home-panel__inner">
-                            <div>
-                                <div class="role-home-panel__eyebrow"><?php echo htmlspecialchars($panel['eyebrow']); ?></div>
-                                <h2><?php echo htmlspecialchars($panel['title']); ?></h2>
-                                <p><?php echo htmlspecialchars($panel['text']); ?></p>
-                            </div>
-                            <div class="role-home-actions">
-                                <?php foreach ($panel['actions'] as $action) { ?>
-                                    <a class="role-action <?php echo $action['primary'] ? 'is-primary' : ''; ?>" href="<?php echo htmlspecialchars($action['href']); ?>">
-                                        <?php echo htmlspecialchars($action['label']); ?>
-                                    </a>
-                                <?php } ?>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        <?php } ?>
-    <?php } ?>
 
     <?php if ($role_home === 'designer') { ?>
         <section class="designer-dashboard-section" aria-labelledby="designer-dashboard-title">

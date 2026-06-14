@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if (empty($errors)) {
         // set default status and tanggal_upload
-        $status = 'pending';
+        $status = 'approved';
         $tanggal_upload = date('Y-m-d H:i:s');
 
         $judul_q = mysqli_real_escape_string($koneksi, $judul);

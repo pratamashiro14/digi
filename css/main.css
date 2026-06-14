@@ -3377,7 +3377,7 @@ body {
 
 .top-bar {
   height: 36px;
-  background: #151515;
+  background: #1591DC;
 }
 
 .content-topbar {
@@ -3387,7 +3387,7 @@ body {
 .left-top-bar,
 .right-top-bar a,
 .account-dd .account-toggle {
-  color: #d4d4d8;
+  color: rgba(255, 255, 255, 0.85);
   font-size: 12px;
   letter-spacing: 0;
 }
@@ -3565,8 +3565,8 @@ header:not([class]) .wrap-menu-desktop,
 }
 
 .role-pelanggan .role-chip {
-  background: rgba(22, 163, 74, 0.24);
-  color: #dcfce7;
+  background: rgba(21, 145, 220, 0.24);
+  color: #e0f2fe;
 }
 
 .role-home-panel {

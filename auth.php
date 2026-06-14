@@ -70,6 +70,41 @@ function is_login() {
     return is_user_login() || is_designer_login();
 }
 
+/**
+ * True jika user tertentu (mana pun rolenya) berstatus Premium,
+ * dicek dari kolom t_user.status_member = 'premium'.
+ */
+function user_is_premium($id) {
+    $id = (int) $id;
+    if (!$id) return false;
+
+    global $koneksi;
+    if (!isset($koneksi)) {
+        include __DIR__ . '/admin/koneksi.php';
+    }
+
+    // Premium dianggap AKTIF bila salah satu sumber ini terpenuhi:
+    //  1) t_user.status_member = 'premium'
+    //  2) t_user.premium = 1 (flag)
+    //  3) ada langganan aktif & belum kedaluwarsa di t_premium
+    $sql = "SELECT 1
+            FROM t_user u
+            LEFT JOIN t_premium p
+              ON p.id_user = u.id_user
+             AND p.status = 'aktif'
+             AND p.tanggal_berakhir >= CURDATE()
+            WHERE u.id_user = '$id'
+              AND (u.status_member = 'premium' OR u.premium = 1 OR p.id_premium IS NOT NULL)
+            LIMIT 1";
+    $res = mysqli_query($koneksi, $sql);
+    return $res && mysqli_num_rows($res) > 0;
+}
+
+/** True jika yang sedang login adalah PEMBELI dengan status Premium. */
+function is_premium_buyer() {
+    return is_user_login() && user_is_premium(current_id());
+}
+
 // ------------------------------------------------------------
 // 3. DATA USER YANG SEDANG LOGIN (seragam, apa pun rolenya)
 // ------------------------------------------------------------

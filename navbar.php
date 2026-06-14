@@ -66,6 +66,12 @@ if ($is_admin_logged_in) {
         ['href' => 'premium.php', 'label' => 'Fitur Unggulan', 'active' => 'premium'],
         ['href' => 'contact.php', 'label' => 'Hubungi Kami', 'active' => 'contact'],
     ];
+    // Menu "Desainer Favorit" hanya untuk pembeli yang sudah login
+    if ($is_user_logged_in) {
+        array_splice($main_menu, 3, 0, [
+            ['href' => 'desainer_favorit.php', 'label' => 'Desainer Favorit', 'active' => 'favorit'],
+        ]);
+    }
 }
 
 $account_links = [];
@@ -90,6 +96,7 @@ if ($is_admin_logged_in) {
     $account_links = [
         ['href' => 'profil.php', 'icon' => 'zmdi-account', 'label' => 'Profil Saya'],
         ['href' => 'riwayat.php', 'icon' => 'zmdi-receipt', 'label' => 'Riwayat Pembelian'],
+        ['href' => 'desainer_favorit.php', 'icon' => 'zmdi-favorite', 'label' => 'Desainer Favorit'],
         ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan', 'badge' => $unread_count],
         ['href' => 'premium.php', 'icon' => 'zmdi-star', 'label' => 'Upgrade Premium'],
         ['divider' => true],

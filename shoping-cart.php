@@ -157,8 +157,8 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
 
     // Kalau user gak login ATAU gak punya history bidding yang belum dibayar
     if (empty($row)) {
-       // KITA UBAH SEDIKIT: Jangan ambil data dummy, tapi lempar ke halaman riwayat atau tampilkan pesan
-       sweetalert_redirect('Keranjang belanja kosong atau semua tagihan sudah dibayar.', 'riwayat.php', 'info', 'Informasi');
+        header('Location: riwayat.php');
+        exit;
     }
 }
 

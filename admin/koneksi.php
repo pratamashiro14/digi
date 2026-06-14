@@ -16,4 +16,16 @@ $check_chat = mysqli_query($koneksi, "SHOW COLUMNS FROM t_chat LIKE 'is_read'");
 if ($check_chat && mysqli_num_rows($check_chat) == 0) {
     mysqli_query($koneksi, "ALTER TABLE t_chat ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0 AFTER isi_pesan");
 }
+
+// Auto-migration: tabel favorit desainer (pembeli premium mem-follow desainer)
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_favorit_desainer (
+    id_favorit INT(11) NOT NULL AUTO_INCREMENT,
+    id_buyer INT(11) NOT NULL,
+    id_designer INT(11) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_favorit),
+    UNIQUE KEY uniq_fav (id_buyer, id_designer),
+    KEY id_buyer (id_buyer),
+    KEY id_designer (id_designer)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 ?>

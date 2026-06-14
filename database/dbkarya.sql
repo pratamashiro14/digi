@@ -222,6 +222,24 @@ INSERT INTO `t_premium` (`id_premium`, `id_user`, `tipe_premium`, `tanggal_aktif
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `t_favorit_desainer`
+-- (Fitur premium "Desainer Favorit": pembeli premium mem-follow desainer)
+--
+
+CREATE TABLE `t_favorit_desainer` (
+  `id_favorit` int(11) NOT NULL AUTO_INCREMENT,
+  `id_buyer` int(11) NOT NULL,
+  `id_designer` int(11) NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_favorit`),
+  UNIQUE KEY `uniq_fav` (`id_buyer`,`id_designer`),
+  KEY `id_buyer` (`id_buyer`),
+  KEY `id_designer` (`id_designer`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `t_transaksi`
 --
 

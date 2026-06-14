@@ -406,7 +406,15 @@ if ($conn->connect_error) {
 }
 
 // Query mengambil data
-$sql = "SELECT * FROM t_design WHERE status = 'approved' ORDER BY id_design DESC";
+// - Karya aktif (atau tanpa batas waktu) tampil lebih dulu
+// - Karya yang waktunya sudah habis ditaruh paling belakang
+// - Karya yang sudah lewat 2 hari dari waktu berakhir otomatis tidak tampil (arsip)
+$sql = "SELECT d.*, u.nama AS nama_desainer
+        FROM t_design d
+        LEFT JOIN t_user u ON d.id_designer = u.id_user
+        WHERE d.status = 'approved'
+          AND (d.waktu_berakhir IS NULL OR d.waktu_berakhir >= DATE_SUB(NOW(), INTERVAL 2 DAY))
+        ORDER BY (d.waktu_berakhir IS NOT NULL AND d.waktu_berakhir < NOW()) ASC, d.id_design DESC";
 $result = $conn->query($sql);
 ?>
 
@@ -471,6 +479,12 @@ $result = $conn->query($sql);
                     <span class="stext-105 cl3">
                         <?php echo $harga_display; ?>
                     </span>
+
+                    <?php if (!empty($row['id_designer']) && !empty($row['nama_desainer'])) { ?>
+                        <a href="toko_desainer.php?id=<?php echo $row['id_designer']; ?>" class="stext-107 cl5 hov-cl1 trans-04" style="font-size:12px; margin-top:5px;">
+                            <i class="fa fa-user-circle-o"></i> <?php echo htmlspecialchars($row['nama_desainer']); ?>
+                        </a>
+                    <?php } ?>
                 </div>
 
                 <div class="block2-txt-child2 flex-r p-t-3">

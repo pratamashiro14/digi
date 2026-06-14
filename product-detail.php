@@ -174,7 +174,11 @@ if(isset($_SESSION['id_user'])){
                     <div class="p-r-50 p-t-5 p-lr-0-lg">
                         
                         <h4 class="mtext-105 cl2 js-name-detail p-b-5"><?php echo $d['judul']; ?></h4>
-                        <span class="desainer-tag">Karya oleh: <b><?php echo $d['nama_desainer']; ?></b></span>
+                        <span class="desainer-tag">Karya oleh:
+                            <a href="toko_desainer.php?id=<?php echo $d['id_pemilik']; ?>" style="color:#1591DC; text-decoration:underline;">
+                                <b><?php echo $d['nama_desainer']; ?></b>
+                            </a>
+                        </span>
                         <span class="mtext-106 cl2 price-tag">Open Bid: Rp <?php echo number_format($d['harga_awal'],0,',','.'); ?></span>
                         <a href="detail_chat.php?tujuan=<?php echo $d['id_pemilik']; ?>"class="btn-chat-desainer"><i class="fa fa-comments"></i> Hubungi Desainer</a>
                         <p class="stext-102 cl3 p-t-15"><?php echo $d['deskripsi']; ?></p>

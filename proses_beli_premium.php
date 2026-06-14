@@ -1,73 +1,93 @@
 <?php
+// ==========================================================
+// PROSES BELI PREMIUM  (langkah 1 dari 3)
+// premium.php  ->  proses_beli_premium.php  ->  bayar_premium.php  ->  cek_status_premium.php
+//
+// Tugas file ini:
+//   1. Validasi paket & role (harga ditentukan SERVER, bukan dari form)
+//   2. Buat order id unik & minta Snap Token ke Midtrans
+//   3. Simpan langganan berstatus 'pending' di t_premium
+//   4. Arahkan ke halaman pembayaran
+// ==========================================================
 require_once __DIR__ . '/auth.php';
+require_login();                 // boleh pembeli ATAU desainer
+include 'admin/koneksi.php';
+require_once __DIR__ . '/Midtrans/Midtrans.php';
 
-// 1. CEK LOGIN TERLEBIH DAHULU — khusus pembeli/user
-require_user();
+// ---- 1. Paket resmi (sumber kebenaran harga ada di server) ----
+$tipe  = $_POST['tipe_premium'] ?? '';
+$paket = [
+    'pengguna' => ['harga' => 25000, 'butuh' => 'pembeli'],
+    'desainer' => ['harga' => 28000, 'butuh' => 'desainer'],
+];
 
-// 2. HUBUNGKAN KE DATABASE
-// Pastikan nama file koneksi kamu benar
-include 'admin/koneksi.php'; 
-
-// 3. HUBUNGKAN KE LIBRARY MIDTRANS
-// Sesuaikan path (lokasi) foldernya dengan struktur folder kamu
-// Jika pakai Composer: require_once dirname(__FILE__) . '/vendor/autoload.php';
-// Jika manual:
-require_once dirname(__FILE__) . '/Midtrans/Midtrans.php'; 
-
-// 4. KONFIGURASI MIDTRANS (WAJIB ADA DISINI)
-// Ganti dengan SERVER KEY dari dashboard Midtrans kamu (Sandbox)
-\Midtrans\Config::$serverKey = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0'; 
-\Midtrans\Config::$isProduction = false; // Set false untuk Sandbox
-\Midtrans\Config::$isSanitized = true;
-\Midtrans\Config::$is3ds = true;
-
-// 4. AMBIL DATA USER & SIAPKAN TRANSAKSI (id_buyer = id user yang login)
-$id_buyer = current_id();
-// Buat Order ID unik (misal: PREM + timestamp)
-$order_id = 'PREM-' . time(); 
-// Tentukan harga premium (bisa hardcode atau ambil dari database paket)
-$harga_paket = 50000; // Contoh: Rp 50.000
-
-// 5. SIAPKAN PARAMETER UNTUK MIDTRANS
-$transaction_details = array(
-    'order_id' => $order_id,
-    'gross_amount' => $harga_paket, // Harga harus angka (integer), jangan string
-);
-
-// Opsional: Data Pelanggan (biar rapi di dashboard midtrans)
-// $customer_details = array(
-//    'first_name'    => "User ID $id_buyer",
-//    'email'         => "user@example.com",
-// );
-
-$params = array(
-    'transaction_details' => $transaction_details,
-    // 'customer_details' => $customer_details, // Aktifkan jika ada
-);
-
-try {
-    // 6. MINTA SNAP TOKEN KE MIDTRANS
-    $snapToken = \Midtrans\Snap::getSnapToken($params);
-
-    // 7. SIMPAN KE DATABASE (FIX ERROR FOREIGN KEY DISINI)
-    // Perhatikan: id_design diisi NULL karena ini beli premium
-    $query_sql = "INSERT INTO t_transaksi 
-        (id_buyer, id_design, harga_final, metode_pembayaran, status_pembayaran, tanggal_transaksi, id_midtrans_order, snap_token) 
-        VALUES 
-        ('$id_buyer', NULL, '$harga_paket', 'midtrans_snap', 'pending', NOW(), '$order_id', '$snapToken')
-    ";
-    
-    // Eksekusi Query
-    if (mysqli_query($koneksi, $query_sql)) {
-        // 8. JIKA BERHASIL, ARAHKAN KE HALAMAN BAYAR
-        // Kita kirim tokennya lewat URL atau simpan di session
-        header("Location: bayar_premium.php?order_id=$order_id&token=$snapToken");
-    } else {
-        echo "Gagal menyimpan transaksi ke database: " . mysqli_error($koneksi);
-    }
-
-} catch (Exception $e) {
-    echo "Terjadi kesalahan Midtrans: " . $e->getMessage();
+if (!isset($paket[$tipe])) {
+    sweetalert_redirect('Paket premium tidak valid.', 'premium.php', 'error', 'Gagal');
 }
 
-?>
+$harga  = $paket[$tipe]['harga'];
+$durasi = 30; // hari
+
+// ---- 2. Role harus cocok dengan paket ----
+if ($tipe === 'pengguna' && !is_user_login()) {
+    sweetalert_redirect('Paket ini khusus akun pembeli.', 'premium.php', 'error', 'Tidak Sesuai');
+}
+if ($tipe === 'desainer' && !is_designer_login()) {
+    sweetalert_redirect('Paket ini khusus akun desainer.', 'premium.php', 'error', 'Tidak Sesuai');
+}
+
+$id_user = (int) current_id();
+$nama    = current_name();
+$email   = current_email();
+
+// ---- 3. Order ID unik untuk transaksi ini ----
+$order_id = 'PREM-' . $id_user . '-' . time();
+
+// ---- 4. Konfigurasi Midtrans (Sandbox) ----
+\Midtrans\Config::$serverKey    = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0';
+\Midtrans\Config::$isProduction = false;
+\Midtrans\Config::$isSanitized  = true;
+\Midtrans\Config::$is3ds        = true;
+
+$params = [
+    'transaction_details' => [
+        'order_id'     => $order_id,
+        'gross_amount' => $harga,
+    ],
+    'item_details' => [[
+        'id'       => 'PREMIUM-' . $tipe,
+        'price'    => $harga,
+        'quantity' => 1,
+        'name'     => 'Premium ' . ucfirst($tipe) . ' 30 Hari',
+    ]],
+    'customer_details' => [
+        'first_name' => $nama,
+        'email'      => $email,
+    ],
+];
+
+try {
+    $snapToken = \Midtrans\Snap::getSnapToken($params);
+} catch (Exception $e) {
+    sweetalert_redirect('Gagal terhubung ke pembayaran: ' . $e->getMessage(), 'premium.php', 'error', 'Gagal');
+}
+
+// ---- 5. Simpan langganan 'pending' di t_premium ----
+$tipe_esc  = mysqli_real_escape_string($koneksi, $tipe);
+$order_esc = mysqli_real_escape_string($koneksi, $order_id);
+$token_esc = mysqli_real_escape_string($koneksi, $snapToken);
+
+$insert = "INSERT INTO t_premium
+    (id_user, tipe_premium, harga, durasi_hari, tanggal_aktif, tanggal_berakhir,
+     status, no_referensi_pembayaran, snap_token)
+    VALUES
+    ('$id_user', '$tipe_esc', '$harga', '$durasi', CURDATE(),
+     DATE_ADD(CURDATE(), INTERVAL $durasi DAY), 'pending', '$order_esc', '$token_esc')";
+
+if (!mysqli_query($koneksi, $insert)) {
+    sweetalert_redirect('Gagal menyimpan langganan: ' . mysqli_error($koneksi), 'premium.php', 'error', 'Gagal');
+}
+
+// ---- 6. Lanjut ke halaman pembayaran ----
+header('Location: bayar_premium.php?order_id=' . urlencode($order_id));
+exit;

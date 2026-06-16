@@ -29,7 +29,8 @@ if(!isset($_GET['id']) || empty($_GET['id'])){
 $id_produk = (int) $_GET['id'];
 
 // Ambil Data Produk
-$query = mysqli_query($koneksi, "SELECT d.*, u.nama as nama_desainer, u.id_user as id_pemilik 
+$query = mysqli_query($koneksi, "SELECT d.*, u.nama as nama_desainer, u.id_user as id_pemilik,
+                                        (d.waktu_berakhir IS NOT NULL AND d.waktu_berakhir <= NOW()) AS lelang_berakhir_db
                                  FROM t_design d 
                                  JOIN t_user u ON d.id_designer = u.id_user 
                                  WHERE d.id_design='$id_produk'");
@@ -48,6 +49,14 @@ $q_history = mysqli_query($koneksi, "SELECT b.*, u.nama FROM t_bidding b
 $q_max_bid = mysqli_query($koneksi, "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design='$id_produk'");
 $d_max_bid = mysqli_fetch_assoc($q_max_bid);
 $highest_bid_detail = ($d_max_bid && $d_max_bid['max_bid']) ? $d_max_bid['max_bid'] : $d['harga_awal'];
+
+$q_sold = mysqli_query($koneksi, "SELECT 1
+                                  FROM t_transaksi
+                                  WHERE id_design='$id_produk'
+                                    AND status_pembayaran IN ('berhasil', 'settlement', 'capture')
+                                  LIMIT 1");
+$is_sold = ($d['status'] === 'sold') || ($q_sold && mysqli_num_rows($q_sold) > 0);
+$is_auction_ended = !empty($d['lelang_berakhir_db']);
 
 // Cek Status Verifikasi User
 $status_verifikasi = 'unverified'; // Default
@@ -186,7 +195,19 @@ if(isset($_SESSION['id_user'])){
                         <div class="p-t-33">
                             <div class="timer-box"><span id="timer-detail"><i class="fa fa-clock-o"></i> Loading Waktu...</span></div>
 
-                            <?php if(current_role() === 'designer') { ?>
+                            <?php if($is_sold) { ?>
+
+                                <div class="alert alert-secondary text-center" style="font-size:13px;">
+                                    Karya ini sudah terjual dan tidak menerima penawaran baru.
+                                </div>
+
+                            <?php } elseif($is_auction_ended) { ?>
+
+                                <div class="alert alert-secondary text-center" style="font-size:13px;">
+                                    Lelang sudah berakhir. Penawaran baru tidak tersedia.
+                                </div>
+
+                            <?php } elseif(current_role() === 'designer') { ?>
 
                                 <div class="alert alert-info text-center" style="font-size:13px;">
                                     Kamu sedang masuk sebagai <b>Desainer</b>. Penawaran hanya tersedia untuk pembeli.

@@ -410,7 +410,16 @@ function render_designer_stat_card($stat) {
 
 			<div class="row isotope-grid">
                 <?php
-                $sql_produk = "SELECT * FROM t_design WHERE status = 'approved' ORDER BY id_design DESC";
+                $sql_produk = "SELECT d.*
+                               FROM t_design d
+                               WHERE d.status = 'approved'
+                                 AND NOT EXISTS (
+                                     SELECT 1
+                                     FROM t_transaksi t
+                                     WHERE t.id_design = d.id_design
+                                       AND t.status_pembayaran IN ('berhasil', 'settlement', 'capture')
+                                 )
+                               ORDER BY d.id_design DESC";
                 $result_produk = mysqli_query($koneksi, $sql_produk);
                 if (mysqli_num_rows($result_produk) > 0) {
                     while($row = mysqli_fetch_assoc($result_produk)) {

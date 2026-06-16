@@ -4,25 +4,27 @@
 
     /*[ Load page ]
     ===========================================================*/
-    $(".animsition").animsition({
-        inClass: 'fade-in',
-        outClass: 'fade-out',
-        inDuration: 1500,
-        outDuration: 800,
-        linkElement: '.animsition-link',
-        loading: true,
-        loadingParentElement: 'html',
-        loadingClass: 'animsition-loading-1',
-        loadingInner: '<div class="loader05"></div>',
-        timeout: false,
-        timeoutCountdown: 5000,
-        onLoadEvent: true,
-        browser: [ 'animation-duration', '-webkit-animation-duration'],
-        overlay : false,
-        overlayClass : 'animsition-overlay-slide',
-        overlayParentElement : 'html',
-        transition: function(url){ window.location.href = url; }
-    });
+    if ($.fn.animsition) {
+        $(".animsition").animsition({
+            inClass: 'fade-in',
+            outClass: 'fade-out',
+            inDuration: 1500,
+            outDuration: 800,
+            linkElement: '.animsition-link',
+            loading: true,
+            loadingParentElement: 'html',
+            loadingClass: 'animsition-loading-1',
+            loadingInner: '<div class="loader05"></div>',
+            timeout: false,
+            timeoutCountdown: 5000,
+            onLoadEvent: true,
+            browser: [ 'animation-duration', '-webkit-animation-duration'],
+            overlay : false,
+            overlayClass : 'animsition-overlay-slide',
+            overlayParentElement : 'html',
+            transition: function(url){ window.location.href = url; }
+        });
+    }
     
     /*[ Back to top ]
     ===========================================================*/
@@ -54,25 +56,19 @@
     }
     
 
-    if($(window).scrollTop() > posWrapHeader) {
-        $(headerDesktop).addClass('fix-menu-desktop');
-        $(wrapMenu).css('top',0); 
-    }  
-    else {
-        $(headerDesktop).removeClass('fix-menu-desktop');
-        $(wrapMenu).css('top',posWrapHeader - $(this).scrollTop()); 
-    }
-
-    $(window).on('scroll',function(){
-        if($(this).scrollTop() > posWrapHeader) {
+    function updateFixedHeader() {
+        if($(window).scrollTop() > posWrapHeader) {
             $(headerDesktop).addClass('fix-menu-desktop');
-            $(wrapMenu).css('top',0); 
-        }  
+            $(wrapMenu).css('top', 0);
+        }
         else {
             $(headerDesktop).removeClass('fix-menu-desktop');
-            $(wrapMenu).css('top',posWrapHeader - $(this).scrollTop()); 
-        } 
-    });
+            $(wrapMenu).css('top', '');
+        }
+    }
+
+    updateFixedHeader();
+    $(window).on('scroll', updateFixedHeader);
 
 
     /*==================================================================

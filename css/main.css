@@ -3427,6 +3427,10 @@ header:not([class]) .wrap-menu-desktop,
   background: rgba(255, 255, 255, 0.97);
 }
 
+.fix-menu-desktop .wrap-menu-desktop {
+  top: 0;
+}
+
 .limiter-menu-desktop {
   justify-content: space-between;
   gap: 24px;

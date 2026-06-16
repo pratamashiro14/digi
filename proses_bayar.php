@@ -24,6 +24,28 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $tipe_transaksi = isset($_POST['tipe_transaksi']) ? $_POST['tipe_transaksi'] : 'biasa';
     $id_bidding = isset($_POST['id_bidding_midtrans']) ? $_POST['id_bidding_midtrans'] : '0';
 
+    $cek_karya = mysqli_prepare($koneksi, "SELECT d.status,
+                EXISTS (
+                    SELECT 1
+                    FROM t_transaksi t
+                    WHERE t.id_design = d.id_design
+                      AND t.status_pembayaran IN ('berhasil', 'settlement', 'capture')
+                ) AS sudah_terjual
+            FROM t_design d
+            WHERE d.id_design = ?
+            LIMIT 1");
+    mysqli_stmt_bind_param($cek_karya, 'i', $id_design);
+    mysqli_stmt_execute($cek_karya);
+    $data_karya = mysqli_fetch_assoc(mysqli_stmt_get_result($cek_karya));
+
+    if (!$data_karya) {
+        sweetalert_redirect('Karya tidak ditemukan.', 'product.php', 'error', 'Pembayaran Ditolak');
+    }
+
+    if (($data_karya['status'] ?? '') === 'sold' || !empty($data_karya['sudah_terjual'])) {
+        sweetalert_redirect('Karya ini sudah terjual dan tidak bisa dibayar lagi.', 'product.php', 'info', 'Karya Terjual');
+    }
+
     // --- B. BUAT ORDER ID UNIK ---
     $order_id = "ORD-" . time() . "-" . rand(100, 999);
 

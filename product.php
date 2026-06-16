@@ -406,11 +406,18 @@ if ($conn->connect_error) {
 // - Karya aktif (atau tanpa batas waktu) tampil lebih dulu
 // - Karya yang waktunya sudah habis ditaruh paling belakang
 // - Karya yang sudah lewat 2 hari dari waktu berakhir otomatis tidak tampil (arsip)
-$sql = "SELECT d.*, u.nama AS nama_desainer
+$sql = "SELECT d.*, u.nama AS nama_desainer,
+               (d.waktu_berakhir IS NOT NULL AND d.waktu_berakhir <= NOW()) AS lelang_berakhir_db
         FROM t_design d
         LEFT JOIN t_user u ON d.id_designer = u.id_user
         WHERE d.status = 'approved'
           AND (d.waktu_berakhir IS NULL OR d.waktu_berakhir >= DATE_SUB(NOW(), INTERVAL 2 DAY))
+          AND NOT EXISTS (
+              SELECT 1
+              FROM t_transaksi t
+              WHERE t.id_design = d.id_design
+                AND t.status_pembayaran IN ('berhasil', 'settlement', 'capture')
+          )
         ORDER BY (d.waktu_berakhir IS NOT NULL AND d.waktu_berakhir < NOW()) ASC, d.id_design DESC";
 $result = $conn->query($sql);
 ?>
@@ -430,6 +437,7 @@ $result = $conn->query($sql);
             $kategori = $row['kategori'];
             $waktu_berakhir = isset($row['waktu_berakhir']) ? $row['waktu_berakhir'] : '';
             $harga_beli_langsung = isset($row['harga_beli_langsung']) ? $row['harga_beli_langsung'] : 0;
+            $lelang_berakhir = !empty($row['lelang_berakhir_db']);
     ?>
 
     <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo $kategori; ?>">
@@ -462,6 +470,7 @@ $result = $conn->query($sql);
                    data-highest-bid="<?php echo $current_max_bid; ?>"
                    data-img="<?php echo $gambar2; ?>"
                    data-endtime="<?php echo $waktu_berakhir; ?>"
+                   data-auction-ended="<?php echo $lelang_berakhir ? '1' : '0'; ?>"
                    data-beli-langsung="<?php echo $harga_beli_langsung; ?>">
                     Quick View
                 </a>
@@ -819,6 +828,19 @@ $result = $conn->query($sql);
 			$('#modalBidInput').val(formatted);
 		}
 
+		function setModalBidAvailable(isAvailable) {
+			var notice = $('#modal-bid-closed-notice');
+			if (!notice.length) {
+				notice = $('<div id="modal-bid-closed-notice" class="alert alert-secondary text-center" style="font-size:13px; margin-bottom:10px;">Lelang sudah berakhir. Penawaran baru tidak tersedia.</div>');
+				$('#biddingForm .bid-control').before(notice);
+			}
+
+			notice.toggle(!isAvailable);
+			$('#biddingForm .bid-control').toggle(isAvailable);
+			$('#biddingForm button[type="submit"]').toggle(isAvailable).prop('disabled', !isAvailable);
+			$('#modalBidInput').prop('disabled', !isAvailable);
+		}
+
 		// Handle manual input pada field harga
 		$(document).on('input', '#modalBidInput', function() {
 			var inputValue = $(this).val();
@@ -859,6 +881,7 @@ $result = $conn->query($sql);
 			var highestBid = $(this).data('highest-bid');
 			var img = $(this).data('img');
 			var endtime = $(this).data('endtime');
+			var auctionEnded = String($(this).data('auction-ended')) === '1';
 			var beliLangsung = $(this).data('beli-langsung');
 
 			$('.modal-title').text(judul);
@@ -885,6 +908,7 @@ $result = $conn->query($sql);
 			minBidValue = parseInt(highestBid) + 10000;
 			currentBidValue = minBidValue;
 			updateBidInput();
+			setModalBidAvailable(!auctionEnded);
 
 			$('#modal-bid-history').html('<div style="padding:10px; text-align:center;">Mengambil data...</div>');
 			$('#modal-bid-history').load('ambil_history.php?id=' + id);
@@ -898,6 +922,16 @@ $result = $conn->query($sql);
 
 			$('#quickViewModal').modal('show');
 		});
+
+		var autoOpenBidId = new URLSearchParams(window.location.search).get('show_bid');
+		if (autoOpenBidId) {
+			var targetQuickView = $('.js-show-modal1[data-id="' + autoOpenBidId + '"]').first();
+			if (targetQuickView.length) {
+				setTimeout(function() {
+					targetQuickView.trigger('click');
+				}, 300);
+			}
+		}
 
 		function startModalTimer(waktuAkhir) {
 			function update() {
@@ -918,6 +952,7 @@ $result = $conn->query($sql);
 					$('#modal-timer-display').html(tampilan);
 				} else {
 					$('#modal-timer-display').text("LELANG BERAKHIR");
+					setModalBidAvailable(false);
 					clearInterval(modalInterval);
 				}
 			}

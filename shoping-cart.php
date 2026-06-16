@@ -46,13 +46,23 @@ $row = []; // Variabel penampung data
 // Kita butuh ID user untuk ngecek otomatis dia menang lelang apa nggak
 $id_user_login = isset($_SESSION['id_user']) ? $_SESSION['id_user'] : null;
 
+function lelang_masih_berjalan($koneksi, $id_design) {
+    $id_design = (int) $id_design;
+    $result = mysqli_query($koneksi, "SELECT (waktu_berakhir IS NOT NULL AND waktu_berakhir > NOW()) AS masih_berjalan
+                                      FROM t_design
+                                      WHERE id_design = '$id_design'
+                                      LIMIT 1");
+    $data = $result ? mysqli_fetch_assoc($result) : null;
+    return !empty($data['masih_berjalan']);
+}
+
 // ==========================================================
 // LOGIKA PENCARIAN DATA (PRIORITAS 1 -> 2 -> 3)
 // ==========================================================
 
 // --- SKENARIO 0: AKSES BELI LANGSUNG (?id_design=...&beli_langsung=1) ---
 if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
-    $id_design = $_GET['id_design'];
+    $id_design = (int) $_GET['id_design'];
     $asal_transaksi = "beli_langsung";
 
     $query = "SELECT * FROM t_design WHERE id_design = '$id_design'";
@@ -90,7 +100,7 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
         }
 
         // Cek apakah waktu lelang sudah berakhir
-        if (!empty($row['waktu_berakhir']) && strtotime($row['waktu_berakhir']) > time()) {
+        if (lelang_masih_berjalan($koneksi, $id_design)) {
             sweetalert_redirect('Waktu lelang belum berakhir. Checkout hanya bisa dilakukan setelah lelang ditutup.', 'riwayat.php', 'info', 'Lelang Berjalan');
             exit;
         }
@@ -100,7 +110,7 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
 
 // --- SKENARIO 2: AKSES BELI BIASA (?id_design=...) ---
 } elseif (isset($_GET['id_design'])) {
-    $id_design = $_GET['id_design'];
+    $id_design = (int) $_GET['id_design'];
     $asal_transaksi = "biasa";
 
     $query = "SELECT * FROM t_design WHERE id_design = '$id_design'";
@@ -145,7 +155,7 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
                     $asal_transaksi = "lelang"; 
                     
                     // Cek apakah waktu lelang sudah berakhir
-                    if (!empty($row['waktu_berakhir']) && strtotime($row['waktu_berakhir']) > time()) {
+                    if (lelang_masih_berjalan($koneksi, $id_design_cek)) {
                         // Jika belum berakhir, kosongkan row agar tidak muncul di keranjang (karena belum bisa dibayar)
                         $row = [];
                     }
@@ -165,6 +175,20 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
 // --- VALIDASI AKHIR ---
 if (!$row) {
     sweetalert_redirect('Data tidak ditemukan.', 'index.php', 'error', 'Gagal!');
+}
+
+$id_design_checkout = (int) $row['id_design'];
+$cek_sudah_terjual = mysqli_prepare($koneksi, "SELECT 1
+                         FROM t_transaksi
+                         WHERE id_design = ?
+                           AND status_pembayaran IN ('berhasil', 'settlement', 'capture')
+                         LIMIT 1");
+mysqli_stmt_bind_param($cek_sudah_terjual, 'i', $id_design_checkout);
+mysqli_stmt_execute($cek_sudah_terjual);
+$hasil_sudah_terjual = mysqli_stmt_get_result($cek_sudah_terjual);
+
+if (($row['status'] ?? '') === 'sold' || mysqli_num_rows($hasil_sudah_terjual) > 0) {
+    sweetalert_redirect('Karya ini sudah terjual dan tidak bisa dibeli atau dibayar lagi.', 'product.php', 'info', 'Karya Terjual');
 }
 
 // --- PERSIAPAN TAMPILAN ---

@@ -774,7 +774,7 @@ $result = $conn->query($sql);
 								<?php if ($bid_status['code'] === 'guest') { ?>
 									<a href="login.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:#171717; color:#fff; border-radius:8px; font-size:1rem; font-weight:600; text-decoration:none; margin-bottom:10px;"><i class="fa fa-sign-in"></i> Masuk untuk Menawar</a>
 								<?php } elseif ($bid_status['code'] === 'unverified') { ?>
-									<a href="verifikasi.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#f7971e,#ffd200); color:#5a4500; border-radius:8px; font-size:1rem; font-weight:600; text-decoration:none; margin-bottom:10px;"><i class="fa fa-id-card"></i> Verifikasi KTP untuk Menawar</a>
+									<a href="verifikasi.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#4e8eff,#1591DC); color:#000; border-radius:8px; font-size:1rem; font-weight:700; text-decoration:none; margin-bottom:10px;"><i class="fa fa-id-card"></i> Verifikasi KTP untuk Menawar</a>
 								<?php } ?>
 								<?php } ?>
 

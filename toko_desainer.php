@@ -191,7 +191,7 @@ $avatar_src = $foto_desainer ? 'admin/uploads/' . $foto_desainer : $avatar_fallb
                 <?php } ?>
 
                 <?php if (!is_designer_login() && !is_admin_login()) { ?>
-                    <a href="detail_chat.php?tujuan=<?php echo $id_designer; ?>" class="btn-toko btn-chat-toko">
+                    <a href="pesan.php?lawan=<?php echo $id_designer; ?>" class="btn-toko btn-chat-toko">
                         <i class="fa fa-comments"></i> Hubungi Desainer
                     </a>
                 <?php } ?>

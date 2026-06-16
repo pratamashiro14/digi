@@ -7,6 +7,26 @@ require_login();
 
 $id_user = (int) current_id(); // ID User atau Desainer
 $nama_user = current_name();
+$is_user = is_user_login();
+$is_designer = is_designer_login();
+$id_lawan = isset($_GET['lawan']) ? intval($_GET['lawan']) : null;
+
+$status_member = 'premium';
+if ($is_user) {
+    $q_member = mysqli_query($koneksi, "SELECT status_member FROM t_user WHERE id_user='$id_user' LIMIT 1");
+    $data_member = $q_member ? mysqli_fetch_assoc($q_member) : null;
+    $status_member = $data_member['status_member'] ?? 'free';
+    if (is_premium_buyer()) {
+        $status_member = 'premium';
+    }
+}
+
+$batas_chat = 30;
+$q_total_chat = mysqli_query($koneksi, "SELECT COUNT(*) AS total FROM t_chat WHERE id_pengirim='$id_user'");
+$data_total_chat = $q_total_chat ? mysqli_fetch_assoc($q_total_chat) : ['total' => 0];
+$total_chat_saya = (int) ($data_total_chat['total'] ?? 0);
+$sisa_kuota = max(0, $batas_chat - $total_chat_saya);
+$bisa_chat = !$is_user || $status_member !== 'free' || $sisa_kuota > 0;
 
 // 2. LOGIKA KIRIM PESAN
 if (isset($_POST['kirim_pesan'])) {
@@ -14,6 +34,10 @@ if (isset($_POST['kirim_pesan'])) {
     $isi = trim($_POST['isi_pesan'] ?? '');
 
     if (!empty($isi) && !empty($penerima)) {
+        if (!$bisa_chat) {
+            sweetalert_redirect('Kuota chat gratis Anda sudah habis. Upgrade Premium untuk mengirim pesan tanpa batas.', 'pesan.php?lawan=' . $penerima, 'warning', 'Kuota Chat Habis');
+        }
+
         // Query Insert (prepared statement — cegah SQL injection)
         $stmt = mysqli_prepare($koneksi, "INSERT INTO t_chat (id_pengirim, id_penerima, isi_pesan, waktu_kirim)
                     VALUES (?, ?, ?, NOW())");
@@ -25,7 +49,6 @@ if (isset($_POST['kirim_pesan'])) {
 }
 
 // 3. TANDAI SEBAGAI DIBACA (sebelum query apapun agar badge langsung update)
-$id_lawan = isset($_GET['lawan']) ? intval($_GET['lawan']) : null;
 if ($id_lawan) {
     mysqli_query($koneksi, "UPDATE t_chat SET is_read=1 WHERE id_pengirim=$id_lawan AND id_penerima=" . intval($id_user) . " AND is_read=0");
 }
@@ -33,7 +56,7 @@ if ($id_lawan) {
 // 4. LOGIKA MENGAMBIL DAFTAR KONTAK
 $list_kontak = [];
 $q_kontak = mysqli_query($koneksi, "
-    SELECT DISTINCT u.id_user, u.nama, u.foto,
+    SELECT DISTINCT u.id_user, u.nama, u.foto, u.foto_profil,
         (SELECT COUNT(*) FROM t_chat WHERE id_pengirim=u.id_user AND id_penerima='$id_user' AND is_read=0) as unread_count
     FROM t_user u
     JOIN t_chat c ON (u.id_user = c.id_pengirim OR u.id_user = c.id_penerima)
@@ -45,6 +68,26 @@ while ($row = mysqli_fetch_assoc($q_kontak)) {
     $list_kontak[] = $row;
 }
 
+if ($id_lawan) {
+    $ada_lawan_di_kontak = false;
+    foreach ($list_kontak as $kontak) {
+        if ((int) $kontak['id_user'] === $id_lawan) {
+            $ada_lawan_di_kontak = true;
+            break;
+        }
+    }
+
+    if (!$ada_lawan_di_kontak) {
+        $q_kontak_baru = mysqli_query($koneksi, "SELECT id_user, nama, foto, foto_profil, 0 AS unread_count
+                                                 FROM t_user
+                                                 WHERE id_user='$id_lawan'
+                                                 LIMIT 1");
+        if ($q_kontak_baru && mysqli_num_rows($q_kontak_baru) > 0) {
+            array_unshift($list_kontak, mysqli_fetch_assoc($q_kontak_baru));
+        }
+    }
+}
+
 // 5. LOGIKA MENGAMBIL ISI CHAT
 $chat_history = [];
 $nama_lawan = "";
@@ -53,6 +96,9 @@ if ($id_lawan) {
     // Ambil nama lawan bicara
     $q_lawan = mysqli_query($koneksi, "SELECT nama FROM t_user WHERE id_user='$id_lawan'");
     $data_lawan = mysqli_fetch_assoc($q_lawan);
+    if (!$data_lawan) {
+        sweetalert_redirect('Pengguna tidak ditemukan.', 'pesan.php', 'error', 'Chat Tidak Tersedia');
+    }
     $nama_lawan = $data_lawan['nama'];
 
     // Ambil history chat (Urutkan dari yang terlama ke terbaru)
@@ -113,6 +159,33 @@ if ($id_lawan) {
         .chat-main { width: 70%; display: flex; flex-direction: column; background: #fff; }
         .chat-header { padding: 15px; border-bottom: 1px solid #eee; font-weight: 700; background: #fff; display: flex; align-items: center; }
         .chat-header i { margin-right: 10px; color: #4e8eff; font-size: 20px; }
+        .chat-quota-bar {
+            padding: 9px 15px;
+            border-bottom: 1px solid #dbe6ff;
+            background: #eef4ff;
+            color: #3f7dff;
+            font-size: 13px;
+            text-align: center;
+            font-weight: 500;
+        }
+        .chat-quota-bar.is-warning {
+            background: #fff7e6;
+            border-bottom-color: #ffe1a6;
+            color: #9a6700;
+        }
+        .chat-locked {
+            padding: 16px;
+            border-top: 1px solid #eee;
+            background: #fff;
+            color: #667085;
+            text-align: center;
+            font-size: 13px;
+        }
+        .chat-locked a {
+            color: #1591DC;
+            font-weight: 700;
+            text-decoration: underline;
+        }
         
         .chat-box { flex-grow: 1; padding: 20px; overflow-y: auto; background-color: #f5f6fa; display: flex; flex-direction: column; gap: 10px; }
         
@@ -171,7 +244,8 @@ if ($id_lawan) {
                                 foreach ($list_kontak as $kontak) {
                                     $active_class = ($id_lawan == $kontak['id_user']) ? 'active' : '';
                                     // Cek foto profil (kalau kosong pakai default)
-                                    $foto_k = !empty($kontak['foto']) ? 'admin/uploads/'.$kontak['foto'] : 'images/icons/icon-header-01.png';
+                                    $foto_mentah = !empty($kontak['foto_profil']) ? $kontak['foto_profil'] : ($kontak['foto'] ?? '');
+                                    $foto_k = !empty($foto_mentah) ? 'admin/uploads/'.$foto_mentah : 'images/icons/icon-header-01.png';
                             ?>
                                 <a href="pesan.php?lawan=<?php echo $kontak['id_user']; ?>" class="contact-item <?php echo $active_class; ?>">
                                     <img src="<?php echo $foto_k; ?>" class="contact-avatar">
@@ -201,6 +275,16 @@ if ($id_lawan) {
                                 <i class="fa fa-user-circle"></i> <?php echo htmlspecialchars($nama_lawan); ?>
                             </div>
 
+                            <?php if ($is_user && $status_member === 'free') { ?>
+                                <div class="chat-quota-bar <?php echo $sisa_kuota <= 5 ? 'is-warning' : ''; ?>">
+                                    <i class="fa fa-info-circle"></i>
+                                    Kuota Chat Free: <b><?php echo $sisa_kuota; ?></b> / <?php echo $batas_chat; ?> Pesan.
+                                    <?php if ($sisa_kuota <= 5 && $sisa_kuota > 0) { ?>
+                                        <span>Hampir habis!</span>
+                                    <?php } ?>
+                                </div>
+                            <?php } ?>
+
                             <div class="chat-box" id="chatBox">
                                 <?php foreach ($chat_history as $msg) { 
                                     // Tentukan CSS bubble (Punya sendiri atau Lawan)
@@ -214,11 +298,18 @@ if ($id_lawan) {
                                 <?php } ?>
                             </div>
 
-                            <form action="" method="POST" class="chat-input">
-                                <input type="hidden" name="id_penerima" value="<?php echo $id_lawan; ?>">
-                                <input type="text" name="isi_pesan" class="input-field" placeholder="Tulis pesan..." autocomplete="off" required>
-                                <button type="submit" name="kirim_pesan" class="btn-send" title="Kirim pesan" aria-label="Kirim pesan"><i class="fa fa-paper-plane"></i></button>
-                            </form>
+                            <?php if ($bisa_chat) { ?>
+                                <form action="" method="POST" class="chat-input">
+                                    <input type="hidden" name="id_penerima" value="<?php echo $id_lawan; ?>">
+                                    <input type="text" name="isi_pesan" class="input-field" placeholder="Tulis pesan..." autocomplete="off" required>
+                                    <button type="submit" name="kirim_pesan" class="btn-send" title="Kirim pesan" aria-label="Kirim pesan"><i class="fa fa-paper-plane"></i></button>
+                                </form>
+                            <?php } else { ?>
+                                <div class="chat-locked">
+                                    <b>Kuota Chat Gratis Habis.</b>
+                                    <span>Upgrade ke <a href="premium.php">Premium</a> untuk mengirim pesan tanpa batas.</span>
+                                </div>
+                            <?php } ?>
 
                         <?php } else { ?>
                             <div class="empty-chat">

@@ -20,8 +20,8 @@ if(empty($_SESSION['admin'])){
     // ========================================================
 
     // Lanjutkan dengan kode spesifik file ini
-    $id = $_GET['id'];
-    
+    $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+
     $query = mysqli_query($koneksi, "
         SELECT d.*, u.nama AS nama_desainer
         FROM t_design d
@@ -39,11 +39,13 @@ if(empty($_SESSION['admin'])){
         $harga_awal = isset($_POST['harga_awal']) ? $_POST['harga_awal'] : $data['harga_awal'];
 
         // Query update
-        $update = mysqli_query($koneksi, "
-            UPDATE t_design 
-            SET judul='$judul', kategori='$kategori', harga_awal='$harga_awal', status='$status_update'
-            WHERE id_design='$id'
+        $stmt = mysqli_prepare($koneksi, "
+            UPDATE t_design
+            SET judul = ?, kategori = ?, harga_awal = ?, status = ?
+            WHERE id_design = ?
         ");
+        mysqli_stmt_bind_param($stmt, "ssdsi", $judul, $kategori, $harga_awal, $status_update, $id);
+        $update = mysqli_stmt_execute($stmt);
 
         if ($update) {
             sweetalert_redirect('Perubahan karya berhasil disimpan.', 'karyadesain.php', 'success', 'Berhasil!');

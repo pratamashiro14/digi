@@ -35,22 +35,34 @@ $mode = $_GET['mode'] ?? 'view';
 // === HANDLE PROSES UPDATE DAN UPLOAD FOTO (HANYA JIKA MODE ADALAH EDIT) ===
 if ($mode === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     
-    $new_nama = mysqli_real_escape_string($koneksi, trim($_POST['nama_admin']));
-    $new_email = mysqli_real_escape_string($koneksi, trim($_POST['email']));
-    $target_dir = "assets/img/fotoprofil/"; 
-    $new_foto_name = $foto_admin; 
+    $new_nama = trim($_POST['nama_admin']);
+    $new_email = trim($_POST['email']);
+    $target_dir = "assets/img/fotoprofil/";
+    $new_foto_name = $foto_admin;
     $update_fields = [];
-    
+    $update_types = '';
+    $update_vals = [];
+
     // Cek perubahan Nama & Email
-    if ($new_nama !== $nama_admin) $update_fields[] = "nama_admin = '$new_nama'";
-    
+    if ($new_nama !== $nama_admin) {
+        $update_fields[] = "nama_admin = ?";
+        $update_types .= 's';
+        $update_vals[] = $new_nama;
+    }
+
     if ($new_email !== $email_admin) {
-        $check_email = mysqli_query($koneksi, "SELECT id_admin FROM t_admin WHERE email = '$new_email' AND id_admin != '$id_admin'");
-        if (mysqli_num_rows($check_email) > 0) {
+        $check_email = mysqli_prepare($koneksi, "SELECT id_admin FROM t_admin WHERE email = ? AND id_admin != ?");
+        mysqli_stmt_bind_param($check_email, "si", $new_email, $id_admin);
+        mysqli_stmt_execute($check_email);
+        $check_email_result = mysqli_stmt_get_result($check_email);
+        if (mysqli_num_rows($check_email_result) > 0) {
             $error = 'Email baru sudah digunakan oleh admin lain!';
         } else {
-            $update_fields[] = "email = '$new_email'";
+            $update_fields[] = "email = ?";
+            $update_types .= 's';
+            $update_vals[] = $new_email;
         }
+        mysqli_stmt_close($check_email);
     }
 
     // Cek upload foto
@@ -71,7 +83,9 @@ if ($mode === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['u
             $upload_path = $target_dir . $new_foto_name;
 
             if (move_uploaded_file($file_tmp, $upload_path)) {
-                $update_fields[] = "foto = '$new_foto_name'";
+                $update_fields[] = "foto = ?";
+                $update_types .= 's';
+                $update_vals[] = $new_foto_name;
             } else {
                 $error = "Gagal mengunggah file foto.";
             }
@@ -80,12 +94,19 @@ if ($mode === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['u
 
     // Eksekusi Update
     if (empty($error) && !empty($update_fields)) {
-        $update_query = "UPDATE t_admin SET " . implode(', ', $update_fields) . " WHERE id_admin = '$id_admin'";
-        
-        if (mysqli_query($koneksi, $update_query)) {
+        $update_query = "UPDATE t_admin SET " . implode(', ', $update_fields) . " WHERE id_admin = ?";
+        $update_types .= 'i';
+        $update_vals[] = $id_admin;
+
+        $stmt = mysqli_prepare($koneksi, $update_query);
+        mysqli_stmt_bind_param($stmt, $update_types, ...$update_vals);
+
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
             sweetalert_redirect('Profil admin berhasil diperbarui.', 'profile.php', 'success', 'Berhasil!');
         } else {
             $error = "Gagal menyimpan perubahan: " . mysqli_error($koneksi);
+            mysqli_stmt_close($stmt);
         }
     } elseif (empty($error)) {
          sweetalert_redirect('Tidak ada perubahan yang disimpan.', 'profile.php', 'info', 'Informasi');

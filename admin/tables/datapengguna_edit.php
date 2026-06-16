@@ -20,41 +20,43 @@ if(empty($_SESSION['admin'])){
     }
     // ========================================================
 
-    $id = $_GET['id'];
-    $query = mysqli_query($koneksi, "SELECT * FROM t_user WHERE id_user='$id'");
-    $data = mysqli_fetch_assoc($query);
+    $id = (int) ($_GET['id'] ?? 0);
+    $sel = mysqli_prepare($koneksi, "SELECT * FROM t_user WHERE id_user=?");
+    mysqli_stmt_bind_param($sel, 'i', $id);
+    mysqli_stmt_execute($sel);
+    $data = mysqli_fetch_assoc(mysqli_stmt_get_result($sel));
 
     if (isset($_POST['simpan'])) {
-        $nama = $_POST['nama'];
-        $email = $_POST['email'];
-        $password = $_POST['password'];
-        $no_telp = isset($_POST['no_telp']) ? $_POST['no_telp'] : '';
-        $alamat = $_POST['alamat'];
-        $role = strtolower($_POST['role']); // Convert to lowercase
-        $premium = $_POST['premium'];
+        $nama = $_POST['nama'] ?? '';
+        $email = $_POST['email'] ?? '';
+        $password = $_POST['password'] ?? '';
+        $no_telp = $_POST['no_telp'] ?? '';
+        $alamat = $_POST['alamat'] ?? '';
+        $role = strtolower($_POST['role'] ?? ''); // Convert to lowercase
+        $premium = (int) ($_POST['premium'] ?? 0);
 
-        $nik = isset($_POST['nik']) ? mysqli_real_escape_string($koneksi, $_POST['nik']) : '';
-        $nik_update = "";
+        // Bangun query UPDATE dengan prepared statement (cegah SQL injection)
+        $sets  = ['nama=?', 'email=?', 'password=?', 'no_telp=?', 'alamat=?', 'role=?', 'premium=?'];
+        $types = 'ssssssi';
+        $vals  = [$nama, $email, $password, $no_telp, $alamat, $role, $premium];
+
         if ($role === 'designer') {
-            $nik_update = ", nik='$nik'";
+            $sets[]  = 'nik=?';
+            $types  .= 's';
+            $vals[]  = $_POST['nik'] ?? '';
         }
 
-        $update = mysqli_query($koneksi, "UPDATE t_user SET 
-            nama='$nama',
-            email='$email',
-            password='$password',
-            no_telp='$no_telp',
-            alamat='$alamat',
-            role='$role',
-            premium='$premium'
-            $nik_update
-            WHERE id_user='$id'
-        ");
+        $types .= 'i';
+        $vals[] = $id;
+        $sql = "UPDATE t_user SET " . implode(', ', $sets) . " WHERE id_user=?";
+        $stmt = mysqli_prepare($koneksi, $sql);
+        mysqli_stmt_bind_param($stmt, $types, ...$vals);
+        $update = mysqli_stmt_execute($stmt);
 
         if ($update) {
             sweetalert_redirect('Data pengguna berhasil diperbarui.', 'datapengguna.php', 'success', 'Berhasil!');
         } else {
-            sweetalert_back('Gagal memperbarui data: ' . mysqli_error($koneksi), 'error', 'Gagal!');
+            sweetalert_back('Gagal memperbarui data.', 'error', 'Gagal!');
         }
     }
 ?>

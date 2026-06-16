@@ -3,28 +3,22 @@ require_once __DIR__ . '/auth.php';
 // 1. HUBUNGKAN KONEKSI DATABASE (Arahkan ke folder admin)
 include 'admin/koneksi.php';
 
-// Hubungkan ke Midtrans
-require_once __DIR__ . '/midtrans/Midtrans.php';
+// Hubungkan ke Midtrans + konfigurasi (key dari config.php)
+require_once __DIR__ . '/midtrans_config.php';
 
 // Cek apakah user sudah login
 require_user();
 
 $id_user = current_id();
 
-// 2. SETTING KONFIGURASI MIDTRANS
-\Midtrans\Config::$serverKey = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0'; // Pastikan Server Key Benar
-\Midtrans\Config::$isProduction = false;
-\Midtrans\Config::$isSanitized = true;
-\Midtrans\Config::$is3ds = true;
-
 // 3. PROSES SAAT TOMBOL BAYAR DITEKAN
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     // --- A. AMBIL DATA DARI FORM (SHOPING-CART) ---
-    $id_buyer = $_SESSION['id_user'];      // ID User yang login
-    $id_design = $_POST['id_design_midtrans'];
+    $id_buyer = (int) $_SESSION['id_user'];      // ID User yang login
+    $id_design = (int) $_POST['id_design_midtrans'];
     $judul_produk = $_POST['judul_midtrans'];
-    $total_bayar = $_POST['total_bayar_midtrans'];
+    $total_bayar = (int) preg_replace('/[^0-9]/', '', $_POST['total_bayar_midtrans']);
     
     // Validasi tambahan
     $tipe_transaksi = isset($_POST['tipe_transaksi']) ? $_POST['tipe_transaksi'] : 'biasa';
@@ -35,25 +29,19 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // --- C. SIMPAN KE DATABASE (Status: pending) ---
     // Perbaikan: Menggunakan variabel $koneksi (bukan $conn)
-    $query_simpan = "INSERT INTO t_transaksi (
-                        id_midtrans_order, 
-                        id_design, 
-                        id_buyer, 
-                        harga_final, 
-                        status_pembayaran, 
+    $stmt_simpan = mysqli_prepare($koneksi, "INSERT INTO t_transaksi (
+                        id_midtrans_order,
+                        id_design,
+                        id_buyer,
+                        harga_final,
+                        status_pembayaran,
                         tanggal_transaksi
-                    ) VALUES (
-                        '$order_id', 
-                        '$id_design', 
-                        '$id_buyer', 
-                        '$total_bayar', 
-                        'pending', 
-                        NOW()
-                    )";
-    
+                    ) VALUES (?, ?, ?, ?, 'pending', NOW())");
+    mysqli_stmt_bind_param($stmt_simpan, 'siii', $order_id, $id_design, $id_buyer, $total_bayar);
+
     // Eksekusi Simpan ke Database
-    if (!mysqli_query($koneksi, $query_simpan)) {
-        die("Error menyimpan data transaksi: " . mysqli_error($koneksi));
+    if (!mysqli_stmt_execute($stmt_simpan)) {
+        die("Error menyimpan data transaksi.");
     }
 
     // --- D. SUSUN PARAMETER UNTUK MIDTRANS ---
@@ -104,7 +92,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript"
             src="https://app.sandbox.midtrans.com/snap/snap.js"
-            data-client-key="SB-Mid-client-6m0YatujRuhkkQ1w"></script> 
+            data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY, ENT_QUOTES); ?>"></script>
     <script src="/digi/vendor/sweetalert/sweetalert.min.js"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 50px; }

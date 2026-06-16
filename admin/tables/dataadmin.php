@@ -33,23 +33,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_admin'])) {
     if ($password === '' || strlen($password) < 6) $errors[] = 'Password minimal 6 karakter.';
 
     if (empty($errors)) {
-        $n = mysqli_real_escape_string($koneksi, $nama_admin);
-        $e = mysqli_real_escape_string($koneksi, $email);
-        
-        // Cek email duplikat
-        $check_query = mysqli_query($koneksi, "SELECT id_admin FROM t_admin WHERE email = '$e'");
-        if (mysqli_num_rows($check_query) > 0) {
+        // Cek email duplikat (prepared statement)
+        $check_stmt = mysqli_prepare($koneksi, "SELECT id_admin FROM t_admin WHERE email = ?");
+        mysqli_stmt_bind_param($check_stmt, "s", $email);
+        mysqli_stmt_execute($check_stmt);
+        $check_result = mysqli_stmt_get_result($check_stmt);
+        if (mysqli_num_rows($check_result) > 0) {
             $errors[] = 'Email sudah terdaftar. Gunakan email lain.';
+            mysqli_stmt_close($check_stmt);
         } else {
-            $pw_hash = mysqli_real_escape_string($koneksi, password_hash($password, PASSWORD_DEFAULT));
+            mysqli_stmt_close($check_stmt);
+            $pw_hash = password_hash($password, PASSWORD_DEFAULT);
 
-            $sql = "INSERT INTO t_admin (nama_admin, email, password)
-                    VALUES ('$n', '$e', '$pw_hash')";
+            $stmt = mysqli_prepare($koneksi, "INSERT INTO t_admin (nama_admin, email, password) VALUES (?, ?, ?)");
+            mysqli_stmt_bind_param($stmt, "sss", $nama_admin, $email, $pw_hash);
 
-            if (mysqli_query($koneksi, $sql)) {
+            if (mysqli_stmt_execute($stmt)) {
+                mysqli_stmt_close($stmt);
                 sweetalert_redirect('Admin baru berhasil ditambahkan.', 'dataadmin.php', 'success', 'Berhasil!');
             } else {
                 $errors[] = "Gagal menambahkan admin: " . mysqli_error($koneksi);
+                mysqli_stmt_close($stmt);
             }
         }
     }

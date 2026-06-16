@@ -59,10 +59,9 @@ $conversation = mysqli_query($koneksi, "
 if (isset($_POST['simpan'])) {
     $isi_pesan = isset($_POST['isi_pesan']) ? $_POST['isi_pesan'] : '';
 
-    $update = mysqli_query($koneksi, "UPDATE t_chat SET 
-        isi_pesan='$isi_pesan'
-        WHERE id_chat='$id'
-    ");
+    $stmt = mysqli_prepare($koneksi, "UPDATE t_chat SET isi_pesan = ? WHERE id_chat = ?");
+    mysqli_stmt_bind_param($stmt, "si", $isi_pesan, $id);
+    $update = mysqli_stmt_execute($stmt);
 
     if ($update) {
         sweetalert_redirect('Data chat berhasil diperbarui.', 'datachat.php', 'success', 'Berhasil!');

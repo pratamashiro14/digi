@@ -5,7 +5,7 @@ include 'admin/koneksi.php';
 // Cek Login — khusus pembeli/user
 require_user();
 
-$id_user = current_id();
+$id_user = (int) current_id();
 
 // Proses Upload
 if (isset($_POST['upload_ktp'])) {

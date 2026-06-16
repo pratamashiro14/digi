@@ -8,7 +8,7 @@ $is_user     = is_user_login();
 $is_designer = is_designer_login();
 
 // Ambil ID Pelaku
-$id_saya = current_id();
+$id_saya = (int) current_id();
 
 // 2. TANGKAP ID LAWAN BICARA
 if (isset($_GET['tujuan'])) {

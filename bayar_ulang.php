@@ -2,8 +2,8 @@
 require_once __DIR__ . '/auth.php';
 // Hubungkan ke database (Folder admin)
 include 'admin/koneksi.php';
-// Hubungkan Library Midtrans
-require_once __DIR__ . '/midtrans/Midtrans.php';
+// Hubungkan Library + konfigurasi Midtrans (key dari config.php)
+require_once __DIR__ . '/midtrans_config.php';
 
 // Cek Login — khusus pembeli/user
 require_user();
@@ -14,19 +14,20 @@ if (!isset($_GET['id'])) {
     exit;
 }
 
-$id_transaksi = $_GET['id'];
-$id_user = $_SESSION['id_user'];
+$id_transaksi = (int) $_GET['id'];
+$id_user = (int) $_SESSION['id_user'];
 
 // 1. AMBIL DATA TRANSAKSI LAMA
 // Kita cari transaksi yang statusnya pending milik user ini
-$query = "SELECT t.*, d.judul 
-          FROM t_transaksi t 
-          JOIN t_design d ON t.id_design = d.id_design 
-          WHERE t.id_transaksi = '$id_transaksi' 
-          AND t.id_buyer = '$id_user' 
-          AND t.status_pembayaran = 'pending'";
-
-$result = mysqli_query($koneksi, $query);
+$stmt = mysqli_prepare($koneksi, "SELECT t.*, d.judul
+          FROM t_transaksi t
+          JOIN t_design d ON t.id_design = d.id_design
+          WHERE t.id_transaksi = ?
+          AND t.id_buyer = ?
+          AND t.status_pembayaran = 'pending'");
+mysqli_stmt_bind_param($stmt, 'ii', $id_transaksi, $id_user);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
 $data = mysqli_fetch_assoc($result);
 
 if (!$data) {
@@ -40,22 +41,17 @@ if (!$data) {
 $order_id_baru = "ORD-" . time() . "-" . rand(100, 999);
 
 // UPDATE DATABASE: Ganti ID lama dengan ID baru
-$update_query = "UPDATE t_transaksi 
-                 SET id_midtrans_order = '$order_id_baru', 
-                     tanggal_transaksi = NOW() 
-                 WHERE id_transaksi = '$id_transaksi'";
+$update_stmt = mysqli_prepare($koneksi, "UPDATE t_transaksi
+                 SET id_midtrans_order = ?,
+                     tanggal_transaksi = NOW()
+                 WHERE id_transaksi = ?");
+mysqli_stmt_bind_param($update_stmt, 'si', $order_id_baru, $id_transaksi);
 
-if (!mysqli_query($koneksi, $update_query)) {
-    die("Gagal update ID baru: " . mysqli_error($koneksi));
+if (!mysqli_stmt_execute($update_stmt)) {
+    die("Gagal update ID baru.");
 }
 
-// ============================================================
-// KONFIGURASI MIDTRANS
-// ============================================================
-\Midtrans\Config::$serverKey = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0'; // Pastikan Server Key Benar
-\Midtrans\Config::$isProduction = false;
-\Midtrans\Config::$isSanitized = true;
-\Midtrans\Config::$is3ds = true;
+// Konfigurasi Midtrans sudah dimuat dari midtrans_config.php (key dari config.php)
 
 // SIAPKAN PARAMETER (Gunakan ID BARU tadi)
 $params = array(
@@ -89,7 +85,7 @@ try {
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript"
             src="https://app.sandbox.midtrans.com/snap/snap.js"
-            data-client-key="SB-Mid-client-6m0YatujRuhkkQ1w"></script> 
+            data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY, ENT_QUOTES); ?>"></script>
     <style>
         body { font-family: sans-serif; text-align: center; padding: 50px; }
         .btn-pay {

@@ -8,15 +8,16 @@ if(empty($_SESSION['admin'])){
 } else {
 
 if (isset($_POST['simpan'])) {
-    $id_buyer = $_POST['id_buyer'];
-    $id_design = $_POST['id_design'];
+    $id_buyer = (int) ($_POST['id_buyer'] ?? 0);
+    $id_design = (int) ($_POST['id_design'] ?? 0);
     $nominal = $_POST['nominal'];
     $status = $_POST['status'];
     $tanggal_bid = date('Y-m-d');
 
-    $insert = mysqli_query($koneksi, "INSERT INTO t_bidding (id_buyer, id_design, nominal, status, tanggal_bid) 
-        VALUES ('$id_buyer', '$id_design', '$nominal', '$status', '$tanggal_bid')
-    ");
+    $stmt = mysqli_prepare($koneksi, "INSERT INTO t_bidding (id_buyer, id_design, nominal, status, tanggal_bid)
+        VALUES (?, ?, ?, ?, ?)");
+    mysqli_stmt_bind_param($stmt, "iisss", $id_buyer, $id_design, $nominal, $status, $tanggal_bid);
+    $insert = mysqli_stmt_execute($stmt);
 
     if ($insert) {
         sweetalert_redirect('Data bidding berhasil ditambahkan.', 'databidding.php', 'success', 'Berhasil!');

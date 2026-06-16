@@ -132,10 +132,10 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
             if ($data_auto['harga_tawaran'] >= $d_max['max_bid']) {
                 // --- [UPDATE BARU] CEK KE DATABASE TRANSAKSI ---
                 // Kita cek: Apakah desain ini sudah pernah dibayar (settlement) atau sedang proses (pending)?
-                $cek_transaksi = mysqli_query($koneksi, "SELECT * FROM t_transaksi 
-                                 WHERE id_buyer = '$id_user_login' 
+                $cek_transaksi = mysqli_query($koneksi, "SELECT * FROM t_transaksi
+                                 WHERE id_buyer = '$id_user_login'
                                  AND id_design = '$id_design_cek'
-                                 AND (status_pembayaran = 'settlement' OR status_pembayaran = 'pending')");
+                                 AND (status_pembayaran = 'berhasil' OR status_pembayaran = 'pending')");
                 
                 // Jika BELUM ADA di tabel transaksi (artinya belum dibayar), baru kita tampilkan tagihannya
                 if(mysqli_num_rows($cek_transaksi) == 0) {

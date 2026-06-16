@@ -5,6 +5,7 @@
 // Token diambil dari DB (bukan dari URL) berdasarkan order_id milik user yang login.
 // ==========================================================
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/config.php';
 require_login();
 include 'admin/koneksi.php';
 
@@ -37,7 +38,7 @@ $tipe_label = ucfirst($data['tipe_premium']);
 
     <!-- Midtrans Snap (Sandbox) -->
     <script src="https://app.sandbox.midtrans.com/snap/snap.js"
-            data-client-key="SB-Mid-client-6m0YatujRuhkkQ1w"></script>
+            data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY, ENT_QUOTES); ?>"></script>
 
     <style>
         * { box-sizing: border-box; }

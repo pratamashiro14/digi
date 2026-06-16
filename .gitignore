@@ -1,6 +1,10 @@
 # Config editor Claude Code (tidak perlu ikut ke repo)
 .claude/
 
+# Konfigurasi rahasia (kredensial DB & key Midtrans) — JANGAN commit
+config.php
+admin/config.php
+
 # Dependencies (hasil composer/npm install — biar ringan, install sendiri)
 /vendor/
 node_modules/

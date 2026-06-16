@@ -6,7 +6,7 @@ include 'admin/koneksi.php';
 // 1. CEK LOGIN KHUSUS DESAINER
 require_verified_designer();
 
-$id_desainer = current_id();
+$id_desainer = (int) current_id();
 $nama_desainer = current_name();
 $works_view = $_GET['view'] ?? 'auction-create';
 if (!in_array($works_view, ['all', 'auction-create', 'active'], true)) {
@@ -15,7 +15,7 @@ if (!in_array($works_view, ['all', 'auction-create', 'active'], true)) {
 
 // 2. LOGIKA HAPUS KARYA
 if (isset($_GET['hapus'])) {
-    $id_hapus = $_GET['hapus'];
+    $id_hapus = (int) $_GET['hapus'];
     
     // Ambil info gambar & file master untuk dihapus fisiknya
     $q_data = mysqli_query($koneksi, "SELECT gambar, file_master FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
@@ -74,10 +74,10 @@ if (isset($_POST['simpan_karya'])) {
     $query_insert = "INSERT INTO t_design 
         (id_designer, judul, deskripsi, kategori, harga_awal, harga_beli_langsung, gambar, tanggal_upload, status, waktu_berakhir, file_master) 
         VALUES 
-        ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$harga_beli_langsung', '$nama_gambar', NOW(), 'pending', '$waktu_berakhir', '$nama_file_master')";
+        ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$harga_beli_langsung', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
 
     if (mysqli_query($koneksi, $query_insert)) {
-        sweetalert_redirect('Karya berhasil diunggah. Menunggu verifikasi dan persetujuan Admin sebelum ditayangkan.', 'unggahan.php?view=all#daftar-karya', 'success', 'Upload Berhasil!');
+        sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php?view=active#daftar-karya', 'success', 'Upload Berhasil!');
     } else {
         sweetalert_back('Gagal mengunggah karya: ' . mysqli_error($koneksi), 'error', 'Upload Gagal!');
     }
@@ -87,7 +87,7 @@ if (isset($_POST['simpan_karya'])) {
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Unggahan Desainer - Mulai Lelang</title>
+    <title>Unggahan Desainer -  Mulai Lelang</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     

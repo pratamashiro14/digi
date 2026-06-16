@@ -10,21 +10,19 @@ if (empty(trim($email)) || empty(trim($password_input))) {
     exit;
 }
 
-// Amankan input email untuk query
-$email_safe = mysqli_real_escape_string($koneksi, $email);
-
-// 1. Cari akun berdasarkan email (tabel t_user untuk pembeli & desainer)
-$query     = mysqli_query($koneksi, "SELECT * FROM t_user WHERE email='$email_safe'");
+// 1. Cari akun berdasarkan email (prepared statement — cegah SQL injection)
+$stmt = mysqli_prepare($koneksi, "SELECT * FROM t_user WHERE email = ? LIMIT 1");
+mysqli_stmt_bind_param($stmt, 's', $email);
+mysqli_stmt_execute($stmt);
+$query     = mysqli_stmt_get_result($stmt);
 $cek_email = $query ? mysqli_num_rows($query) : 0;
 
 if ($cek_email > 0) {
     $data        = mysqli_fetch_assoc($query);
     $password_db = $data['password'];
 
-    // 2. Cek password (dukung 3 format: password_hash, md5, plaintext)
-    $cocok = password_verify($password_input, $password_db)
-          || md5($password_input) === $password_db
-          || $password_input === $password_db;
+    // 2. Verifikasi password + migrasi otomatis format lama (md5/plaintext) ke bcrypt
+    $cocok = verify_and_upgrade_password($password_input, $password_db, 't_user', 'id_user', (int) $data['id_user']);
 
     if ($cocok) {
         // 3. OTOMATIS arahkan sesuai ROLE di database

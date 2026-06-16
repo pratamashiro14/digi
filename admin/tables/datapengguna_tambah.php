@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../admin_guard.php';
 require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
@@ -46,23 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 
     if (empty($errors)) {
-        $n = mysqli_real_escape_string($koneksi, $nama);
-        $e = mysqli_real_escape_string($koneksi, $email);
-        $tel = mysqli_real_escape_string($koneksi, $no_telp);
-        $al = mysqli_real_escape_string($koneksi, $alamat);
-        $r = mysqli_real_escape_string($koneksi, $role);
-        $s = mysqli_real_escape_string($koneksi, $status);
         $p = (int)$premium;
-        $foto_q = mysqli_real_escape_string($koneksi, $foto_name);
         $pw_hash = password_hash($password, PASSWORD_BCRYPT);
 
-        $sql = "INSERT INTO t_user (nama, email, password, no_telp, alamat, role, status, premium, foto)
-                VALUES ('$n', '$e', '$pw_hash', '$tel', '$al', '$r', '$s', $p, '$foto_q')";
+        $stmt = mysqli_prepare($koneksi, "INSERT INTO t_user (nama, email, password, no_telp, alamat, role, status, premium, foto)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "sssssssis", $nama, $email, $pw_hash, $no_telp, $alamat, $role, $status, $p, $foto_name);
 
-        if (mysqli_query($koneksi, $sql)) {
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
             sweetalert_redirect('Pengguna berhasil ditambahkan.', 'datapengguna.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
+            mysqli_stmt_close($stmt);
         }
     }
 

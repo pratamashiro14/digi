@@ -1,13 +1,9 @@
 <?php
 require_once __DIR__ . '/sweetalert.php';
+require_once __DIR__ . '/config.php';
 
 // 1. Koneksi Database
-$servername = "localhost:3306";
-$username = "root";
-$password = "";
-$dbname = "dbkarya"; 
-
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);

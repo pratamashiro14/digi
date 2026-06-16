@@ -10,7 +10,7 @@
 require_once __DIR__ . '/auth.php';
 require_login();
 include 'admin/koneksi.php';
-require_once __DIR__ . '/Midtrans/Midtrans.php';
+require_once __DIR__ . '/midtrans_config.php';
 
 $order_id  = $_GET['order_id'] ?? '';
 $id_user   = (int) current_id();
@@ -24,9 +24,7 @@ if (!$prem) {
     sweetalert_redirect('Transaksi tidak ditemukan.', 'premium.php', 'error', 'Gagal');
 }
 
-// 2. Konfigurasi Midtrans (Sandbox)
-\Midtrans\Config::$serverKey    = 'Mid-server-yE95ZcyAgzoCQHosJ868mVL0';
-\Midtrans\Config::$isProduction = false;
+// 2. Konfigurasi Midtrans sudah dimuat dari midtrans_config.php (key dari config.php)
 
 $view           = 'failed';
 $pesan          = '';

@@ -205,7 +205,7 @@ function require_verified_designer() {
         include __DIR__ . '/admin/koneksi.php';
     }
     
-    $id = current_id();
+    $id = (int) current_id();
     $cek = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user='$id'");
     $data = mysqli_fetch_assoc($cek);
     
@@ -276,4 +276,64 @@ function do_logout() {
         setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
     }
     session_destroy();
+}
+
+// ------------------------------------------------------------
+// 7. VERIFIKASI PASSWORD + AUTO-UPGRADE KE BCRYPT
+// ------------------------------------------------------------
+/**
+ * Verifikasi password sekaligus migrasi format lama (plaintext/MD5) ke bcrypt
+ * secara transparan saat user berhasil login. Setelah login pertama, baris
+ * password di DB otomatis berubah jadi bcrypt sehingga jalur lama tidak terpakai lagi.
+ *
+ * @param string $input   Password dari form
+ * @param string $hash_db Nilai kolom password di DB
+ * @param string $table   't_user' atau 't_admin' (dibatasi whitelist)
+ * @param string $id_col  Nama kolom id baris tsb
+ * @param int    $id_val  Nilai id baris tsb
+ * @return bool           true jika password cocok
+ */
+function verify_and_upgrade_password($input, $hash_db, $table, $id_col, $id_val) {
+    // Tolak akun tanpa password (NULL/kosong): tidak boleh bisa login
+    if ($input === '' || $hash_db === null || $hash_db === '') {
+        return false;
+    }
+
+    // 1) Format modern: bcrypt / argon (password_hash)
+    if (password_verify($input, $hash_db)) {
+        if (password_needs_rehash($hash_db, PASSWORD_DEFAULT)) {
+            _upgrade_password_hash($input, $table, $id_col, $id_val);
+        }
+        return true;
+    }
+
+    // 2) Format lama (HANYA untuk migrasi): MD5 32-heksa, atau plaintext
+    $is_md5_match       = (strlen($hash_db) === 32 && ctype_xdigit($hash_db) && hash_equals($hash_db, md5($input)));
+    $is_plaintext_match = hash_equals($hash_db, $input);
+
+    if ($is_md5_match || $is_plaintext_match) {
+        _upgrade_password_hash($input, $table, $id_col, $id_val); // konversi ke bcrypt
+        return true;
+    }
+
+    return false;
+}
+
+/** Simpan ulang password sebagai bcrypt. Internal (dipakai fungsi di atas). */
+function _upgrade_password_hash($plain, $table, $id_col, $id_val) {
+    global $koneksi;
+    if (!isset($koneksi)) {
+        include __DIR__ . '/admin/koneksi.php';
+    }
+    // Whitelist tabel+kolom: cegah injeksi lewat nama tabel/kolom
+    $allowed = ['t_user' => 'id_user', 't_admin' => 'id_admin'];
+    if (!isset($allowed[$table]) || $allowed[$table] !== $id_col) {
+        return;
+    }
+    $new_hash = password_hash($plain, PASSWORD_DEFAULT);
+    if ($stmt = mysqli_prepare($koneksi, "UPDATE `$table` SET password = ? WHERE `$id_col` = ?")) {
+        mysqli_stmt_bind_param($stmt, 'si', $new_hash, $id_val);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_close($stmt);
+    }
 }

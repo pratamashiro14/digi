@@ -10,7 +10,10 @@ $email = '';
 
 // Validasi token
 if (!empty($token)) {
-    $query = mysqli_query($koneksi, "SELECT email FROM t_password_reset WHERE token='$token' AND expiry > NOW()");
+    $stmt = mysqli_prepare($koneksi, "SELECT email FROM t_password_reset WHERE token=? AND expiry > NOW()");
+    mysqli_stmt_bind_param($stmt, 's', $token);
+    mysqli_stmt_execute($stmt);
+    $query = mysqli_stmt_get_result($stmt);
     if (mysqli_num_rows($query) > 0) {
         $row = mysqli_fetch_assoc($query);
         $email = $row['email'];
@@ -41,8 +44,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
         $message_type = 'error';
     } else {
         // Validasi token masih berlaku
-        $check_token = mysqli_query($koneksi, "SELECT email FROM t_password_reset WHERE token='$token' AND expiry > NOW()");
-        
+        $ct = mysqli_prepare($koneksi, "SELECT email FROM t_password_reset WHERE token=? AND expiry > NOW()");
+        mysqli_stmt_bind_param($ct, 's', $token);
+        mysqli_stmt_execute($ct);
+        $check_token = mysqli_stmt_get_result($ct);
+
         if (mysqli_num_rows($check_token) > 0) {
             $token_row = mysqli_fetch_assoc($check_token);
             $email = $token_row['email'];
@@ -50,12 +56,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
             // Hash password menggunakan password_hash
             $password_hashed = password_hash($password_baru, PASSWORD_BCRYPT);
 
-            // Update password di t_admin
-            $update_query = mysqli_query($koneksi, "UPDATE t_admin SET password='$password_hashed' WHERE email='$email'");
+            // Update password di t_admin (prepared statement)
+            $uq = mysqli_prepare($koneksi, "UPDATE t_admin SET password=? WHERE email=?");
+            mysqli_stmt_bind_param($uq, 'ss', $password_hashed, $email);
+            $update_query = mysqli_stmt_execute($uq);
 
             if ($update_query) {
                 // Hapus token dari database
-                mysqli_query($koneksi, "DELETE FROM t_password_reset WHERE token='$token'");
+                $dl = mysqli_prepare($koneksi, "DELETE FROM t_password_reset WHERE token=?");
+                mysqli_stmt_bind_param($dl, 's', $token);
+                mysqli_stmt_execute($dl);
 
                 $message = 'Password berhasil diperbarui! Silakan login dengan password baru.';
                 $message_type = 'success';

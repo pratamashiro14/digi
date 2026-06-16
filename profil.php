@@ -5,50 +5,50 @@ include 'admin/koneksi.php';
 // 1. CEK LOGIN USER BIASA — halaman khusus pembeli/user
 require_user();
 
-$id_user = current_id();
+$id_user = (int) current_id();
 
 // ==========================================================
 // 2. LOGIKA UPDATE DATA
 // ==========================================================
 if (isset($_POST['simpan_profil'])) {
-    $nama_baru = $_POST['nama'];
-    $telp_baru = $_POST['no_telp'];
-    $alamat_baru = $_POST['alamat'];
-    // Email biasanya read-only agar tidak merusak login, tapi kalau mau diubah bisa dibuka
-    // $email_baru = $_POST['email']; 
-    $pass_baru = $_POST['password'];
+    $nama_baru = trim($_POST['nama'] ?? '');
+    $telp_baru = trim($_POST['no_telp'] ?? '');
+    $alamat_baru = trim($_POST['alamat'] ?? '');
+    $pass_baru = $_POST['password'] ?? '';
 
-    // A. Cek Upload Foto
-    $query_foto = "";
+    // Kolom dasar (prepared statement — cegah SQL injection)
+    $sets  = ['nama = ?', 'no_telp = ?', 'alamat = ?'];
+    $types = 'sss';
+    $vals  = [$nama_baru, $telp_baru, $alamat_baru];
+
+    // A. Cek Upload Foto (opsional)
     if (!empty($_FILES['foto']['name'])) {
-        $nama_foto = rand(100,999) . "_" . $_FILES['foto']['name'];
+        $nama_foto = rand(100,999) . "_" . preg_replace('/[^A-Za-z0-9_.-]/', '_', basename($_FILES['foto']['name']));
         $file_tmp = $_FILES['foto']['tmp_name'];
-        $folder_simpan = "admin/uploads/"; 
-        
+        $folder_simpan = "admin/uploads/";
+
         if (move_uploaded_file($file_tmp, $folder_simpan . $nama_foto)) {
-            $query_foto = ", foto = '$nama_foto'";
-            // Update session foto jika perlu
+            $sets[]  = 'foto = ?';
+            $types  .= 's';
+            $vals[]  = $nama_foto;
         }
     }
 
-    // B. Cek Ganti Password
-    $query_pass = "";
+    // B. Cek Ganti Password (opsional)
     if (!empty($pass_baru)) {
-        // Kita gunakan password_hash agar lebih aman (sesuai standar registrasi user kamu)
         $pass_hash = password_hash($pass_baru, PASSWORD_DEFAULT);
-        $query_pass = ", password = '$pass_hash'";
+        $sets[]  = 'password = ?';
+        $types  .= 's';
+        $vals[]  = $pass_hash;
     }
 
     // C. Update Database
-    $sql_update = "UPDATE t_user SET 
-                   nama = '$nama_baru', 
-                   no_telp = '$telp_baru', 
-                   alamat = '$alamat_baru'
-                   $query_foto
-                   $query_pass
-                   WHERE id_user = '$id_user'";
-
-    $run_update = mysqli_query($koneksi, $sql_update);
+    $types .= 'i';
+    $vals[] = $id_user;
+    $sql_update = "UPDATE t_user SET " . implode(', ', $sets) . " WHERE id_user = ?";
+    $stmt = mysqli_prepare($koneksi, $sql_update);
+    mysqli_stmt_bind_param($stmt, $types, ...$vals);
+    $run_update = mysqli_stmt_execute($stmt);
 
     if ($run_update) {
         // Update Session Nama supaya Header langsung berubah
@@ -56,7 +56,7 @@ if (isset($_POST['simpan_profil'])) {
 
         sweetalert_redirect('Profil berhasil diperbarui.', 'profil.php', 'success', 'Berhasil!');
     } else {
-        sweetalert_back('Gagal memperbarui profil: ' . mysqli_error($koneksi), 'error', 'Gagal!');
+        sweetalert_back('Gagal memperbarui profil.', 'error', 'Gagal!');
     }
 }
 

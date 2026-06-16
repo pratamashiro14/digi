@@ -5,7 +5,7 @@ include 'admin/koneksi.php';
 // 1. CEK LOGIN KHUSUS DESAINER
 require_designer();
 
-$id_user = current_id();
+$id_user = (int) current_id();
 
 // Ambil status verifikasi saat ini dari DB sebelum memproses POST
 $query_verif = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user = '$id_user'");

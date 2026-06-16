@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../admin_guard.php';
 require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
@@ -46,17 +47,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $status = 'approved';
         $tanggal_upload = date('Y-m-d H:i:s');
 
-        $judul_q = mysqli_real_escape_string($koneksi, $judul);
-        $kategori_q = mysqli_real_escape_string($koneksi, $kategori);
-        $gambar_q = mysqli_real_escape_string($koneksi, $gambar_name);
+        $stmt = mysqli_prepare($koneksi, "INSERT INTO t_design (judul, id_designer, kategori, harga_awal, gambar, status, tanggal_upload)
+                VALUES (?, ?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "sisdsss", $judul, $id_desainer, $kategori, $harga_awal, $gambar_name, $status, $tanggal_upload);
 
-        $sql = "INSERT INTO t_design (judul, id_designer, kategori, harga_awal, gambar, status, tanggal_upload)
-                VALUES ('$judul_q', '$id_desainer', '$kategori_q', '$harga_awal', '$gambar_q', '$status', '$tanggal_upload')";
-
-        if (mysqli_query($koneksi, $sql)) {
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
             sweetalert_redirect('Karya desain berhasil ditambahkan.', 'karyadesain.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
+            mysqli_stmt_close($stmt);
         }
     }
 

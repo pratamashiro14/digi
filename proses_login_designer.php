@@ -4,20 +4,20 @@ include 'admin/koneksi.php';
 
 $email = $_POST['email'] ?? '';
 $password = $_POST['password'] ?? '';
-$email_safe = mysqli_real_escape_string($koneksi, $email);
 
-$query = mysqli_query(
+$stmt = mysqli_prepare(
     $koneksi,
-    "SELECT * FROM t_user WHERE email='$email_safe' AND role IN ('designer', 'desainer')"
+    "SELECT * FROM t_user WHERE email = ? AND role IN ('designer', 'desainer') LIMIT 1"
 );
+mysqli_stmt_bind_param($stmt, 's', $email);
+mysqli_stmt_execute($stmt);
+$query = mysqli_stmt_get_result($stmt);
 $cek = $query ? mysqli_num_rows($query) : 0;
 
 if($cek > 0){
     $data = mysqli_fetch_assoc($query);
     $password_db = $data['password'];
-    $cocok = password_verify($password, $password_db)
-          || md5($password) === $password_db
-          || $password === $password_db;
+    $cocok = verify_and_upgrade_password($password, $password_db, 't_user', 'id_user', (int) $data['id_user']);
 
     if ($cocok) {
         login_as_designer($data['id_user'], $data['nama'], $data['email']);

@@ -394,12 +394,9 @@ if(isset($_SESSION['keranjang'])) {
 
 			<?php
 // 1. KONEKSI DATABASE & QUERY (Taruh paling atas sebelum php grid)
-$servername = "localhost:3306";
-$username = "root";
-$password = "";
-$dbname = "dbkarya"; 
+require_once __DIR__ . '/config.php';
 
-$conn = new mysqli($servername, $username, $password, $dbname);
+$conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);

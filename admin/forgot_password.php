@@ -15,15 +15,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
         $message = 'Email tidak valid!';
         $message_type = 'error';
     } else {
-        // Cek apakah email ada di database
-        $query = mysqli_query($koneksi, "SELECT id_admin FROM t_admin WHERE email='$email'");
+        // Cek apakah email ada di database (prepared statement)
+        $cek = mysqli_prepare($koneksi, "SELECT id_admin FROM t_admin WHERE email=?");
+        mysqli_stmt_bind_param($cek, 's', $email);
+        mysqli_stmt_execute($cek);
+        $query = mysqli_stmt_get_result($cek);
         if (mysqli_num_rows($query) > 0) {
             // Generate token random
             $token = bin2hex(random_bytes(32));
-            
-            // Simpan token ke database dengan expiry dihitung oleh MySQL (lebih reliable)
-            // Query: INSERT dengan DATE_ADD(NOW(), INTERVAL 1 HOUR)
-            $insert_token = mysqli_query($koneksi, "INSERT INTO t_password_reset (email, token, expiry) VALUES ('$email', '$token', DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+
+            // Simpan token ke database dengan expiry dihitung oleh MySQL (prepared statement)
+            $ins = mysqli_prepare($koneksi, "INSERT INTO t_password_reset (email, token, expiry) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 HOUR))");
+            mysqli_stmt_bind_param($ins, 'ss', $email, $token);
+            $insert_token = mysqli_stmt_execute($ins);
 
             if ($insert_token) {
                 // URL reset password

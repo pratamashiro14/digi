@@ -379,7 +379,7 @@ if (!$data_admin) {
             <?php
             include "../koneksi.php";
             
-            $id = isset($_GET['id']) ? $_GET['id'] : '';
+            $id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
             if (empty($id)) {
               echo "<div class='alert alert-danger'>ID Bidding tidak ditemukan</div>";
               exit;

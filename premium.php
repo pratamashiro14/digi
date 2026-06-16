@@ -17,6 +17,26 @@ if(isset($_SESSION['keranjang'])) {
         $jumlah_item_keranjang += $jml;
     }
 }
+
+// Status premium user yang sedang login
+$sudah_premium  = is_login() && user_is_premium(current_id());
+$premium_sampai = '';
+if ($sudah_premium) {
+    $uid = (int) current_id();
+    $rp = mysqli_fetch_assoc(mysqli_query($koneksi,
+        "SELECT MAX(tanggal_berakhir) AS tgl FROM t_premium
+         WHERE id_user='$uid' AND status='aktif' AND tanggal_berakhir>=CURDATE()"));
+    $premium_sampai = $rp['tgl'] ?? '';
+}
+
+function tgl_id_premium($tgl) {
+    if (!$tgl) return '';
+    $bulan = [1=>'Januari','Februari','Maret','April','Mei','Juni',
+              'Juli','Agustus','September','Oktober','November','Desember'];
+    $ts = strtotime($tgl);
+    if (!$ts) return $tgl;
+    return date('j', $ts) . ' ' . $bulan[(int) date('n', $ts)] . ' ' . date('Y', $ts);
+}
 ?>
 
 <!DOCTYPE html>
@@ -69,6 +89,19 @@ if(isset($_SESSION['keranjang'])) {
             transition: 0.3s; text-transform: uppercase; text-decoration: none;
         }
         .btn-beli:hover { background: linear-gradient(90deg, #5a73d4, #686dd0); color: #fff; }
+
+        .premium-active-banner {
+            background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534;
+            border-radius: 14px; padding: 16px 22px; margin-bottom: 30px;
+            display: flex; align-items: center; gap: 14px; font-size: 15px;
+        }
+        .premium-active-banner i { font-size: 26px; color: #16a34a; }
+        .premium-active-banner strong { display: block; font-size: 16px; margin-bottom: 2px; }
+        .btn-aktif {
+            display: block; width: 100%; padding: 14px 0; border-radius: 50px;
+            background: #e5e7eb; color: #6b7280; font-weight: bold; font-size: 16px;
+            border: none; text-transform: uppercase; text-align: center; cursor: default;
+        }
         
         @media (max-width: 768px) {
             .premium-card { flex-direction: column; text-align: left; align-items: flex-start; padding: 25px; }
@@ -99,6 +132,20 @@ if(isset($_SESSION['keranjang'])) {
                 <h1>Pilih Paket yang Sesuai</h1>
                 <p>Tingkatkan pengalaman sebagai pembeli atau desainer dengan fitur tambahan yang benar-benar mendukung aktivitasmu.</p>
             </div>
+
+            <?php if ($sudah_premium) { ?>
+            <div class="premium-active-banner">
+                <i class="fa fa-check-circle"></i>
+                <div>
+                    <strong>Kamu sudah Premium!</strong>
+                    <?php if ($premium_sampai) { ?>
+                        <span>Membership aktif sampai <?php echo htmlspecialchars(tgl_id_premium($premium_sampai)); ?>.</span>
+                    <?php } else { ?>
+                        <span>Akun kamu berstatus premium aktif.</span>
+                    <?php } ?>
+                </div>
+            </div>
+            <?php } ?>
 			
             <?php if (!$is_designer_logged_in) { ?>
             <div class="premium-card">
@@ -113,12 +160,16 @@ if(isset($_SESSION['keranjang'])) {
                 </div>
                 <div class="card-right">
                     <div class="price-tag">Rp 25.000 <span class="price-per">/ Bulan</span></div>
-                    
+
+                    <?php if ($sudah_premium && $is_user_logged_in) { ?>
+                        <span class="btn-aktif"><i class="fa fa-check"></i> Paket Aktif</span>
+                    <?php } else { ?>
                     <form action="proses_beli_premium.php" method="POST">
                         <input type="hidden" name="tipe_premium" value="pengguna">
                         <input type="hidden" name="harga" value="25000">
                         <button type="submit" class="btn-beli">Pilih Paket Pembeli</button>
                     </form>
+                    <?php } ?>
                 </div>
             </div>
             <?php } ?>
@@ -136,12 +187,16 @@ if(isset($_SESSION['keranjang'])) {
                 </div>
                 <div class="card-right">
                     <div class="price-tag">Rp 28.000 <span class="price-per">/ Bulan</span></div>
-                    
+
+                    <?php if ($sudah_premium && $is_designer_logged_in) { ?>
+                        <span class="btn-aktif"><i class="fa fa-check"></i> Paket Aktif</span>
+                    <?php } else { ?>
                     <form action="proses_beli_premium.php" method="POST">
                         <input type="hidden" name="tipe_premium" value="desainer">
                         <input type="hidden" name="harga" value="28000">
                         <button type="submit" class="btn-beli">Pilih Paket Desainer</button>
                     </form>
+                    <?php } ?>
                 </div>
             </div>
             <?php } ?>

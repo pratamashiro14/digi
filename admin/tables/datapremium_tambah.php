@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../admin_guard.php';
 require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
 
@@ -17,19 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($tanggal_berakhir === '') $errors[] = "Tanggal berakhir wajib diisi.";
 
     if (empty($errors)) {
-        $uid = mysqli_real_escape_string($koneksi, $id_user);
-        $tp  = mysqli_real_escape_string($koneksi, $tipe_premium);
-        $ta  = mysqli_real_escape_string($koneksi, $tanggal_aktif);
-        $tb  = mysqli_real_escape_string($koneksi, $tanggal_berakhir);
-        $st  = mysqli_real_escape_string($koneksi, $status);
+        $stmt = mysqli_prepare($koneksi, "INSERT INTO t_premium (id_user, tipe_premium, tanggal_aktif, tanggal_berakhir, status)
+                VALUES (?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, "issss", $id_user, $tipe_premium, $tanggal_aktif, $tanggal_berakhir, $status);
 
-        $sql = "INSERT INTO t_premium (id_user, tipe_premium, tanggal_aktif, tanggal_berakhir, status)
-                VALUES ('$uid', '$tp', '$ta', '$tb', '$st')";
-
-        if (mysqli_query($koneksi, $sql)) {
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
             sweetalert_redirect('Data premium berhasil ditambahkan.', 'datapremium.php', 'success', 'Berhasil!');
         } else {
             $errors[] = "Database error: " . mysqli_error($koneksi);
+            mysqli_stmt_close($stmt);
         }
     }
 

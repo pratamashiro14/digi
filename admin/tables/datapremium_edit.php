@@ -7,7 +7,7 @@ if(empty($_SESSION['admin'])){
   header('location:../logout.php');
 } else {
 
-$id = $_GET['id'];
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $query = mysqli_query($koneksi, "
     SELECT p.*, u.nama AS nama_pengguna
     FROM t_premium p
@@ -23,13 +23,14 @@ if (isset($_POST['simpan'])) {
     $tanggal_berakhir = $_POST['tanggal_berakhir'];
     $status = $_POST['status'];
 
-    $update = mysqli_query($koneksi, "UPDATE t_premium SET 
-        tipe_premium='$tipe_premium',
-        tanggal_aktif='$tanggal_aktif',
-        tanggal_berakhir='$tanggal_berakhir',
-        status='$status'
-        WHERE id_premium='$id'
-    ");
+    $stmt = mysqli_prepare($koneksi, "UPDATE t_premium SET
+        tipe_premium = ?,
+        tanggal_aktif = ?,
+        tanggal_berakhir = ?,
+        status = ?
+        WHERE id_premium = ?");
+    mysqli_stmt_bind_param($stmt, "ssssi", $tipe_premium, $tanggal_aktif, $tanggal_berakhir, $status, $id);
+    $update = mysqli_stmt_execute($stmt);
 
     if ($update) {
         sweetalert_redirect('Data premium berhasil diperbarui.', 'datapremium.php', 'success', 'Berhasil!');

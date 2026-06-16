@@ -5,19 +5,20 @@ include 'admin/koneksi.php';
 // 1. CEK LOGIN (User Biasa atau Desainer)
 require_login();
 
-$id_user = current_id(); // ID User atau Desainer
+$id_user = (int) current_id(); // ID User atau Desainer
 $nama_user = current_name();
 
 // 2. LOGIKA KIRIM PESAN
 if (isset($_POST['kirim_pesan'])) {
-    $penerima = $_POST['id_penerima'];
-    $isi = mysqli_real_escape_string($koneksi, $_POST['isi_pesan']);
+    $penerima = (int) ($_POST['id_penerima'] ?? 0);
+    $isi = trim($_POST['isi_pesan'] ?? '');
 
     if (!empty($isi) && !empty($penerima)) {
-        // Query Insert sesuai nama kolom di screenshot kamu
-        $q_kirim = "INSERT INTO t_chat (id_pengirim, id_penerima, isi_pesan, waktu_kirim) 
-                    VALUES ('$id_user', '$penerima', '$isi', NOW())";
-        mysqli_query($koneksi, $q_kirim);
+        // Query Insert (prepared statement — cegah SQL injection)
+        $stmt = mysqli_prepare($koneksi, "INSERT INTO t_chat (id_pengirim, id_penerima, isi_pesan, waktu_kirim)
+                    VALUES (?, ?, ?, NOW())");
+        mysqli_stmt_bind_param($stmt, 'iis', $id_user, $penerima, $isi);
+        mysqli_stmt_execute($stmt);
         header("Location: pesan.php?lawan=$penerima"); // Refresh halaman
         exit();
     }

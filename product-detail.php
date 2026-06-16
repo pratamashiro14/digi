@@ -26,7 +26,7 @@ if(isset($_SESSION['keranjang'])) {
 if(!isset($_GET['id']) || empty($_GET['id'])){
     sweetalert_redirect('Produk tidak ditemukan.', 'index.php', 'error', 'Gagal!');
 }
-$id_produk = $_GET['id'];
+$id_produk = (int) $_GET['id'];
 
 // Ambil Data Produk
 $query = mysqli_query($koneksi, "SELECT d.*, u.nama as nama_desainer, u.id_user as id_pemilik 
@@ -52,7 +52,7 @@ $highest_bid_detail = ($d_max_bid && $d_max_bid['max_bid']) ? $d_max_bid['max_bi
 // Cek Status Verifikasi User
 $status_verifikasi = 'unverified'; // Default
 if(isset($_SESSION['id_user'])){
-    $id_user_login = $_SESSION['id_user'];
+    $id_user_login = (int) $_SESSION['id_user'];
     $cek_user = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user='$id_user_login'");
     $u = mysqli_fetch_assoc($cek_user);
     $status_verifikasi = $u['status_verifikasi'];

@@ -1,7 +1,13 @@
 <?php
-$koneksi = mysqli_connect("localhost:3306", "root", "", "dbkarya");
+require_once __DIR__ . '/../config.php';
+
+$koneksi = mysqli_connect(DB_HOST, DB_USER, DB_PASS, DB_NAME);
 
 if (!$koneksi) {
+    // Jangan bocorkan detail koneksi ke publik di produksi
+    if (APP_ENV === 'production') {
+        die("Layanan sedang bermasalah. Coba lagi nanti.");
+    }
     die("Koneksi gagal: " . mysqli_connect_error());
 }
 

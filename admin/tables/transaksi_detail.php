@@ -43,8 +43,11 @@ if (!$detail) {
     die("<div class='alert alert-danger'>Data transaksi dengan ID #{$id_transaksi} tidak ditemukan.</div>");
 }
 
-$midtrans_server_key = 'SB-Mid-server-xxxxxxxxxxxx';
-$midtrans_base_url = 'https://api.sandbox.midtrans.com/v2/';
+require_once __DIR__ . '/../../config.php';
+$midtrans_server_key = MIDTRANS_SERVER_KEY;
+$midtrans_base_url = MIDTRANS_IS_PRODUCTION
+    ? 'https://api.midtrans.com/v2/'
+    : 'https://api.sandbox.midtrans.com/v2/';
 $transaction_id = $detail['id_midtrans_order'];
 
 $payment_status_text = 'Belum Ada Data Midtrans';

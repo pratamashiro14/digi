@@ -3,29 +3,19 @@ require_once __DIR__ . '/../auth.php';
 include 'koneksi.php'; // Pastikan koneksi.php ada dan benar
 
 if (isset($_POST['login'])) {
-    $email = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
-    $password = $_POST['password'];
+    $email = $_POST['email'] ?? '';
+    $password = $_POST['password'] ?? '';
 
-    $query = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE email='$email'");
+    // Cari admin (prepared statement — cegah SQL injection)
+    $stmt = mysqli_prepare($koneksi, "SELECT * FROM t_admin WHERE email = ? LIMIT 1");
+    mysqli_stmt_bind_param($stmt, 's', $email);
+    mysqli_stmt_execute($stmt);
+    $query = mysqli_stmt_get_result($stmt);
     $data = mysqli_fetch_assoc($query);
 
-    // Verifikasi password (mendukung beberapa format: plaintext, md5, password_hash)
+    // Verifikasi password + migrasi otomatis format lama (md5/plaintext) ke bcrypt
     if ($data) {
-        $pw_db = $data['password'];
-        $pw_ok = false;
-
-        // 1) Langsung cocok plaintext
-        if ($password === $pw_db) {
-            $pw_ok = true;
-        }
-        // 2) Cek MD5 (akun lama)
-        if (!$pw_ok && md5($password) === $pw_db) {
-            $pw_ok = true;
-        }
-        // 3) Cek password_hash / password_verify (jika disimpan hashed)
-        if (!$pw_ok && function_exists('password_verify') && password_verify($password, $pw_db)) {
-            $pw_ok = true;
-        }
+        $pw_ok = verify_and_upgrade_password($password, $data['password'], 't_admin', 'id_admin', (int) $data['id_admin']);
 
         if ($pw_ok) {
             login_as_admin($data['id_admin']);

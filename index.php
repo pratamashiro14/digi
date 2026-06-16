@@ -242,7 +242,20 @@ function render_designer_stat_card($stat) {
                                         'rejected' => 'Ditolak',
                                         'sold' => 'Terjual',
                                     ];
-                                    $status_label = $status_labels[$work_status] ?? ucfirst($work_status);
+                                    // Lelang yang sudah lewat batas waktu
+                                    $sudah_berakhir = !empty($work['waktu_berakhir'])
+                                        && strtotime($work['waktu_berakhir']) < time();
+
+                                    if ($work_status === 'sold') {
+                                        $status_label = 'Terjual';
+                                        $status_class = 'sold';
+                                    } elseif ($work_status === 'approved' && $sudah_berakhir) {
+                                        $status_label = 'Berakhir';
+                                        $status_class = 'rejected'; // pakai gaya badge yang sudah ada
+                                    } else {
+                                        $status_label = $status_labels[$work_status] ?? ucfirst($work_status);
+                                        $status_class = $work_status;
+                                    }
                                 ?>
                                     <div class="designer-work-item">
                                         <img src="admin/uploads/<?php echo htmlspecialchars($work['gambar']); ?>" alt="<?php echo htmlspecialchars($work['judul']); ?>">
@@ -250,7 +263,7 @@ function render_designer_stat_card($stat) {
                                             <strong><?php echo htmlspecialchars($work['judul']); ?></strong>
                                             <span><?php echo htmlspecialchars(ucfirst($work['kategori'])); ?> &middot; Rp<?php echo number_format($work['harga_awal'], 0, ',', '.'); ?></span>
                                         </div>
-                                        <span class="designer-status is-<?php echo htmlspecialchars($work_status); ?>"><?php echo htmlspecialchars($status_label); ?></span>
+                                        <span class="designer-status is-<?php echo htmlspecialchars($status_class); ?>"><?php echo htmlspecialchars($status_label); ?></span>
                                     </div>
                                 <?php } ?>
                             </div>

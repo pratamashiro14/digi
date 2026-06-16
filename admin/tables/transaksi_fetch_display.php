@@ -1,4 +1,5 @@
 <?php
+require_once __DIR__ . '/../admin_guard.php';
 include "../koneksi.php";
 
 // Tentukan base URL untuk gambar bukti
@@ -26,8 +27,11 @@ if (isset($_GET['id']) && is_numeric($_GET['id'])) {
     if ($detail) {
         
         // --- CONFIGURASI MIDTRANS ---
-        $midtrans_server_key = 'SB-Mid-server-xxxxxxxxxxxx';
-        $midtrans_base_url = 'https://api.sandbox.midtrans.com/v2/';
+        require_once __DIR__ . '/../../config.php';
+        $midtrans_server_key = MIDTRANS_SERVER_KEY;
+        $midtrans_base_url = MIDTRANS_IS_PRODUCTION
+            ? 'https://api.midtrans.com/v2/'
+            : 'https://api.sandbox.midtrans.com/v2/';
         $transaction_id = isset($detail['id_midtrans_order']) ? $detail['id_midtrans_order'] : null;
 
         $midtrans_status = null;

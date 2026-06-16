@@ -1,7 +1,8 @@
 <?php
+require_once __DIR__ . '/../admin_guard.php';
 require_once __DIR__ . '/../../sweetalert.php';
 include "../koneksi.php";
-$id = $_GET['id'];
+$id = (int) ($_GET['id'] ?? 0);
 
 // hapus data berdasarkan id_design
 $query = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design = '$id'");

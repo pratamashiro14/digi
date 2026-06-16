@@ -13,8 +13,8 @@ $role = current_role();
 
 // 2. Cek Parameter ID Transaksi atau ID Design
 // Kita dukung download melalui ID Transaksi (untuk pembeli) atau ID Design (untuk desainer/admin)
-$id_transaksi = isset($_GET['id']) ? mysqli_real_escape_string($koneksi, $_GET['id']) : '';
-$id_design = isset($_GET['id_design']) ? mysqli_real_escape_string($koneksi, $_GET['id_design']) : '';
+$id_transaksi = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$id_design = isset($_GET['id_design']) ? (int) $_GET['id_design'] : 0;
 
 $file_master = '';
 $judul = '';
@@ -22,12 +22,15 @@ $authorized = false;
 
 if (!empty($id_transaksi)) {
     // Ambil data transaksi & design
-    $query = "SELECT t.*, d.file_master, d.judul, d.id_designer 
-              FROM t_transaksi t 
-              JOIN t_design d ON t.id_design = d.id_design 
-              WHERE t.id_transaksi = '$id_transaksi'";
-    $result = mysqli_query($koneksi, $query);
-    
+    $stmt = mysqli_prepare($koneksi,
+        "SELECT t.*, d.file_master, d.judul, d.id_designer
+              FROM t_transaksi t
+              JOIN t_design d ON t.id_design = d.id_design
+              WHERE t.id_transaksi = ?");
+    mysqli_stmt_bind_param($stmt, 'i', $id_transaksi);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $file_master = $row['file_master'];
@@ -48,9 +51,11 @@ if (!empty($id_transaksi)) {
     }
 } elseif (!empty($id_design)) {
     // Ambil data design saja
-    $query = "SELECT file_master, judul, id_designer FROM t_design WHERE id_design = '$id_design'";
-    $result = mysqli_query($koneksi, $query);
-    
+    $stmt = mysqli_prepare($koneksi, "SELECT file_master, judul, id_designer FROM t_design WHERE id_design = ?");
+    mysqli_stmt_bind_param($stmt, 'i', $id_design);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
     if ($result && mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $file_master = $row['file_master'];

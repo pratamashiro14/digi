@@ -8,7 +8,9 @@ if(empty($_SESSION['admin'])){
     exit;
 }
 
-// === LOGIKA VERIFIKASI KTP DESAINER ===
+require_once "../../bidding_helper.php";
+
+// === LOGIKA VERIFIKASI KTP (DESAINER & PELANGGAN) ===
 if (isset($_GET['approve_ktp'])) {
     $id_verif = mysqli_real_escape_string($koneksi, $_GET['approve_ktp']);
     mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'verified' WHERE id_user = '$id_verif'");
@@ -18,6 +20,65 @@ if (isset($_GET['approve_ktp'])) {
 if (isset($_GET['reject_ktp'])) {
     $id_verif = mysqli_real_escape_string($koneksi, $_GET['reject_ktp']);
     mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'unverified', foto_ktp = NULL WHERE id_user = '$id_verif'");
+    header("Location: datapengguna.php");
+    exit;
+}
+
+// === SUSPEND / AKTIFKAN AKUN (sementara, level akun) ===
+if (isset($_GET['suspend'])) {
+    $id = (int) $_GET['suspend'];
+    $stmt = mysqli_prepare($koneksi, "UPDATE t_user SET status='nonaktif' WHERE id_user=?");
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    mysqli_stmt_execute($stmt);
+    header("Location: datapengguna.php");
+    exit;
+}
+if (isset($_GET['aktifkan'])) {
+    $id = (int) $_GET['aktifkan'];
+    $stmt = mysqli_prepare($koneksi, "UPDATE t_user SET status='aktif' WHERE id_user=?");
+    mysqli_stmt_bind_param($stmt, 'i', $id);
+    mysqli_stmt_execute($stmt);
+    header("Location: datapengguna.php");
+    exit;
+}
+
+// === BAN / UNBAN BERBASIS NIK (permanen, lintas akun) ===
+if (isset($_GET['ban_nik'])) {
+    $id = (int) $_GET['ban_nik'];
+    $alasan = trim($_GET['alasan'] ?? '');
+    if ($alasan === '') $alasan = 'Pelanggaran (spam/penyalahgunaan lelang).';
+    // Ambil NIK user
+    $q = mysqli_prepare($koneksi, "SELECT nik FROM t_user WHERE id_user=?");
+    mysqli_stmt_bind_param($q, 'i', $id);
+    mysqli_stmt_execute($q);
+    $row_nik = mysqli_fetch_assoc(mysqli_stmt_get_result($q));
+    $nik = trim($row_nik['nik'] ?? '');
+    if ($nik !== '') {
+        $admin_id = (int) $_SESSION['admin'];
+        $ins = mysqli_prepare($koneksi, "INSERT INTO t_blokir_nik (nik, alasan, id_admin) VALUES (?,?,?)
+                                         ON DUPLICATE KEY UPDATE alasan=VALUES(alasan), id_admin=VALUES(id_admin)");
+        mysqli_stmt_bind_param($ins, 'ssi', $nik, $alasan, $admin_id);
+        mysqli_stmt_execute($ins);
+        // Nonaktifkan juga akun saat ini
+        mysqli_query($koneksi, "UPDATE t_user SET status='nonaktif' WHERE id_user='$id'");
+    }
+    header("Location: datapengguna.php");
+    exit;
+}
+if (isset($_GET['unban_nik'])) {
+    $id = (int) $_GET['unban_nik'];
+    $q = mysqli_prepare($koneksi, "SELECT nik FROM t_user WHERE id_user=?");
+    mysqli_stmt_bind_param($q, 'i', $id);
+    mysqli_stmt_execute($q);
+    $row_nik = mysqli_fetch_assoc(mysqli_stmt_get_result($q));
+    $nik = trim($row_nik['nik'] ?? '');
+    if ($nik !== '') {
+        $del = mysqli_prepare($koneksi, "DELETE FROM t_blokir_nik WHERE nik=?");
+        mysqli_stmt_bind_param($del, 's', $nik);
+        mysqli_stmt_execute($del);
+        // Kembalikan akun jadi aktif
+        mysqli_query($koneksi, "UPDATE t_user SET status='aktif' WHERE id_user='$id'");
+    }
     header("Location: datapengguna.php");
     exit;
 }
@@ -133,6 +194,13 @@ if (!$data_admin) {
                   <p>Transaksi</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="datapencairan.php">
+                  <i class="fas fa-wallet"></i>
+                  <p>Data Pencairan</p>
+                </a>
+              </li>
+
                <li class="nav-item">
                 <a href="datapremium.php">
                   <i class="fas fa-crown"></i>
@@ -394,7 +462,8 @@ include '../koneksi.php';
             <th scope="col">Peran</th>
             <th scope="col">Premium</th>
             <th scope="col">Status</th>
-            <th scope="col">Verif KTP (Desainer)</th>
+            <th scope="col">Verif KTP</th>
+            <th scope="col">Moderasi</th>
             <th scope="col" style="width: 10%">Aksi</th>
           </tr>
         </thead>
@@ -402,11 +471,12 @@ include '../koneksi.php';
           <?php
           $no = 1;
           $query = mysqli_query($koneksi, "SELECT * FROM t_user ORDER BY id_user DESC");
-          
+
           if (mysqli_num_rows($query) == 0) {
-              echo "<tr><td colspan='7' class='text-center text-muted'>Belum ada data pengguna</td></tr>";
+              echo "<tr><td colspan='9' class='text-center text-muted'>Belum ada data pengguna</td></tr>";
           } else {
               while ($row = mysqli_fetch_assoc($query)) {
+                  $is_banned = !empty($row['nik']) && nik_diblokir($koneksi, $row['nik']);
           ?>
           <tr>
             <td><?= $no++ ?></td>
@@ -426,11 +496,14 @@ include '../koneksi.php';
             </td>
             <td>
               <span class="badge bg-<?= $row['status'] == 'aktif' ? 'success' : 'warning' ?>">
-                <?= ucfirst($row['status']) ?>
+                <?= ucfirst($row['status'] ?? 'aktif') ?>
               </span>
+              <?php if ($is_banned): ?>
+                <br><span class="badge bg-danger mt-1">NIK Diblokir</span>
+              <?php endif; ?>
             </td>
             <td>
-              <?php if ($row['role'] == 'designer') : ?>
+              <?php if (in_array($row['role'], ['designer','pelanggan'], true)) : ?>
                   <?php if ($row['status_verifikasi'] == 'pending') : ?>
                       <span class="badge bg-warning text-dark">Pending</span>
                       <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
@@ -454,6 +527,26 @@ include '../koneksi.php';
                   <?php endif; ?>
               <?php else: ?>
                   <span class="text-muted">-</span>
+              <?php endif; ?>
+            </td>
+            <td>
+              <?php if ($row['role'] === 'admin'): ?>
+                  <span class="text-muted">-</span>
+              <?php else: ?>
+                  <?php if (($row['status'] ?? 'aktif') === 'aktif'): ?>
+                      <a href="?suspend=<?= $row['id_user'] ?>" class="btn btn-sm btn-warning py-0 px-1 mb-1" style="font-size:11px;"
+                         onclick="return confirm('Suspend (nonaktifkan sementara) akun ini?')">Suspend</a>
+                  <?php else: ?>
+                      <a href="?aktifkan=<?= $row['id_user'] ?>" class="btn btn-sm btn-success py-0 px-1 mb-1" style="font-size:11px;">Aktifkan</a>
+                  <?php endif; ?>
+                  <br>
+                  <?php if (empty($row['nik'])): ?>
+                      <small class="text-muted" style="font-size:10px;">Ban NIK: belum verifikasi</small>
+                  <?php elseif ($is_banned): ?>
+                      <a href="?unban_nik=<?= $row['id_user'] ?>" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban NIK</a>
+                  <?php else: ?>
+                      <a href="#" onclick="return banNik(<?= $row['id_user'] ?>)" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban NIK</a>
+                  <?php endif; ?>
               <?php endif; ?>
             </td>
             <td>
@@ -553,5 +646,14 @@ include '../koneksi.php';
     </script>
     <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
     <script src="../../js/sweetalert-confirm.js"></script>
+    <script>
+      // Ban berbasis NIK: minta alasan lalu arahkan ke handler.
+      function banNik(id) {
+        var alasan = prompt('BAN NIK permanen — pelaku tidak bisa ikut lelang walau buat akun baru.\n\nAlasan ban:', 'Spam/penyalahgunaan lelang');
+        if (alasan === null) return false; // batal
+        window.location.href = '?ban_nik=' + id + '&alasan=' + encodeURIComponent(alasan);
+        return false;
+      }
+    </script>
   </body>
 </html>

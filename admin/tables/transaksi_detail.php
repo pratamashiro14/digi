@@ -237,6 +237,13 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
                         <li class="nav-home"><a href="../beranda.php"><i class="icon-home"></i></a></li>
                         <li class="separator"><i class="icon-arrow-right"></i></li>
                         <li class="nav-item"><a href="transaksi.php">Transaksi</a></li>
+              <li class="nav-item">
+                <a href="datapencairan.php">
+                  <i class="fas fa-wallet"></i>
+                  <p>Data Pencairan</p>
+                </a>
+              </li>
+
                         <li class="separator"><i class="icon-arrow-right"></i></li>
                         <li class="nav-item">#<?= htmlspecialchars((string) $id_transaksi) ?></li>
                     </ul>

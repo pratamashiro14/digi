@@ -150,6 +150,13 @@ if(empty($_SESSION['admin'])){
                   <p>Transaksi</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="datapencairan.php">
+                  <i class="fas fa-wallet"></i>
+                  <p>Data Pencairan</p>
+                </a>
+              </li>
+
                <li class="nav-item">
                 <a href="datapremium.php">
                   <i class="fas fa-crown"></i>

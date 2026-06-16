@@ -90,6 +90,13 @@ if ($q) {
             <li class="nav-item"><a href="karyadesain.php"><i class="fas fa-palette"></i><p>Karya Desain</p></a></li>
             <li class="nav-item"><a href="datapengguna.php"><i class="fas fa-user"></i><p>Data Pengguna</p></a></li>
             <li class="nav-item"><a href="transaksi.php"><i class="fas fa-money-bill-wave"></i><p>Transaksi</p></a></li>
+              <li class="nav-item">
+                <a href="datapencairan.php">
+                  <i class="fas fa-wallet"></i>
+                  <p>Data Pencairan</p>
+                </a>
+              </li>
+
             <li class="nav-item active"><a href="datapremium.php"><i class="fas fa-crown"></i><p>Data Premium</p></a></li>
             <li class="nav-item"><a href="databidding.php"><i class="fas fa-hand-holding-usd"></i><p>Data Bidding</p></a></li>
             <li class="nav-item"><a href="datachat.php"><i class="fas fa-comments"></i><p>Moderisasi Chat</p></a></li>

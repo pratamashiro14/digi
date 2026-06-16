@@ -18,6 +18,13 @@ function designer_sections() {
                 ['key' => 'history', 'label' => 'Riwayat', 'href' => 'penjualan.php?view=history', 'icon' => 'zmdi-time-countdown'],
             ],
         ],
+        'finance' => [
+            'title' => 'Keuangan',
+            'items' => [
+                ['key' => 'withdraw', 'label' => 'Pencairan Dana', 'href' => 'pencairan.php', 'icon' => 'zmdi-balance-wallet'],
+                ['key' => 'history', 'label' => 'Riwayat Pencairan', 'href' => 'pencairan.php?view=history', 'icon' => 'zmdi-time-countdown'],
+            ],
+        ],
     ];
 }
 

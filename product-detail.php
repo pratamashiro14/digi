@@ -66,6 +66,10 @@ if(isset($_SESSION['id_user'])){
     $u = mysqli_fetch_assoc($cek_user);
     $status_verifikasi = $u['status_verifikasi'];
 }
+
+// Kelayakan bid (verifikasi + suspend/ban berbasis NIK)
+require_once __DIR__ . '/bidding_helper.php';
+$bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
 ?>
 
 <!DOCTYPE html>
@@ -228,8 +232,14 @@ if(isset($_SESSION['id_user'])){
                                 </div>
                                 <a href="login.php" class="btn-verif"><i class="fa fa-sign-in"></i> MASUK SEBAGAI PEMBELI</a>
 
+                            <?php } elseif($bid_state['code'] === 'suspended' || $bid_state['code'] === 'banned') { ?>
+
+                                <div class="alert alert-danger text-center" style="font-size:13px;">
+                                    <i class="fa fa-ban"></i> <?php echo htmlspecialchars($bid_state['reason']); ?>
+                                </div>
+
                             <?php } elseif($status_verifikasi == 'verified') { ?>
-                                
+
                                 <form action="proses_bidding.php" method="POST">
                                     <input type="hidden" name="id_design" value="<?php echo $id_produk; ?>">
                                     <div class="p-b-10">

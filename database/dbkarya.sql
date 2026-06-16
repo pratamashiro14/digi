@@ -200,6 +200,22 @@ INSERT INTO `t_password_reset` (`id`, `email`, `token`, `expiry`, `created_at`) 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `t_blokir_nik`
+-- (Ban berbasis NIK: pelaku yang dibanned tetap tidak bisa ikut lelang
+--  walau membuat akun baru dengan NIK yang sama.)
+--
+
+CREATE TABLE `t_blokir_nik` (
+  `id_blokir` int(11) NOT NULL,
+  `nik` varchar(20) NOT NULL,
+  `alasan` varchar(255) DEFAULT NULL,
+  `id_admin` int(11) DEFAULT NULL,
+  `tanggal_blokir` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `t_premium`
 --
 
@@ -235,6 +251,27 @@ CREATE TABLE `t_favorit_desainer` (
   UNIQUE KEY `uniq_fav` (`id_buyer`,`id_designer`),
   KEY `id_buyer` (`id_buyer`),
   KEY `id_designer` (`id_designer`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_pencairan`
+-- (Pencairan dana desainer — model escrow. Dana ditahan platform sampai
+--  desainer mengajukan tarik & admin memproses transfer manual.)
+--
+
+CREATE TABLE `t_pencairan` (
+  `id_pencairan` int(11) NOT NULL,
+  `id_designer` int(11) NOT NULL,
+  `jumlah` decimal(12,2) NOT NULL,
+  `bank` varchar(50) NOT NULL,
+  `no_rekening` varchar(40) NOT NULL,
+  `nama_pemilik_rek` varchar(100) NOT NULL,
+  `status` enum('pending','diproses','selesai','ditolak') DEFAULT 'pending',
+  `catatan_admin` varchar(255) DEFAULT NULL,
+  `tanggal_request` datetime DEFAULT current_timestamp(),
+  `tanggal_proses` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -360,6 +397,20 @@ ALTER TABLE `t_premium`
   ADD KEY `id_user` (`id_user`);
 
 --
+-- Indexes for table `t_pencairan`
+--
+ALTER TABLE `t_pencairan`
+  ADD PRIMARY KEY (`id_pencairan`),
+  ADD KEY `id_designer` (`id_designer`);
+
+--
+-- Indexes for table `t_blokir_nik`
+--
+ALTER TABLE `t_blokir_nik`
+  ADD PRIMARY KEY (`id_blokir`),
+  ADD UNIQUE KEY `uniq_nik` (`nik`);
+
+--
 -- Indexes for table `t_transaksi`
 --
 ALTER TABLE `t_transaksi`
@@ -420,6 +471,18 @@ ALTER TABLE `t_premium`
   MODIFY `id_premium` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `t_pencairan`
+--
+ALTER TABLE `t_pencairan`
+  MODIFY `id_pencairan` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `t_blokir_nik`
+--
+ALTER TABLE `t_blokir_nik`
+  MODIFY `id_blokir` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `t_transaksi`
 --
 ALTER TABLE `t_transaksi`
@@ -453,6 +516,12 @@ ALTER TABLE `t_design`
 --
 ALTER TABLE `t_premium`
   ADD CONSTRAINT `t_premium_ibfk_1` FOREIGN KEY (`id_user`) REFERENCES `t_user` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `t_pencairan`
+--
+ALTER TABLE `t_pencairan`
+  ADD CONSTRAINT `t_pencairan_ibfk_1` FOREIGN KEY (`id_designer`) REFERENCES `t_user` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `t_transaksi`

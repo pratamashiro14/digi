@@ -239,6 +239,13 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
                   <p>Transaksi</p>
                 </a>
               </li>
+              <li class="nav-item">
+                <a href="tables/datapencairan.php">
+                  <i class="fas fa-wallet"></i>
+                  <p>Data Pencairan</p>
+                </a>
+              </li>
+
                <li class="nav-item">
                 <a href="tables/datapremium.php">
                   <i class="fas fa-crown"></i>

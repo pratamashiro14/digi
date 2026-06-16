@@ -55,6 +55,7 @@ if ($is_admin_logged_in) {
         ['href' => 'index.php', 'label' => 'Dashboard', 'active' => 'beranda'],
         ['href' => 'unggahan.php?view=all#daftar-karya', 'label' => 'Karya Saya', 'active' => 'designer-uploads'],
         ['href' => 'penjualan.php', 'label' => 'Penjualan', 'active' => 'designer-sales'],
+        ['href' => 'pencairan.php', 'label' => 'Pencairan', 'active' => 'designer-finance'],
         ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages', 'badge' => $unread_count],
         ['href' => 'profil_desainer.php', 'label' => 'Profil', 'active' => 'designer-profile'],
     ];
@@ -88,6 +89,7 @@ if ($is_admin_logged_in) {
         ['href' => 'profil_desainer.php', 'icon' => 'zmdi-account', 'label' => 'Profil Desainer'],
         ['href' => 'unggahan.php?view=auction-create#formUpload', 'icon' => 'zmdi-cloud-upload', 'label' => 'Buat Lelang'],
         ['href' => 'penjualan.php', 'icon' => 'zmdi-store', 'label' => 'Penjualan'],
+        ['href' => 'pencairan.php', 'icon' => 'zmdi-balance-wallet', 'label' => 'Pencairan Dana'],
         ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan', 'badge' => $unread_count],
         ['divider' => true],
         ['href' => 'logout.php', 'icon' => 'zmdi-power', 'label' => 'Logout'],

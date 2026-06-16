@@ -6,6 +6,12 @@ if (is_designer_login()) {
 }
 
 include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php';
+
+// Kelayakan ikut lelang untuk user yang sedang login (verifikasi/suspend/ban).
+// Dipakai untuk menampilkan/menyembunyikan tombol "Pasang Penawaran" di quick view.
+$bid_status = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
+$can_bid = $bid_status['ok'];
 
 // Cek Login
 $is_designer_logged_in = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";
@@ -752,7 +758,8 @@ $result = $conn->query($sql);
 
 							<form id="biddingForm" action="proses_bidding.php" method="POST">
 								<input type="hidden" name="id_design" id="input-id-design" value="">
-								
+
+								<?php if ($can_bid) { ?>
 								<div class="bid-control" style="display: flex; gap: 10px; margin-bottom: 20px; align-items: stretch;">
 									<button type="button" class="btn-bid-qty" style="flex: 0 0 45px; padding: 8px; font-size: 1.2rem; border: 1px solid #ddd; background: #fff; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="changeBid(-10000)">−</button>
 									<input type="text" class="input-bid-val" id="modalBidInput" name="harga_tawaran" style="flex: 1; padding: 10px 12px; border: 2px solid #4e8eff; border-radius: 5px; font-size: 1rem; font-weight: 600; text-align: center; color: #4e8eff;" value="Rp 0" placeholder="Rp 0">
@@ -760,6 +767,17 @@ $result = $conn->query($sql);
 								</div>
 
 								<button type="submit" class="btn-auction-action btn-gradient-blue" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; margin-bottom: 10px;">Pasang Penawaran</button>
+								<?php } else { ?>
+								<div style="background:#fff8e1; border:1px solid #ffe0a3; color:#8a6d00; padding:12px 14px; border-radius:8px; font-size:0.88rem; margin-bottom:10px; text-align:center;">
+									<i class="fa fa-info-circle"></i> <?php echo htmlspecialchars($bid_status['reason']); ?>
+								</div>
+								<?php if ($bid_status['code'] === 'guest') { ?>
+									<a href="login.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:#171717; color:#fff; border-radius:8px; font-size:1rem; font-weight:600; text-decoration:none; margin-bottom:10px;"><i class="fa fa-sign-in"></i> Masuk untuk Menawar</a>
+								<?php } elseif ($bid_status['code'] === 'unverified') { ?>
+									<a href="verifikasi.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#f7971e,#ffd200); color:#5a4500; border-radius:8px; font-size:1rem; font-weight:600; text-decoration:none; margin-bottom:10px;"><i class="fa fa-id-card"></i> Verifikasi KTP untuk Menawar</a>
+								<?php } ?>
+								<?php } ?>
+
 								<a href="#" id="btn-modal-beli-langsung" class="btn-auction-action" style="display: none; width: 100%; text-align: center; padding: 12px; background: linear-gradient(90deg, #2ecc71, #27ae60); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; margin-bottom: 10px; box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4);"><i class="fa fa-flash"></i> Beli Langsung</a>
 								<a href="product-detail.php" id="btn-detail-lengkap" class="btn-auction-action btn-grey-outline" style="display: block; text-align: center; padding: 12px; background: #f0f0f0; color: #333; text-decoration: none; border-radius: 8px; font-size: 1rem; font-weight: 600; border: 1px solid #ddd;">Lihat Detail Lengkap</a>
 							</form>

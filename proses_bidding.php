@@ -1,11 +1,21 @@
 <?php
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php';
 
 // 1. Cek Login User
 require_user();
 
 $id_user = (int) current_id(); // ID User yang sedang login
+
+// 1b. GERBANG KELAYAKAN BID: harus aktif, KTP verified, NIK tidak diblokir.
+//     Wajib dicek di server agar gate tidak bisa dilewati lewat endpoint langsung.
+$kelayakan = status_bid_user($koneksi, $id_user);
+if (!$kelayakan['ok']) {
+    sweetalert_back($kelayakan['reason'], 'warning', 'Tidak Dapat Menawar');
+    exit;
+}
+
 $id_design = (int) ($_POST['id_design'] ?? 0);
 
 // Bersihkan format Rupiah (Contoh: "Rp 120.000" jadi "120000")

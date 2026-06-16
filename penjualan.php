@@ -114,11 +114,15 @@ $total_pemasukan = 0;
                             if(mysqli_num_rows($result_penjualan) > 0) {
                                 while($row = mysqli_fetch_assoc($result_penjualan)) {
                                     // Sesuai screenshot t_transaksi: kolomnya 'harga_final'
-                                    $harga = $row['harga_final'] ?? 0; 
-                                    $total_pemasukan += $harga;
-                                    
+                                    $harga = $row['harga_final'] ?? 0;
+
                                     // Sesuai screenshot t_transaksi: kolomnya 'status_pembayaran'
                                     $status_transaksi = $row['status_pembayaran'] ?? 'Sudah Terjual';
+
+                                    // Hanya transaksi BERHASIL yang dihitung sebagai pemasukan
+                                    if ($status_transaksi === 'berhasil') {
+                                        $total_pemasukan += $harga;
+                                    }
                             ?>
                             <tr>
                                 <td>
@@ -142,8 +146,13 @@ $total_pemasukan = 0;
                     </div>
 
                     <div class="sales-footer">
-                        <div class="total-label">TOTAL PEMASUKAN :</div>
-                        <div class="total-amount">Rp <?php echo number_format($total_pemasukan, 0, ',', '.'); ?></div>
+                        <div class="total-label">TOTAL PEMASUKAN (BERHASIL) :</div>
+                        <div style="display:flex; align-items:center; gap:18px;">
+                            <div class="total-amount">Rp <?php echo number_format($total_pemasukan, 0, ',', '.'); ?></div>
+                            <a href="pencairan.php" class="btn" style="background:linear-gradient(135deg,#667eea 0%,#764ba2 100%); color:#fff; border-radius:8px; font-weight:600; padding:10px 18px; margin-right:20px;">
+                                <i class="zmdi zmdi-balance-wallet"></i> Cairkan Dana
+                            </a>
+                        </div>
                     </div>
                 </div>
 

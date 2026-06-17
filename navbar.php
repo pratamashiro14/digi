@@ -33,12 +33,23 @@ $topbar_text = [
     'guest' => 'Pilih desain sesuai standarmu.',
 ][$role] ?? 'Pilih desain sesuai standarmu.';
 
+$_cur = basename($_SERVER['PHP_SELF'] ?? '');
+
 // Hitung pesan belum dibaca (harus sebelum $main_menu dibuat)
 $unread_count = 0;
 if (($is_user_logged_in || $is_designer_logged_in) && !empty($koneksi)) {
     $uid = function_exists('current_id') ? current_id() : null;
     if ($uid) {
-        $q_unread = mysqli_query($koneksi, "SELECT COUNT(*) as c FROM t_chat WHERE id_penerima=" . intval($uid) . " AND is_read=0");
+        $uid = intval($uid);
+        $active_chat_lawan = ($_cur === 'pesan.php' && isset($_GET['lawan'])) ? intval($_GET['lawan']) : 0;
+        $sql_unread = "SELECT COUNT(*) as c
+                       FROM t_chat c
+                       INNER JOIN t_user u ON u.id_user=c.id_pengirim
+                       WHERE c.id_penerima=$uid AND c.is_read=0";
+        if ($active_chat_lawan > 0) {
+            $sql_unread .= " AND c.id_pengirim<>$active_chat_lawan";
+        }
+        $q_unread = mysqli_query($koneksi, $sql_unread);
         if ($q_unread) $unread_count = (int)(mysqli_fetch_assoc($q_unread)['c'] ?? 0);
     }
 }
@@ -110,7 +121,6 @@ if ($is_admin_logged_in) {
 <?php
 // Cek apakah perlu tampilkan toast notif
 $_show_toast = false;
-$_cur = basename($_SERVER['PHP_SELF'] ?? '');
 if ($unread_count > 0 && !in_array($_cur, ['pesan.php', 'detail_chat.php'])) {
     $_last = $_SESSION['msg_toast_count'] ?? -1;
     if ($unread_count !== (int)$_last) {

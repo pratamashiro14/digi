@@ -2084,6 +2084,36 @@ input.num-product::-webkit-inner-spin-button {
   opacity: 1;
 }
 
+.product-market-page .block2 {
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid #e5e9f0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.06);
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+
+.product-market-page .block2:hover {
+  transform: translateY(-3px);
+  border-color: #d6deea;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.1);
+}
+
+.product-market-page .block2-pic {
+  overflow: hidden;
+  background: #f3f6fb;
+}
+
+.product-market-page .block2-pic img {
+  width: 100%;
+  display: block;
+}
+
+.product-market-page .block2-txt {
+  padding: 16px 16px 18px;
+}
+
 .js-addedwish-b2 .icon-heart1 {
   opacity: 0;
 }
@@ -4144,6 +4174,11 @@ header:not([class]) .wrap-menu-desktop,
 .home-market-panel .isotope-item {
   padding-left: 18px;
   padding-right: 18px;
+}
+
+.home-market-panel .block2-pic img {
+  height: clamp(260px, 28vw, 360px);
+  object-fit: cover;
 }
 
 @media (max-width: 767px) {

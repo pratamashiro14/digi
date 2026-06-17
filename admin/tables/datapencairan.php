@@ -67,6 +67,26 @@ function badge_status($status) {
     <title>Data Pencairan - DigiDesain Admin</title>
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
     <link rel="icon" href="../assets/img/kaiadmin/favicon.ico" type="image/x-icon" />
+
+    <script src="../assets/js/plugin/webfont/webfont.min.js"></script>
+    <script>
+      WebFont.load({
+        google: { families: ["Public Sans:300,400,500,600,700"] },
+        custom: {
+          families: [
+            "Font Awesome 5 Solid",
+            "Font Awesome 5 Regular",
+            "Font Awesome 5 Brands",
+            "simple-line-icons",
+          ],
+          urls: ["../assets/css/fonts.min.css"],
+        },
+        active: function () {
+          sessionStorage.fonts = true;
+        },
+      });
+    </script>
+
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
@@ -144,7 +164,37 @@ function badge_status($status) {
           </div>
           <nav class="navbar navbar-header navbar-header-transparent navbar-expand-lg border-bottom">
             <div class="container-fluid">
+              <nav class="navbar navbar-header-left navbar-expand-lg navbar-form nav-search p-0 d-none d-lg-flex">
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <button type="submit" class="btn btn-search pe-1">
+                      <i class="fa fa-search search-icon"></i>
+                    </button>
+                  </div>
+                  <input type="text" placeholder="Search ..." class="form-control" />
+                </div>
+              </nav>
+
               <ul class="navbar-nav topbar-nav ms-md-auto align-items-center">
+                <li class="nav-item topbar-icon dropdown hidden-caret d-flex d-lg-none">
+                  <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false" aria-haspopup="true">
+                    <i class="fa fa-search"></i>
+                  </a>
+                  <ul class="dropdown-menu dropdown-search animated fadeIn">
+                    <form class="navbar-left navbar-form nav-search">
+                      <div class="input-group">
+                        <input type="text" placeholder="Search ..." class="form-control" />
+                      </div>
+                    </form>
+                  </ul>
+                </li>
+                <li class="nav-item topbar-icon dropdown hidden-caret" id="notification-dropdown-item">
+                  <a class="nav-link dropdown-toggle" href="#" id="notifDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-bell"></i>
+                    <span class="notification" id="notif-count-badge">0</span>
+                  </a>
+                  <ul class="dropdown-menu notif-box animated fadeIn" aria-labelledby="notifDropdown" id="notification-content-container"></ul>
+                </li>
                 <li class="nav-item topbar-user dropdown hidden-caret">
                   <a class="dropdown-toggle profile-pic" data-bs-toggle="dropdown" href="#" aria-expanded="false">
                     <div class="avatar-sm">
@@ -273,6 +323,29 @@ function badge_status($status) {
         form.catatan.value = alasan;
         return true;
       }
+    </script>
+    <script>
+      function updateNotificationDropdown() {
+        $.ajax({
+          url: '../check_notifs.php',
+          type: 'GET',
+          dataType: 'html',
+          success: function(htmlContent) {
+            $('#notification-content-container').html(htmlContent);
+            var countText = $('#notification-content-container').find('.dropdown-title').text();
+            var match = countText.match(/(\d+)/);
+            $('#notif-count-badge').text(match ? match[0] : 0);
+          },
+          error: function() {
+            $('#notification-content-container').html('<div class="p-3 text-center text-danger">Gagal memuat notifikasi.</div>');
+          }
+        });
+      }
+
+      $(document).ready(function() {
+        updateNotificationDropdown();
+        setInterval(updateNotificationDropdown, 30000);
+      });
     </script>
   </body>
 </html>

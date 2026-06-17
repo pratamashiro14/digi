@@ -138,6 +138,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   <i class="fas fa-home"></i>
                   <p>Beranda</p>
                 </a>
+              </li>
               <li class="nav-item">
                 <a href="tables/karyadesain.php">
                   <i class="fas fa-palette"></i>
@@ -384,17 +385,16 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
           <!-- End Navbar -->
         </div>
 
-        <div class="container">
+        <div class="container admin-dashboard">
           <div class="page-inner">
-            <div
-              class="d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4"
-            >
+            <div class="dashboard-heading d-flex align-items-left align-items-md-center flex-column flex-md-row pt-2 pb-4">
               <div>
-                <h3 class="fw-bold mb-3">Beranda</h3>
+                <h3 class="fw-bold mb-2">Beranda Admin</h3>
+                <p class="mb-0 text-muted">Pantau aktivitas pengguna, transaksi, dan pertumbuhan platform.</p>
               </div>
             </div>
-            <div class="row">
-              <div class="col-sm-6 col-md-3">
+            <div class="row dashboard-stats-row">
+              <div class="col-sm-6 col-xl-3">
                 <div class="card card-stats card-round">
                   <div class="card-body">
                     <div class="row align-items-center">
@@ -415,7 +415,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   </div>
                 </div>
               </div>
-              <div class="col-sm-6 col-md-3">
+              <div class="col-sm-6 col-xl-3">
                 <div class="card card-stats card-round">
                   <div class="card-body">
                     <div class="row align-items-center">
@@ -436,7 +436,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   </div>
                 </div>
               </div>
-              <div class="col-sm-6 col-md-3">
+              <div class="col-sm-6 col-xl-3">
                 <div class="card card-stats card-round">
                   <div class="card-body">
                     <div class="row align-items-center">
@@ -457,7 +457,7 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   </div>
                 </div>
               </div>
-              <div class="col-sm-6 col-md-3">
+              <div class="col-sm-6 col-xl-3">
                 <div class="card card-stats card-round">
                   <div class="card-body">
                     <div class="row align-items-center">
@@ -479,35 +479,14 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                 </div>
               </div>
             </div>
-            <div class="row">
-              <div class="col-md-8">
-                <div class="card card-round">
+            <div class="row dashboard-main-row">
+              <div class="col-xl-8">
+                <div class="card card-round dashboard-card dashboard-card-table">
                   <div class="card-header">
                     <div class="card-head-row card-tools-still-right">
                       <div class="card-title">Penjualan Terakhir</div>
                       <div class="card-tools">
-                        <div class="dropdown">
-                          <button
-                            class="btn btn-icon btn-clean me-0"
-                            type="button"
-                            id="dropdownMenuButton"
-                            data-bs-toggle="dropdown"
-                            aria-haspopup="true"
-                            aria-expanded="false"
-                          >
-                            <i class="fas fa-ellipsis-h"></i>
-                          </button>
-                          <div
-                            class="dropdown-menu"
-                            aria-labelledby="dropdownMenuButton"
-                          >
-                            <a class="dropdown-item" href="#">Action</a>
-                            <a class="dropdown-item" href="#">Another action</a>
-                            <a class="dropdown-item" href="#"
-                              >Something else here</a
-                            >
-                          </div>
-                        </div>
+                        <a href="tables/transaksi.php" class="btn btn-sm btn-primary">Lihat Semua</a>
                       </div>
                     </div>
                   </div>
@@ -567,11 +546,11 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
 </div>
                 </div>
               </div>
-              <div class="col-md-4">
-                <div class="card card-round">
+              <div class="col-xl-4">
+                <div class="card card-round dashboard-card dashboard-card-customers">
                   <div class="card-body">
                     <div class="card-head-row card-tools-still-right">
-                      <div class="card-title">New Customers</div>
+                      <div class="card-title">Pengguna Baru</div>
                       <div class="card-tools">
                         <div class="dropdown">
                         </div>
@@ -586,9 +565,9 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                 </div>
             </div>
             </div><!-- end row penjualan + new customers -->
-            <div class="row">
-              <div class="col-md-6">
-                <div class="card card-round">
+            <div class="row dashboard-chart-row">
+              <div class="col-xl-12">
+                <div class="card card-round dashboard-card dashboard-chart-card">
                   <div class="card-header">
                     <div class="card-head-row">
                       <div class="card-title">Statistik Pengguna</div>
@@ -599,8 +578,14 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                   <div class="card-body">
                     <div class="chart-container" style="min-height: 375px">
                       <canvas id="statisticsChart"></canvas>
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <!--   Core JS Files   -->
     <script src="assets/js/core/jquery-3.7.1.min.js"></script>
@@ -807,7 +792,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
         updateNotificationDropdown(); 
         setInterval(updateNotificationDropdown, 30000); // Update setiap 30 detik
     });
-    </script>
+</script>
   </body>
 </html>
-<?php

@@ -508,7 +508,7 @@ include '../koneksi.php';
                       <span class="badge bg-warning text-dark">Pending</span>
                       <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
                       <?php if (!empty($row['foto_ktp'])): ?>
-                          <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                          <br><small><button type="button" class="btn btn-link p-0 ktp-preview-btn" data-bs-toggle="modal" data-bs-target="#ktpPreviewModal" data-ktp-src="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" data-ktp-name="<?= htmlspecialchars($row['nama']) ?>">Lihat KTP</button></small>
                       <?php endif; ?>
                       <br>
                       <a href="?approve_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-success mt-1 py-0 px-1" style="font-size:11px;">Terima</a>
@@ -517,7 +517,7 @@ include '../koneksi.php';
                       <span class="badge bg-success">Verified</span>
                       <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
                       <?php if (!empty($row['foto_ktp'])): ?>
-                          <br><small><a href="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" target="_blank">Lihat KTP</a></small>
+                          <br><small><button type="button" class="btn btn-link p-0 ktp-preview-btn" data-bs-toggle="modal" data-bs-target="#ktpPreviewModal" data-ktp-src="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" data-ktp-name="<?= htmlspecialchars($row['nama']) ?>">Lihat KTP</button></small>
                       <?php endif; ?>
                   <?php else: ?>
                       <span class="badge bg-secondary">Unverified</span>
@@ -569,6 +569,23 @@ include '../koneksi.php';
     </div>
   </div>
 </div>
+<div class="modal fade" id="ktpPreviewModal" tabindex="-1" aria-labelledby="ktpPreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content ktp-preview-modal">
+      <div class="modal-header">
+        <h5 class="modal-title" id="ktpPreviewModalLabel">Preview KTP</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
+      </div>
+      <div class="modal-body">
+        <img src="" alt="Preview KTP" id="ktpPreviewImage" class="ktp-preview-image">
+      </div>
+      <div class="modal-footer">
+        <a href="#" target="_blank" rel="noopener" id="ktpPreviewOpen" class="btn btn-outline-primary">Buka Gambar</a>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
+      </div>
+    </div>
+  </div>
+</div>
     </div>
     <!--   Core JS Files   -->
     <script src="../assets/js/core/jquery-3.7.1.min.js"></script>
@@ -611,7 +628,30 @@ include '../koneksi.php';
       });
     </script>
 
-        <script>
+    <script>
+      var ktpPreviewModal = document.getElementById('ktpPreviewModal');
+      if (ktpPreviewModal) {
+        ktpPreviewModal.addEventListener('show.bs.modal', function (event) {
+          var button = event.relatedTarget;
+          var imageSrc = button ? button.getAttribute('data-ktp-src') : '';
+          var userName = button ? button.getAttribute('data-ktp-name') : '';
+          var image = document.getElementById('ktpPreviewImage');
+          var openLink = document.getElementById('ktpPreviewOpen');
+          var title = document.getElementById('ktpPreviewModalLabel');
+
+          image.src = imageSrc;
+          openLink.href = imageSrc;
+          title.textContent = userName ? 'Preview KTP - ' + userName : 'Preview KTP';
+        });
+
+        ktpPreviewModal.addEventListener('hidden.bs.modal', function () {
+          document.getElementById('ktpPreviewImage').src = '';
+          document.getElementById('ktpPreviewOpen').href = '#';
+        });
+      }
+    </script>
+
+    <script>
     function updateNotificationDropdown() {
         $.ajax({
             // Path file PHP harus disesuaikan, karena karyadesain.php ada di subfolder,

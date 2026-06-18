@@ -28,15 +28,20 @@ if ($bank === '' || $no_rekening === '' || $nama_rek === '') {
 } elseif ($jumlah > $saldo['tersedia']) {
     sweetalert_back('Nominal melebihi saldo tersedia (' . rupiah($saldo['tersedia']) . ').', 'error', 'Saldo Tidak Cukup!');
 } else {
+    // Biaya admin dipotong per penarikan; desainer menerima (jumlah - fee).
+    $rincian  = fee_pencairan($jumlah);
+    $fee      = $rincian['fee'];
+    $diterima = $rincian['diterima'];
+
     $stmt = mysqli_prepare(
         $koneksi,
-        "INSERT INTO t_pencairan (id_designer, jumlah, bank, no_rekening, nama_pemilik_rek, status, tanggal_request)
-         VALUES (?, ?, ?, ?, ?, 'pending', NOW())"
+        "INSERT INTO t_pencairan (id_designer, jumlah, fee, jumlah_diterima, bank, no_rekening, nama_pemilik_rek, status, tanggal_request)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', NOW())"
     );
-    mysqli_stmt_bind_param($stmt, 'idsss', $id_desainer, $jumlah, $bank, $no_rekening, $nama_rek);
+    mysqli_stmt_bind_param($stmt, 'idddsss', $id_desainer, $jumlah, $fee, $diterima, $bank, $no_rekening, $nama_rek);
 
     if (mysqli_stmt_execute($stmt)) {
-        sweetalert_redirect('Pengajuan pencairan ' . rupiah($jumlah) . ' berhasil dikirim. Tunggu diproses Admin.', 'pencairan.php?view=history', 'success', 'Pengajuan Terkirim!');
+        sweetalert_redirect('Pengajuan pencairan ' . rupiah($jumlah) . ' berhasil dikirim (biaya admin ' . rupiah($fee) . ', diterima ' . rupiah($diterima) . '). Tunggu diproses Admin.', 'pencairan.php?view=history', 'success', 'Pengajuan Terkirim!');
     } else {
         sweetalert_back('Gagal mengajukan pencairan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }

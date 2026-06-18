@@ -265,6 +265,8 @@ CREATE TABLE `t_pencairan` (
   `id_pencairan` int(11) NOT NULL,
   `id_designer` int(11) NOT NULL,
   `jumlah` decimal(12,2) NOT NULL,
+  `fee` decimal(12,2) NOT NULL DEFAULT 0.00,
+  `jumlah_diterima` decimal(12,2) NOT NULL DEFAULT 0.00,
   `bank` varchar(50) NOT NULL,
   `no_rekening` varchar(40) NOT NULL,
   `nama_pemilik_rek` varchar(100) NOT NULL,

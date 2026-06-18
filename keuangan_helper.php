@@ -7,29 +7,28 @@
  *  - Uang hasil penjualan ditahan platform.
  *  - Desainer mengajukan pencairan, admin transfer manual & menandai selesai.
  *
- * Saldo tersedia = (pendapatan kotor - fee platform) - total yang sudah/sedang dicairkan.
- *  - Pendapatan kotor : SUM(harga_final) transaksi berstatus 'berhasil' atas karya desainer.
- *  - Fee platform     : FEE_PERSEN% dari pendapatan kotor.
- *  - Total dicairkan  : pencairan berstatus pending + diproses + selesai
- *                       (yang 'ditolak' tidak mengurangi saldo).
+ * Fee dipotong PER PENARIKAN (bukan dari total penghasilan):
+ *  - Saldo tersedia = total penjualan 'berhasil' - total yang sudah/sedang dicairkan.
+ *  - Saat menarik nominal X: biaya admin = X * FEE_PERSEN%, desainer menerima (X - biaya).
+ *    Nominal X tetap yang mengurangi saldo; biaya admin diambil dari nominal tarik.
  */
 
 if (!defined('FEE_PERSEN')) {
-    define('FEE_PERSEN', 2.5);       // Potongan platform per penjualan (%)
+    define('FEE_PERSEN', 2.5);       // Biaya admin per penarikan (%)
 }
 if (!defined('MIN_PENARIKAN')) {
     define('MIN_PENARIKAN', 50000);  // Minimum nominal sekali tarik (Rp)
 }
 
 /**
- * Hitung ringkasan keuangan seorang desainer.
+ * Hitung ringkasan saldo seorang desainer.
  *
- * @return array{kotor:float, fee:float, bersih:float, dicairkan:float, tersedia:float}
+ * @return array{kotor:float, dicairkan:float, tersedia:float}
  */
 function designer_saldo($koneksi, $id_designer) {
     $id_designer = (int) $id_designer;
 
-    // 1) Pendapatan kotor = transaksi BERHASIL atas karya milik desainer ini.
+    // 1) Total penjualan BERHASIL atas karya milik desainer ini.
     $kotor = 0.0;
     $stmt = mysqli_prepare(
         $koneksi,
@@ -44,7 +43,8 @@ function designer_saldo($koneksi, $id_designer) {
     $row = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
     $kotor = (float) ($row['kotor'] ?? 0);
 
-    // 2) Total yang sudah/sedang dicairkan (kunci saldo).
+    // 2) Total yang sudah/sedang dicairkan (nominal tarik mengunci saldo;
+    //    yang 'ditolak' tidak mengurangi saldo).
     $dicairkan = 0.0;
     $stmt2 = mysqli_prepare(
         $koneksi,
@@ -58,21 +58,35 @@ function designer_saldo($koneksi, $id_designer) {
     $row2 = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt2));
     $dicairkan = (float) ($row2['total'] ?? 0);
 
-    $fee      = round($kotor * (FEE_PERSEN / 100), 2);
-    $bersih   = $kotor - $fee;
-    $tersedia = $bersih - $dicairkan;
+    $tersedia = $kotor - $dicairkan;
     if ($tersedia < 0) $tersedia = 0.0;
 
     return [
         'kotor'     => $kotor,
-        'fee'       => $fee,
-        'bersih'    => $bersih,
         'dicairkan' => $dicairkan,
         'tersedia'  => $tersedia,
     ];
 }
 
+/**
+ * Hitung biaya admin & dana diterima untuk sebuah nominal penarikan.
+ *
+ * @return array{fee:float, diterima:float}
+ */
+function fee_pencairan($jumlah) {
+    $jumlah = (float) $jumlah;
+    $fee = round($jumlah * (FEE_PERSEN / 100), 2);
+    $diterima = $jumlah - $fee;
+    if ($diterima < 0) $diterima = 0.0;
+    return ['fee' => $fee, 'diterima' => $diterima];
+}
+
 /** Format angka ke Rupiah. */
 function rupiah($n) {
     return 'Rp ' . number_format((float) $n, 0, ',', '.');
+}
+
+/** Tampilkan FEE_PERSEN tanpa angka 0 di belakang (2.5 -> "2,5"). */
+function fee_label() {
+    return rtrim(rtrim(number_format(FEE_PERSEN, 1, ',', '.'), '0'), ',');
 }

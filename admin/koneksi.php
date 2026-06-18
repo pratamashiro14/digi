@@ -41,6 +41,8 @@ mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_pencairan (
     id_pencairan INT(11) NOT NULL AUTO_INCREMENT,
     id_designer INT(11) NOT NULL,
     jumlah DECIMAL(12,2) NOT NULL,
+    fee DECIMAL(12,2) NOT NULL DEFAULT 0,
+    jumlah_diterima DECIMAL(12,2) NOT NULL DEFAULT 0,
     bank VARCHAR(50) NOT NULL,
     no_rekening VARCHAR(40) NOT NULL,
     nama_pemilik_rek VARCHAR(100) NOT NULL,
@@ -52,6 +54,9 @@ mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_pencairan (
     KEY id_designer (id_designer),
     CONSTRAINT t_pencairan_ibfk_1 FOREIGN KEY (id_designer) REFERENCES t_user (id_user) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+// Untuk instalasi lama: tambahkan kolom fee per-penarikan bila belum ada.
+mysqli_query($koneksi, "ALTER TABLE t_pencairan ADD COLUMN IF NOT EXISTS fee DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER jumlah");
+mysqli_query($koneksi, "ALTER TABLE t_pencairan ADD COLUMN IF NOT EXISTS jumlah_diterima DECIMAL(12,2) NOT NULL DEFAULT 0 AFTER fee");
 
 // Auto-migration: daftar blokir NIK. Ban berbasis NIK agar pelaku yang dibanned
 // tetap tidak bisa ikut lelang walau membuat akun baru dengan NIK yang sama.

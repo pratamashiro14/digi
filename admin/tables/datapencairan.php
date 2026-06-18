@@ -242,16 +242,18 @@ function badge_status($status) {
                         <th>Desainer</th>
                         <th>Tujuan Transfer</th>
                         <th>Nominal</th>
+                        <th>Biaya</th>
+                        <th>Transfer ke Desainer</th>
                         <th>Tanggal</th>
                         <th>Status</th>
-                        <th style="width:22%">Aksi</th>
+                        <th style="width:18%">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
                       <?php
                       $no = 1;
                       if (!$query || mysqli_num_rows($query) == 0) {
-                          echo "<tr><td colspan='7' class='text-center text-muted'>Belum ada permintaan pencairan</td></tr>";
+                          echo "<tr><td colspan='9' class='text-center text-muted'>Belum ada permintaan pencairan</td></tr>";
                       } else {
                           while ($row = mysqli_fetch_assoc($query)) {
                       ?>
@@ -266,6 +268,8 @@ function badge_status($status) {
                           <small><?= htmlspecialchars($row['no_rekening']) ?><br>a.n. <?= htmlspecialchars($row['nama_pemilik_rek']) ?></small>
                         </td>
                         <td><strong><?= rupiah($row['jumlah']) ?></strong></td>
+                        <td class="text-danger">- <?= rupiah($row['fee']) ?></td>
+                        <td><strong class="text-success"><?= rupiah($row['jumlah_diterima']) ?></strong></td>
                         <td><small><?= date('d M Y H:i', strtotime($row['tanggal_request'])) ?></small></td>
                         <td>
                           <?= badge_status($row['status']) ?>

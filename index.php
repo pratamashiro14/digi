@@ -404,15 +404,29 @@ function render_designer_stat_card($stat) {
                     <div class="dis-none panel-search w-full p-t-10 p-b-15">
                         <div class="bor8 dis-flex p-l-15">
                             <button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04"><i class="zmdi zmdi-search"></i></button>
-                            <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Search">
+                            <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Cari karya atau desainer">
+                        </div>
+                    </div>
+                    <div class="dis-none panel-filter w-full p-t-10">
+                        <div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+                            <div class="product-bid-filter-col p-r-15 p-b-27">
+                                <div class="mtext-102 cl2 p-b-15">Waktu Bid</div>
+                                <ul>
+                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04 filter-link-active" data-bid-filter="all">Semua Waktu</a></li>
+                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="long">Waktu masih lama</a></li>
+                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="soon">Sebentar lagi</a></li>
+                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="ended">Waktu sudah habis</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="row isotope-grid">
                 <?php
-                $sql_produk = "SELECT d.*
+                $sql_produk = "SELECT d.*, u.nama AS nama_desainer
                                FROM t_design d
+                               LEFT JOIN t_user u ON d.id_designer = u.id_user
                                WHERE d.status = 'approved'
                                  AND NOT EXISTS (
                                      SELECT 1
@@ -426,9 +440,21 @@ function render_designer_stat_card($stat) {
                     while($row = mysqli_fetch_assoc($result_produk)) {
                         $id_produk = $row['id_design'];
                         $gambar = "admin/uploads/" . $row['gambar']; 
-                        $kategori = $row['kategori']; 
+                        $kategori = $row['kategori'];
+                        $kategori_class = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(['&', '/', ' '], '', $kategori)));
+                        $waktu_berakhir = $row['waktu_berakhir'] ?? '';
+                        $bid_state = 'long';
+                        if (!empty($waktu_berakhir)) {
+                            $sisa_detik = strtotime($waktu_berakhir) - time();
+                            if ($sisa_detik <= 0) {
+                                $bid_state = 'ended';
+                            } elseif ($sisa_detik <= 86400) {
+                                $bid_state = 'soon';
+                            }
+                        }
+                        $search_text = strtolower(trim($row['judul'] . ' ' . ($row['nama_desainer'] ?? '') . ' ' . $kategori));
                 ?>
-                <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo $kategori; ?>">
+                <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo htmlspecialchars($kategori_class); ?>" data-bid-state="<?php echo htmlspecialchars($bid_state); ?>" data-search="<?php echo htmlspecialchars($search_text); ?>">
                     <div class="block2">
                         <div class="block2-pic hov-img0" style="position: relative;"> 
                             <img src="<?php echo $gambar; ?>" alt="IMG-PRODUCT" style="width: 100%; aspect-ratio: 4/5; object-fit: cover;">
@@ -606,6 +632,103 @@ function render_designer_stat_card($stat) {
 	<script src="vendor/sweetalert/sweetalert.min.js"></script>
 	<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
 	<script src="js/main.js"></script>
+
+    <script>
+        (function($) {
+            var $panel = $('.home-market-panel');
+            var $grid = $panel.find('.isotope-grid');
+            var activeCategory = '*';
+            var activeBidState = 'all';
+            var activeSearch = '';
+
+            if (!$panel.length || !$grid.length) {
+                return;
+            }
+
+            function updateHomeEmptyState() {
+                var isotope = $grid.data('isotope');
+                var visibleCount = isotope ? isotope.filteredItems.length : $grid.find('.isotope-item:visible').length;
+                $panel.find('.market-empty-state').toggleClass('is-visible', visibleCount === 0);
+                $panel.find('.market-load-more').toggle(visibleCount > 0);
+            }
+
+            function homeItemMatches(item) {
+                var $item = $(item);
+                var matchesCategory = activeCategory === '*' || $item.is(activeCategory);
+                var matchesBidState = activeBidState === 'all' || $item.data('bid-state') === activeBidState;
+                var searchableText = ($item.data('search') || '').toString().toLowerCase();
+                var matchesSearch = activeSearch === '' || searchableText.indexOf(activeSearch) !== -1;
+
+                return matchesCategory && matchesBidState && matchesSearch;
+            }
+
+            function applyHomeFilter() {
+                if ($.fn.isotope && $grid.data('isotope')) {
+                    $grid.isotope({
+                        filter: function() {
+                            return homeItemMatches(this);
+                        }
+                    });
+                } else {
+                    $grid.find('.isotope-item').each(function() {
+                        $(this).toggle(homeItemMatches(this));
+                    });
+                }
+                setTimeout(updateHomeEmptyState, 60);
+            }
+
+            $panel.find('.filter-tope-group button').off('click').on('click', function(e) {
+                e.preventDefault();
+                activeCategory = $(this).attr('data-filter') || '*';
+                $panel.find('.filter-tope-group button').removeClass('how-active1');
+                $(this).addClass('how-active1');
+                applyHomeFilter();
+            });
+
+            $panel.find('[data-bid-filter]').off('click').on('click', function(e) {
+                e.preventDefault();
+                activeBidState = $(this).data('bid-filter') || 'all';
+                $panel.find('[data-bid-filter]').removeClass('filter-link-active');
+                $(this).addClass('filter-link-active');
+                applyHomeFilter();
+            });
+
+            $panel.find('input[name="search-product"]').off('input').on('input', function() {
+                activeSearch = $.trim($(this).val()).toLowerCase();
+                applyHomeFilter();
+            });
+
+            $panel.find('.js-show-filter').off('click').on('click', function() {
+                $(this).toggleClass('show-filter');
+                $panel.find('.panel-filter').stop(true, true).slideToggle(300);
+                $panel.find('.js-show-search').removeClass('show-search');
+                $panel.find('.panel-search').stop(true, true).slideUp(300);
+            });
+
+            $panel.find('.js-show-search').off('click').on('click', function() {
+                $(this).toggleClass('show-search');
+                $panel.find('.panel-search').stop(true, true).slideToggle(300);
+                $panel.find('.js-show-filter').removeClass('show-filter');
+                $panel.find('.panel-filter').stop(true, true).slideUp(300);
+            });
+
+            $panel.find('[data-empty-reset]').off('click').on('click', function() {
+                var $allButton = $panel.find('.filter-tope-group button[data-filter="*"]').first();
+                activeCategory = '*';
+                activeBidState = 'all';
+                activeSearch = '';
+                $panel.find('.filter-tope-group button').removeClass('how-active1');
+                $allButton.addClass('how-active1');
+                $panel.find('[data-bid-filter]').removeClass('filter-link-active');
+                $panel.find('[data-bid-filter="all"]').addClass('filter-link-active');
+                $panel.find('input[name="search-product"]').val('');
+                applyHomeFilter();
+            });
+
+            $grid.on('arrangeComplete', updateHomeEmptyState);
+            setTimeout(updateHomeEmptyState, 200);
+        })(jQuery);
+    </script>
 
     <script>
         // 1. SCRIPT TIMER LABEL DI GAMBAR PRODUK

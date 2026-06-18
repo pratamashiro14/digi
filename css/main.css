@@ -2114,6 +2114,98 @@ input.num-product::-webkit-inner-spin-button {
   padding: 16px 16px 18px;
 }
 
+.product-market-page {
+  padding-top: 26px;
+  padding-bottom: 90px !important;
+  background: linear-gradient(180deg, #f8fafc 0%, #f3f6fb 100%) !important;
+}
+
+.product-market-panel {
+  padding: 34px 34px 70px;
+  border: 1px solid #e3e8f0;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.07);
+}
+
+.product-market-panel > .flex-w.flex-sb-m {
+  border-bottom: 1px solid #edf0f5;
+  margin-bottom: 34px;
+}
+
+.product-market-panel .panel-filter,
+.product-market-panel .panel-search {
+  margin-top: 16px;
+}
+
+.product-market-panel .wrap-filter {
+  border: 1px solid #edf0f5;
+  border-radius: 8px;
+}
+
+.product-market-panel .wrap-filter > :not(.product-bid-filter-col) {
+  display: none;
+}
+
+.product-bid-filter-col {
+  width: 100%;
+}
+
+.product-bid-filter-col ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+}
+
+.product-bid-filter-col li {
+  padding-bottom: 0 !important;
+}
+
+.product-bid-filter-col .filter-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid #dfe5ef;
+  border-radius: 8px;
+  background: #fff;
+  color: #667085;
+}
+
+.product-bid-filter-col .filter-link:hover,
+.product-bid-filter-col .filter-link-active {
+  border-color: #1591DC;
+  background: #eff8ff;
+  color: #1591DC;
+}
+
+.product-market-page .market-load-more {
+  padding-top: 64px !important;
+  padding-bottom: 0 !important;
+  margin-bottom: 0;
+}
+
+@media (max-width: 767px) {
+  .product-market-page {
+    padding-top: 16px;
+    padding-bottom: 56px !important;
+  }
+
+  .product-market-panel {
+    padding: 24px 16px 48px;
+  }
+
+  .product-market-panel > .flex-w.flex-sb-m {
+    margin-bottom: 24px;
+    padding-bottom: 28px;
+  }
+
+  .product-market-page .market-load-more {
+    padding-top: 46px !important;
+  }
+}
+
 .js-addedwish-b2 .icon-heart1 {
   opacity: 0;
 }
@@ -4150,7 +4242,7 @@ header:not([class]) .wrap-menu-desktop,
 }
 
 .home-market-panel {
-  padding: 34px 34px 42px;
+  padding: 34px 34px 72px;
   border: 1px solid #e3e8f0;
   border-radius: 8px;
   background: #fff;
@@ -4176,9 +4268,24 @@ header:not([class]) .wrap-menu-desktop,
   padding-right: 18px;
 }
 
+.home-market-panel .panel-filter,
+.home-market-panel .panel-search {
+  margin-top: 16px;
+}
+
+.home-market-panel .wrap-filter {
+  border: 1px solid #edf0f5;
+  border-radius: 8px;
+}
+
 .home-market-panel .block2-pic img {
   height: clamp(260px, 28vw, 360px);
   object-fit: cover;
+}
+
+.home-market-panel .market-load-more {
+  padding-top: 64px !important;
+  margin-bottom: 8px;
 }
 
 @media (max-width: 767px) {
@@ -4187,12 +4294,16 @@ header:not([class]) .wrap-menu-desktop,
   }
 
   .home-market-panel {
-    padding: 24px 16px 30px;
+    padding: 24px 16px 54px;
   }
 
   .home-market-toolbar {
     margin-bottom: 24px;
     padding-bottom: 28px;
+  }
+
+  .home-market-panel .market-load-more {
+    padding-top: 46px !important;
   }
 }
 

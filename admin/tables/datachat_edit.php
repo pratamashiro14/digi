@@ -45,6 +45,22 @@ if (!$data) {
     sweetalert_redirect('Chat tidak ditemukan.', 'datachat.php', 'error', 'Gagal!');
 }
 
+$id_pengirim_chat = (int) $data['id_pengirim'];
+$id_penerima_chat = (int) $data['id_penerima'];
+mysqli_query($koneksi, "
+    UPDATE t_chat c
+    INNER JOIN t_user pengirim ON pengirim.id_user = c.id_pengirim
+    INNER JOIN t_user penerima ON penerima.id_user = c.id_penerima
+    SET c.is_read = 1
+    WHERE c.is_read = 0
+      AND pengirim.role = 'pelanggan'
+      AND penerima.role = 'admin'
+      AND (
+          (c.id_pengirim = '$id_pengirim_chat' AND c.id_penerima = '$id_penerima_chat')
+          OR (c.id_pengirim = '$id_penerima_chat' AND c.id_penerima = '$id_pengirim_chat')
+      )
+");
+
 // Get full conversation
 $conversation = mysqli_query($koneksi, "
     SELECT c.*, u1.nama AS nama_pengirim, u2.nama AS nama_penerima

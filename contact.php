@@ -2,6 +2,40 @@
 require_once __DIR__ . '/auth.php'; 
 include 'admin/koneksi.php'; 
 
+if (!is_login()) {
+    sweetalert_redirect('Silakan login terlebih dahulu untuk chat dengan admin.', 'login.php', 'info', 'Login Diperlukan');
+}
+
+$id_saya = (int) current_id();
+$q_admin_chat = mysqli_query($koneksi, "
+    SELECT id_user
+    FROM t_user
+    WHERE role='admin'
+      AND (status='aktif' OR status IS NULL)
+      AND id_user <> '$id_saya'
+    ORDER BY id_user ASC
+    LIMIT 1
+");
+
+if (!$q_admin_chat || mysqli_num_rows($q_admin_chat) === 0) {
+    $q_admin_chat = mysqli_query($koneksi, "
+        SELECT id_user
+        FROM t_user
+        WHERE role='admin'
+          AND id_user <> '$id_saya'
+        ORDER BY id_user ASC
+        LIMIT 1
+    ");
+}
+
+if ($q_admin_chat && mysqli_num_rows($q_admin_chat) > 0) {
+    $admin_chat = mysqli_fetch_assoc($q_admin_chat);
+    header('Location: pesan.php?lawan=' . (int) $admin_chat['id_user']);
+    exit;
+}
+
+sweetalert_redirect('Belum ada akun admin yang tersedia untuk chat saat ini.', 'index.php', 'warning', 'Admin Tidak Tersedia');
+
 // Cek Login
 $is_designer_logged_in = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";
 $nama_desainer = isset($_SESSION['nama_desainer']) ? $_SESSION['nama_desainer'] : 'Desainer';

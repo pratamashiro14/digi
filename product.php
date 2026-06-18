@@ -156,6 +156,10 @@ if(isset($_SESSION['keranjang'])) {
 	<!-- Product -->
 	<div class="bg0 m-t-23 p-b-140 product-market-page">
 		<div class="container">
+			<div class="product-market-panel">
+				<div class="p-b-10">
+					<h3 class="ltext-103 cl5">Pasar Desain</h3>
+				</div>
 			<div class="flex-w flex-sb-m p-b-52">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
 					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">
@@ -211,6 +215,35 @@ if(isset($_SESSION['keranjang'])) {
 				<!-- Filter -->
 				<div class="dis-none panel-filter w-full p-t-10">
 					<div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
+						<div class="product-bid-filter-col p-r-15 p-b-27">
+							<div class="mtext-102 cl2 p-b-15">
+								Waktu Bid
+							</div>
+
+							<ul>
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04 filter-link-active" data-bid-filter="all">
+										Semua Waktu
+									</a>
+								</li>
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04" data-bid-filter="long">
+										Waktu masih lama
+									</a>
+								</li>
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04" data-bid-filter="soon">
+										Sebentar lagi
+									</a>
+								</li>
+								<li class="p-b-6">
+									<a href="#" class="filter-link stext-106 trans-04" data-bid-filter="ended">
+										Waktu sudah habis
+									</a>
+								</li>
+							</ul>
+						</div>
+
 						<div class="filter-col1 p-r-15 p-b-27">
 							<div class="mtext-102 cl2 p-b-15">
 								Sort By
@@ -441,12 +474,23 @@ $result = $conn->query($sql);
             $harga_display = "Rp " . number_format($harga_awal, 0, ',', '.');
             $gambar2 = "admin/uploads/" . $row['gambar']; 
             $kategori = $row['kategori'];
+            $kategori_class = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(['&', '/', ' '], '', $kategori)));
             $waktu_berakhir = isset($row['waktu_berakhir']) ? $row['waktu_berakhir'] : '';
             $harga_beli_langsung = isset($row['harga_beli_langsung']) ? $row['harga_beli_langsung'] : 0;
             $lelang_berakhir = !empty($row['lelang_berakhir_db']);
+            $bid_state = 'long';
+            if (!empty($waktu_berakhir)) {
+                $sisa_detik = strtotime($waktu_berakhir) - time();
+                if ($sisa_detik <= 0) {
+                    $bid_state = 'ended';
+                } elseif ($sisa_detik <= 86400) {
+                    $bid_state = 'soon';
+                }
+            }
+            $search_text = strtolower(trim($judul . ' ' . ($row['nama_desainer'] ?? '') . ' ' . $kategori));
     ?>
 
-    <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo $kategori; ?>">
+    <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo htmlspecialchars($kategori_class); ?>" data-bid-state="<?php echo htmlspecialchars($bid_state); ?>" data-search="<?php echo htmlspecialchars($search_text); ?>">
         
         <?php
             // Get highest bid for this design
@@ -526,14 +570,12 @@ $result = $conn->query($sql);
     </button>
 </div>
 
-</div>
-				</div>
-
 			<!-- Load more -->
 			<div class="market-load-more flex-c-m flex-w w-full p-t-45">
 				<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
 					Lihat Lebih Banyak
 				</a>
+			</div>
 			</div>
 		</div>
 	</div>
@@ -730,6 +772,100 @@ $result = $conn->query($sql);
 	</script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
+	<script>
+		(function($) {
+			var $panel = $('.product-market-panel');
+			var $grid = $panel.find('.isotope-grid');
+			var activeCategory = '*';
+			var activeBidState = 'all';
+			var activeSearch = '';
+
+			if (!$panel.length || !$grid.length) return;
+
+			function updateProductEmptyState() {
+				var isotope = $grid.data('isotope');
+				var visibleCount = isotope ? isotope.filteredItems.length : $grid.find('.isotope-item:visible').length;
+				$panel.find('.market-empty-state').toggleClass('is-visible', visibleCount === 0);
+				$panel.find('.market-load-more').toggle(visibleCount > 0);
+			}
+
+			function productMatches(item) {
+				var $item = $(item);
+				var matchesCategory = activeCategory === '*' || $item.is(activeCategory);
+				var matchesBidState = activeBidState === 'all' || $item.data('bid-state') === activeBidState;
+				var searchText = String($item.data('search') || '').toLowerCase();
+				var matchesSearch = activeSearch === '' || searchText.indexOf(activeSearch) !== -1;
+
+				return matchesCategory && matchesBidState && matchesSearch;
+			}
+
+			function applyProductFilter() {
+				if ($.fn.isotope && $grid.data('isotope')) {
+					$grid.isotope({
+						filter: function() {
+							return productMatches(this);
+						}
+					});
+				} else {
+					$grid.find('.isotope-item').each(function() {
+						$(this).toggle(productMatches(this));
+					});
+				}
+				setTimeout(updateProductEmptyState, 60);
+			}
+
+			$panel.find('.filter-tope-group button').off('click').on('click', function(e) {
+				e.preventDefault();
+				activeCategory = $(this).attr('data-filter') || '*';
+				$panel.find('.filter-tope-group button').removeClass('how-active1');
+				$(this).addClass('how-active1');
+				applyProductFilter();
+			});
+
+			$panel.find('[data-bid-filter]').off('click').on('click', function(e) {
+				e.preventDefault();
+				activeBidState = $(this).data('bid-filter') || 'all';
+				$panel.find('[data-bid-filter]').removeClass('filter-link-active');
+				$(this).addClass('filter-link-active');
+				applyProductFilter();
+			});
+
+			$panel.find('input[name="search-product"]').off('input').on('input', function() {
+				activeSearch = $.trim($(this).val()).toLowerCase();
+				applyProductFilter();
+			});
+
+			$panel.find('.js-show-filter').off('click').on('click', function() {
+				$(this).toggleClass('show-filter');
+				$panel.find('.panel-filter').stop(true, true).slideToggle(300);
+				$panel.find('.js-show-search').removeClass('show-search');
+				$panel.find('.panel-search').stop(true, true).slideUp(300);
+			});
+
+			$panel.find('.js-show-search').off('click').on('click', function() {
+				$(this).toggleClass('show-search');
+				$panel.find('.panel-search').stop(true, true).slideToggle(300);
+				$panel.find('.js-show-filter').removeClass('show-filter');
+				$panel.find('.panel-filter').stop(true, true).slideUp(300);
+			});
+
+			$panel.find('[data-empty-reset]').off('click').on('click', function() {
+				var $allButton = $panel.find('.filter-tope-group button[data-filter="*"]').first();
+				activeCategory = '*';
+				activeBidState = 'all';
+				activeSearch = '';
+				$panel.find('.filter-tope-group button').removeClass('how-active1');
+				$allButton.addClass('how-active1');
+				$panel.find('[data-bid-filter]').removeClass('filter-link-active');
+				$panel.find('[data-bid-filter="all"]').addClass('filter-link-active');
+				$panel.find('input[name="search-product"]').val('');
+				applyProductFilter();
+			});
+
+			$grid.on('arrangeComplete', updateProductEmptyState);
+			setTimeout(updateProductEmptyState, 200);
+		})(jQuery);
+	</script>
 
 	<!-- MODAL LELANG QUICK VIEW -->
 	<div class="js-modal1 modal fade show" id="quickViewModal" style="margin-top: 60px;">

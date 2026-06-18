@@ -385,22 +385,80 @@ if (!$data_admin) {
         </div>
 
  <?php
-// index.php
-include "../koneksi.php";
-// datachat.php
-// Pastikan jalur ini benar jika koneksi.php berada satu folder di atas tables/
-include "../koneksi.php"; 
-
-// Query disesuaikan menggunakan nama tabel pengguna Anda: t_user
 $query = mysqli_query($koneksi, "
-    SELECT 
-        c.*, 
-        p.nama AS nama_pengirim, 
-        r.nama AS nama_penerima
-    FROM t_chat c
-    LEFT JOIN t_user p ON c.id_pengirim = p.id_user
-    LEFT JOIN t_user r ON c.id_penerima = r.id_user
-    ORDER BY c.waktu_kirim DESC
+    SELECT
+        latest.*,
+        pelanggan.id_user AS id_pelanggan,
+        pelanggan.nama AS nama_pelanggan,
+        pelanggan.email AS email_pelanggan,
+        admin_user.nama AS nama_admin_chat,
+        admin_user.id_user AS id_admin_chat,
+        COALESCE(unread.jumlah_unread, 0) AS jumlah_unread,
+        COALESCE(total.jumlah_pesan, 0) AS jumlah_pesan
+    FROM (
+        SELECT c.*
+        FROM t_chat c
+        INNER JOIN t_user pengirim ON pengirim.id_user = c.id_pengirim
+        INNER JOIN t_user penerima ON penerima.id_user = c.id_penerima
+        INNER JOIN (
+            SELECT
+                CASE
+                    WHEN pengirim2.role = 'admin' THEN c2.id_penerima
+                    ELSE c2.id_pengirim
+                END AS id_pelanggan,
+                MAX(c2.waktu_kirim) AS waktu_terakhir
+            FROM t_chat c2
+            INNER JOIN t_user pengirim2 ON pengirim2.id_user = c2.id_pengirim
+            INNER JOIN t_user penerima2 ON penerima2.id_user = c2.id_penerima
+            WHERE (pengirim2.role = 'admin' AND penerima2.role = 'pelanggan')
+               OR (pengirim2.role = 'pelanggan' AND penerima2.role = 'admin')
+            GROUP BY id_pelanggan
+        ) last_chat
+          ON last_chat.waktu_terakhir = c.waktu_kirim
+         AND last_chat.id_pelanggan = CASE
+             WHEN pengirim.role = 'admin' THEN c.id_penerima
+             ELSE c.id_pengirim
+         END
+        WHERE (pengirim.role = 'admin' AND penerima.role = 'pelanggan')
+           OR (pengirim.role = 'pelanggan' AND penerima.role = 'admin')
+    ) latest
+    INNER JOIN t_user pengirim_latest ON pengirim_latest.id_user = latest.id_pengirim
+    INNER JOIN t_user penerima_latest ON penerima_latest.id_user = latest.id_penerima
+    INNER JOIN t_user pelanggan
+      ON pelanggan.id_user = CASE
+          WHEN pengirim_latest.role = 'admin' THEN latest.id_penerima
+          ELSE latest.id_pengirim
+      END
+    INNER JOIN t_user admin_user
+      ON admin_user.id_user = CASE
+          WHEN pengirim_latest.role = 'admin' THEN latest.id_pengirim
+          ELSE latest.id_penerima
+      END
+    LEFT JOIN (
+        SELECT c3.id_pengirim AS id_pelanggan, COUNT(*) AS jumlah_unread
+        FROM t_chat c3
+        INNER JOIN t_user pengirim3 ON pengirim3.id_user = c3.id_pengirim
+        INNER JOIN t_user penerima3 ON penerima3.id_user = c3.id_penerima
+        WHERE pengirim3.role = 'pelanggan'
+          AND penerima3.role = 'admin'
+          AND c3.is_read = 0
+        GROUP BY c3.id_pengirim
+    ) unread ON unread.id_pelanggan = pelanggan.id_user
+    LEFT JOIN (
+        SELECT
+            CASE
+                WHEN pengirim4.role = 'admin' THEN c4.id_penerima
+                ELSE c4.id_pengirim
+            END AS id_pelanggan,
+            COUNT(*) AS jumlah_pesan
+        FROM t_chat c4
+        INNER JOIN t_user pengirim4 ON pengirim4.id_user = c4.id_pengirim
+        INNER JOIN t_user penerima4 ON penerima4.id_user = c4.id_penerima
+        WHERE (pengirim4.role = 'admin' AND penerima4.role = 'pelanggan')
+           OR (pengirim4.role = 'pelanggan' AND penerima4.role = 'admin')
+        GROUP BY id_pelanggan
+    ) total ON total.id_pelanggan = pelanggan.id_user
+    ORDER BY latest.waktu_kirim DESC, latest.id_chat DESC
 ");
 ?>
 
@@ -416,14 +474,16 @@ $query = mysqli_query($koneksi, "
                     <div class="card-title">Tabel Data Percakapan</div>
                 </div>
 
-                    <table class="table table-hover">
+                    <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
-                                <th>Pengirim</th>
-                                <th>Penerima</th>
-                                <th>Isi Pesan</th>
-                                <th>Waktu Kirim</th>
+                                <th>Pelanggan</th>
+                                <th>Admin Tujuan</th>
+                                <th>Pesan Terakhir</th>
+                                <th>Total Pesan</th>
+                                <th>Belum Dibaca</th>
+                                <th>Waktu Terakhir</th>
                                 <th>Aksi</th>
                             </tr>
                         </thead>
@@ -431,26 +491,37 @@ $query = mysqli_query($koneksi, "
                             <?php
                             $no = 1;
                             // Cek apakah query berhasil dan ada data
-                            if (mysqli_num_rows($query) == 0) {
-                                echo "<tr><td colspan='6' class='text-center text-muted'>Belum ada data chat</td></tr>";
+                            if (!$query || mysqli_num_rows($query) == 0) {
+                                echo "<tr><td colspan='8' class='text-center text-muted py-4'>Belum ada pelanggan yang chat dengan admin</td></tr>";
                             } else {
                                 while ($data = mysqli_fetch_assoc($query)) {
+                                    $unread = (int) ($data['jumlah_unread'] ?? 0);
                             ?>
                             <tr>
                                 <td><?= $no++; ?></td>
-                                <td><?= htmlspecialchars($data['nama_pengirim'] ?? 'ID: ' . $data['id_pengirim']); ?></td>
-                                <td><?= htmlspecialchars($data['nama_penerima'] ?? 'ID: ' . $data['id_penerima']); ?></td>
-                                <td><?= htmlspecialchars(substr($data['isi_pesan'], 0, 80)); ?><?= strlen($data['isi_pesan']) > 80 ? '...' : ''; ?></td>
-                                <td><?= $data['waktu_kirim']; ?></td>
                                 <td>
-                                    <a href="datachat_edit.php?id=<?= $data['id_chat']; ?>" class="text-primary me-2" title="Edit Pesan">
-                                        <i class="fas fa-pencil-alt"></i>
-                                    </a>
-                                    <a href="datachat_hapus.php?id=<?= $data['id_chat']; ?>" 
-                                        class="text-danger" 
-                                        data-swal-confirm="Pesan ini akan dihapus permanen."
-                                        title="Hapus Pesan">
-                                        <i class="fas fa-trash-alt"></i>
+                                    <div class="fw-bold"><?= htmlspecialchars($data['nama_pelanggan'] ?? 'ID: ' . $data['id_pelanggan']); ?></div>
+                                    <small class="text-muted"><?= htmlspecialchars($data['email_pelanggan'] ?? ''); ?></small>
+                                </td>
+                                <td><?= htmlspecialchars($data['nama_admin_chat'] ?? 'Admin'); ?></td>
+                                <td>
+                                    <div class="text-muted small mb-1">
+                                        <?= ((int) $data['id_pengirim'] === (int) $data['id_pelanggan']) ? 'Pelanggan' : 'Admin'; ?>
+                                    </div>
+                                    <?= htmlspecialchars(substr($data['isi_pesan'], 0, 95)); ?><?= strlen($data['isi_pesan']) > 95 ? '...' : ''; ?>
+                                </td>
+                                <td><span class="badge bg-secondary"><?= (int) ($data['jumlah_pesan'] ?? 0); ?></span></td>
+                                <td>
+                                    <?php if ($unread > 0) { ?>
+                                        <span class="badge bg-danger"><?= $unread; ?> baru</span>
+                                    <?php } else { ?>
+                                        <span class="badge bg-success">Sudah dibaca</span>
+                                    <?php } ?>
+                                </td>
+                                <td><?= date('d M Y, H:i', strtotime($data['waktu_kirim'])); ?></td>
+                                <td>
+                                    <a href="datachat_edit.php?id=<?= $data['id_chat']; ?>" class="btn btn-sm btn-primary" title="Lihat Percakapan">
+                                        <i class="fas fa-comments me-1"></i> Lihat Chat
                                     </a>
                                 </td>
                             </tr>

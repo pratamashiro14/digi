@@ -453,7 +453,8 @@ include '../koneksi.php';
     <div class="card-body">
       <a href="datapengguna_tambah.php" class="btn btn-primary mb-3">+ Tambah Data</a>
 
-      <table class="table table-hover">
+      <div class="table-responsive">
+      <table class="table table-hover align-middle" style="min-width: 1000px;">
         <thead class="table-light">
           <tr>
             <th scope="col" style="width: 5%">No</th>
@@ -566,6 +567,7 @@ include '../koneksi.php';
           ?>
         </tbody>
       </table>
+      </div>
     </div>
   </div>
 </div>

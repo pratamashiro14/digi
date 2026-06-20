@@ -64,7 +64,7 @@ function badge_status($status) {
 <html lang="en">
   <head>
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>Data Pencairan - DigiDesain Admin</title>
+    <title>Data Pencairan - DensCreative Admin</title>
     <meta content="width=device-width, initial-scale=1.0, shrink-to-fit=no" name="viewport" />
     <link rel="icon" href="../assets/img/kaiadmin/favicon.ico" type="image/x-icon" />
 
@@ -90,7 +90,7 @@ function badge_status($status) {
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
-    <link rel="stylesheet" href="../assets/css/digidesain-admin.css" />
+    <link rel="stylesheet" href="../assets/css/denscreative-admin.css" />
     <link rel="stylesheet" href="../assets/css/demo.css" />
   </head>
   <body>

@@ -23,10 +23,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                 $reset_url = "http://localhost/digi/reset_password.php?token=$token";
                 $_SESSION['user_reset_url'] = $reset_url;
 
-                $subject = "Reset Password DIGIDESAIN";
+                $subject = "Reset Password DensCreative";
                 $body = "<html><body style='font-family:Arial,sans-serif;'>
                     <div style='max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:10px;'>
-                        <h2 style='color:#4e60ff;'>Reset Password DIGIDESAIN</h2>
+                        <h2 style='color:#4e60ff;'>Reset Password DensCreative</h2>
                         <p>Anda meminta reset password untuk akun Anda.</p>
                         <p>Klik link berikut untuk membuat password baru (berlaku 1 jam):</p>
                         <p><a href='$reset_url' style='background:#4e60ff;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;display:inline-block;'>Reset Password</a></p>
@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 
                 $headers  = "MIME-Version: 1.0\r\n";
                 $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-                $headers .= "From: noreply@digidesain.com\r\n";
+                $headers .= "From: noreply@denscreative.com\r\n";
 
                 $sent = @mail($email_safe, $subject, $body, $headers);
 
@@ -63,7 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password - DIGIDESAIN</title>
+    <title>Lupa Password - DensCreative</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
@@ -110,7 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 <body>
 <div class="auth-card">
     <div class="icon-wrapper"><i class="fa-solid fa-lock-open"></i></div>
-    <h3 class="brand-title">DIGIDESAIN</h3>
+    <h3 class="brand-title">DensCreative</h3>
     <p class="brand-sub">Pulihkan akses ke akunmu</p>
 
     <?php if (!empty($message)): ?>

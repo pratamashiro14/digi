@@ -111,7 +111,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
     <link rel="stylesheet" href="../assets/css/bootstrap.min.css" />
     <link rel="stylesheet" href="../assets/css/plugins.min.css" />
     <link rel="stylesheet" href="../assets/css/kaiadmin.min.css" />
-    <link rel="stylesheet" href="../assets/css/digidesain-admin.css" />
+    <link rel="stylesheet" href="../assets/css/denscreative-admin.css" />
     <style>
         .transaction-image {
             width: 100%;
@@ -142,7 +142,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
         <div class="sidebar-logo">
             <div class="logo-header" data-background-color="dark">
                 <a href="../beranda.php" class="logo">
-                    <img src="../assets/img/dens.png" alt="DIGIDESAIN" class="navbar-brand" />
+                    <img src="../assets/img/dens.png" alt="DensCreative" class="navbar-brand" />
                 </a>
                 <div class="nav-toggle">
                     <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
@@ -173,7 +173,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
             <div class="main-header-logo">
                 <div class="logo-header" data-background-color="dark">
                     <a href="../beranda.php" class="logo">
-                        <img src="../assets/img/dens.png" alt="DIGIDESAIN" class="navbar-brand" />
+                        <img src="../assets/img/dens.png" alt="DensCreative" class="navbar-brand" />
                     </a>
                     <div class="nav-toggle">
                         <button class="btn btn-toggle toggle-sidebar"><i class="gg-menu-right"></i></button>
@@ -300,7 +300,7 @@ $status_badge = $status_lokal === 'berhasil' || $status_lokal === 'settlement'
                             </div>
 
                             <div class="col-lg-5">
-                                <img src="<?= htmlspecialchars($gambar_karya_url) ?>" alt="Gambar karya" class="transaction-image mb-3" onerror="this.src='../assets/img/digidesain.png'">
+                                <img src="<?= htmlspecialchars($gambar_karya_url) ?>" alt="Gambar karya" class="transaction-image mb-3" onerror="this.src='../assets/img/dens.png'">
                                 <?php if ($full_bukti_url) { ?>
                                     <p class="text-muted small mb-2">Bukti manual: <?= $bukti_file_name ?></p>
                                     <a href="<?= htmlspecialchars($full_bukti_url) ?>" target="_blank" class="btn btn-primary w-100">

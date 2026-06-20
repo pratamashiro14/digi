@@ -205,7 +205,7 @@ function tgl_id_premium($tgl) {
 	</section>
 
 	<footer class="membership-footer">
-        <div class="container">DIGIDESAIN Premium membantu pembeli dan desainer bekerja lebih nyaman.</div>
+		<div class="container">DensCreative Premium membantu pembeli dan desainer bekerja lebih nyaman.</div>
 	</footer>
 
 	<div class="btn-back-to-top" id="myBtn">

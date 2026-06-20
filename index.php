@@ -501,6 +501,74 @@ function render_designer_stat_card($stat) {
 	</section>
     <?php } ?>
 
+	<section class="home-faq-section" aria-labelledby="home-faq-title">
+		<div class="container">
+			<div class="home-faq-layout">
+				<div class="home-faq-intro">
+					<span class="home-faq-icon" aria-hidden="true"><i class="zmdi zmdi-help-outline"></i></span>
+					<span class="home-faq-eyebrow">Pusat Bantuan</span>
+					<h2 id="home-faq-title">Ada yang ingin kamu tanyakan?</h2>
+					<p>Temukan jawaban singkat seputar pembelian, lelang, pembayaran, dan penjualan karya di Digital Magician.</p>
+				</div>
+
+				<div class="home-faq-list">
+					<details class="home-faq-item" open>
+						<summary>Bagaimana cara membeli atau melakukan bid?</summary>
+						<div class="home-faq-answer">
+							<p>Pilih karya yang kamu inginkan, buka halaman detail, lalu masukkan nominal bid. Jika karya dijual dengan harga tetap, kamu dapat langsung melanjutkan ke pembayaran.</p>
+						</div>
+					</details>
+
+					<details class="home-faq-item">
+						<summary>Apa yang terjadi jika saya memenangkan lelang?</summary>
+						<div class="home-faq-answer">
+							<p>Pemenang lelang akan menerima pemberitahuan dan dapat menyelesaikan pembayaran melalui halaman riwayat transaksi.</p>
+						</div>
+					</details>
+
+					<details class="home-faq-item">
+						<summary>Metode pembayaran apa yang tersedia?</summary>
+						<div class="home-faq-answer">
+							<p>Pembayaran diproses dengan aman melalui Midtrans. Pilihan metode pembayaran yang tersedia akan ditampilkan saat kamu melakukan checkout.</p>
+						</div>
+					</details>
+
+					<details class="home-faq-item">
+						<summary>Bagaimana cara mengunduh karya setelah pembayaran?</summary>
+						<div class="home-faq-answer">
+							<p>Setelah pembayaran berhasil dikonfirmasi, file karya dapat diunduh dari menu riwayat transaksi pada akunmu.</p>
+						</div>
+					</details>
+
+					<details class="home-faq-item">
+						<summary>Bagaimana cara menjadi desainer dan menjual karya?</summary>
+						<div class="home-faq-answer">
+							<p>Daftar sebagai desainer, lengkapi profil, lalu unggah karya melalui dashboard. Karya akan ditinjau terlebih dahulu sebelum tampil di pasar.</p>
+						</div>
+					</details>
+
+					<details class="home-faq-item">
+						<summary>Apakah transaksi di Digital Magician aman?</summary>
+						<div class="home-faq-answer">
+							<p>Ya. Status pembayaran diverifikasi oleh sistem dan akses unduhan diberikan setelah transaksi berhasil dikonfirmasi.</p>
+						</div>
+					</details>
+				</div>
+
+				<div class="home-faq-support">
+					<div class="home-faq-support-icon" aria-hidden="true"><i class="zmdi zmdi-headset-mic"></i></div>
+					<div class="home-faq-support-copy">
+						<strong>Masih belum menemukan jawabannya?</strong>
+						<span>Tim kami siap membantu pertanyaanmu.</span>
+					</div>
+					<a href="contact.php" class="home-faq-contact">
+						Hubungi Kami <i class="zmdi zmdi-arrow-right" aria-hidden="true"></i>
+					</a>
+				</div>
+			</div>
+		</div>
+	</section>
+
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
 			<div class="row">

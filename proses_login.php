@@ -30,10 +30,10 @@ if ($cek_email > 0) {
 
         if ($role === 'designer' || $role === 'desainer') {
             login_as_designer($data['id_user'], $data['nama'], $data['email']);
-            redirect_with_alert('Login berhasil sebagai Desainer! Selamat datang, ' . $data['nama'] . '.', 'index.php', 'success', 'Login Berhasil!');
+            sweetalert_redirect_auto('Login berhasil sebagai Desainer! Selamat datang, ' . $data['nama'] . '.', 'index.php', 'success', 'Login Berhasil!');
         } else {
             login_as_user($data['id_user'], $data['nama'], $data['email']);
-            redirect_with_alert('Login berhasil sebagai Pembeli! Selamat datang, ' . $data['nama'] . '.', 'product.php', 'success', 'Login Berhasil!');
+            sweetalert_redirect_auto('Login berhasil sebagai Pembeli! Selamat datang, ' . $data['nama'] . '.', 'product.php', 'success', 'Login Berhasil!');
         }
     } else {
         // Password salah

@@ -1,7 +1,7 @@
 <?php
 /**
  * ============================================================
- *  AUTH.PHP — Pusat pengelolaan SESSION & ROLE (DIGIDESAIN)
+ *  AUTH.PHP — Pusat pengelolaan SESSION & ROLE (DensCreative)
  * ============================================================
  * Tujuan: menghilangkan bug "logout mulu" / role kacau.
  *

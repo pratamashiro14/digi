@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Masuk / Daftar - DIGIDESAIN</title>
+    <title>Masuk / Daftar - DensCreative</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -22,8 +22,14 @@
             border-radius: 18px; padding: 36px 32px;
             box-shadow: 0 12px 40px rgba(78, 96, 255, 0.12);
         }
-        .brand-title { text-align: center; font-weight: 700; color: var(--brand); margin-bottom: 4px; letter-spacing: .5px; }
-        .brand-sub { text-align: center; color: #888; font-size: 13px; margin-bottom: 26px; }
+        .auth-brand {
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 30px; text-decoration: none;
+        }
+        .auth-brand img {
+            display: block; width: min(250px, 78%); height: auto;
+            object-fit: contain;
+        }
 
         /* Tab */
         .nav-pills { background: #f1f3ff; border-radius: 50px; padding: 5px; margin-bottom: 26px; gap: 4px; }
@@ -76,8 +82,9 @@
     <a href="index.php" class="back-home">&larr; Beranda</a>
 
     <div class="auth-card">
-        <h3 class="brand-title">DIGIDESAIN</h3>
-        <p class="brand-sub">Marketplace Desain Grafis</p>
+        <a href="index.php" class="auth-brand" aria-label="Kembali ke beranda DensCreative">
+            <img src="images/icons/dens.png" alt="DensCreative">
+        </a>
 
         <form action="proses_login.php" method="POST" class="needs-validation" novalidate>
             <div class="mb-3">

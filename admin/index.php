@@ -19,7 +19,7 @@ if (isset($_POST['login'])) {
 
         if ($pw_ok) {
             login_as_admin($data['id_admin']);
-            sweetalert_redirect('Selamat datang di dashboard admin.', 'beranda.php', 'success', 'Login Berhasil!');
+            sweetalert_redirect_auto('Selamat datang di dashboard admin.', 'beranda.php', 'success', 'Login Berhasil!');
         } else {
             sweetalert_back('Email atau password salah.', 'error', 'Login Admin Gagal!');
         }
@@ -33,7 +33,7 @@ if (isset($_POST['login'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin | DIGIDESAIN</title>
+    <title>Login Admin | DensCreative</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -102,7 +102,7 @@ if (isset($_POST['login'])) {
 </head>
 <body>
     <div class="login-card">
-        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DensCreative Logo">
         <h4>Admin</h4>
         <?php if (!empty($error)) echo "<div class='alert alert-danger'>$error</div>"; ?>
         <form method="post">

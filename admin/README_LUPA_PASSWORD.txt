@@ -10,7 +10,7 @@
 📌 RINGKASAN SINGKAT
 ═══════════════════════════════════════════════════════════════════════════════
 
-Anda diminta membuat sistem "Lupa Password" untuk admin DIGIDESAIN.
+Anda diminta membuat sistem "Lupa Password" untuk admin DensCreative.
 ✅ SUDAH SELESAI! Sistemnya sudah lengkap, aman, dan siap digunakan.
 
 Fitur Utama:
@@ -223,6 +223,6 @@ Technical detail?
 
 ═══════════════════════════════════════════════════════════════════════════════
 
-TERIMA KASIH TELAH MENGGUNAKAN SISTEM LUPA PASSWORD DIGIDESAIN! 🎉
+TERIMA KASIH TELAH MENGGUNAKAN SISTEM LUPA PASSWORD DENSCREATIVE! 🎉
 
 ═══════════════════════════════════════════════════════════════════════════════

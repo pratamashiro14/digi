@@ -117,7 +117,7 @@ if ($id_lawan) {
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <title>Pesan - DIGIDESAIN</title>
+    <title>Pesan - DensCreative</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     

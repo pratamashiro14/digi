@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reset Password - Admin DIGIDESAIN</title>
+    <title>Reset Password - Admin DensCreative</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -160,7 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['token'])) {
 </head>
 <body>
     <div class="reset-card">
-        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DensCreative Logo">
         <h4>Reset Password</h4>
         <p>Masukkan password baru Anda</p>
 

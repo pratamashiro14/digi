@@ -1,6 +1,6 @@
-# Panduan Setup DIGIDESAIN (untuk komputer baru / teman)
+# Panduan Setup DensCreative (untuk komputer baru / teman)
 
-Panduan ini untuk menjalankan proyek **DIGIDESAIN** di komputer baru setelah `git clone`.
+Panduan ini untuk menjalankan proyek **DensCreative** di komputer baru setelah `git clone`.
 Aplikasi ini berbasis **PHP + MySQL** dan dijalankan lewat **XAMPP**.
 
 > **Penting:** File `config.php` (berisi kredensial database & key Midtrans) **TIDAK ikut**

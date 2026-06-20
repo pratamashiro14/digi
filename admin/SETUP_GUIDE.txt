@@ -100,7 +100,7 @@ Edit `php.ini`:
 [mail function]
 SMTP = smtp.gmail.com
 smtp_port = 587
-sendmail_from = "noreply@digidesain.com"
+sendmail_from = "noreply@denscreative.com"
 
 ; Atau bisa menggunakan provider lain seperti:
 ; SMTP = smtp.mailtrap.io

@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                 $_SESSION['password_reset_email'] = $email;
 
                 // Siapkan email
-                $subject = "Reset Password Admin DIGIDESAIN";
+                $subject = "Reset Password Admin DensCreative";
                 $message_body = "
                 <html>
                 <head>
@@ -46,7 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                 </head>
                 <body style='font-family: Arial, sans-serif;'>
                     <div style='max-width: 600px; margin: 0 auto; background: #f5f5f5; padding: 20px; border-radius: 10px;'>
-                        <h2 style='color: #333;'>Reset Password Admin DIGIDESAIN</h2>
+                        <h2 style='color: #333;'>Reset Password Admin DensCreative</h2>
                         <p>Anda telah meminta untuk mereset password admin Anda.</p>
                         <p>Klik link di bawah untuk reset password (link berlaku 1 jam):</p>
                         <p><a href='$reset_url' style='background: #7b61ff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;'>Reset Password</a></p>
@@ -59,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
                 // Header email
                 $headers = "MIME-Version: 1.0" . "\r\n";
                 $headers .= "Content-type: text/html; charset=UTF-8" . "\r\n";
-                $headers .= "From: admin@digidesain.com" . "\r\n";
+                $headers .= "From: admin@denscreative.com" . "\r\n";
 
                 // Coba kirim email
                 // Di localhost XAMPP, email() mungkin tidak bekerja (normal!)
@@ -96,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lupa Password - Admin DIGIDESAIN</title>
+    <title>Lupa Password - Admin DensCreative</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
         body {
@@ -179,7 +179,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 </head>
 <body>
     <div class="reset-card">
-        <img src="assets/img/dens.png" alt="DIGIDESAIN Logo">
+        <img src="assets/img/dens.png" alt="DensCreative Logo">
         <h4>Lupa Password?</h4>
         <p>Masukkan email Anda untuk menerima link reset password</p>
 

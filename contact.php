@@ -247,7 +247,7 @@ if(isset($_SESSION['keranjang'])) {
 							</span>
 
 							<p class="stext-115 cl1 size-213 p-t-18" style="color: #667eea; font-weight: 600;">
-								Digidesain@gmail.com
+								DensCreative@gmail.com
 							</p>
 						</div>
 					</div>

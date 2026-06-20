@@ -1,4 +1,4 @@
-# Sistem Lupa Password Admin DIGIDESAIN
+# Sistem Lupa Password Admin DensCreative
 
 ## Deskripsi Fitur
 Sistem lupa password memungkinkan admin untuk mereset password mereka melalui email verification dengan token yang aman.
@@ -66,7 +66,7 @@ Jika email tidak ada:
 ```
 Email diterima di inbox admin dengan format HTML
 Konten email:
-  - Judul: "Reset Password Admin DIGIDESAIN"
+  - Judul: "Reset Password Admin DensCreative"
   - Isi: Penjelasan dan tombol "Reset Password"
   - Link backup: URL lengkap untuk copy-paste
 ```
@@ -160,7 +160,7 @@ Edit `php.ini`:
 ```
 SMTP = smtp.gmail.com
 smtp_port = 587
-sendmail_from = "admin@digidesain.com"
+sendmail_from = "admin@denscreative.com"
 ```
 
 **Option 3: Testing Tanpa Email Real**

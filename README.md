@@ -1,4 +1,4 @@
-# DIGIDESAIN — Marketplace Desain
+# DensCreative — Marketplace Desain
 
 Aplikasi web marketplace desain grafis: tempat **desainer** menjual karya dan mengikuti lelang,
 serta **pembeli** membeli desain, melakukan pembayaran (Midtrans), dan berkomunikasi lewat chat.

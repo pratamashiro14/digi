@@ -3,12 +3,14 @@
  * SweetAlert response helpers for process/login/CRUD endpoints.
  */
 
-function sweetalert_response($title, $message, $icon = 'info', $redirect = null, $go_back = false) {
+function sweetalert_response($title, $message, $icon = 'info', $redirect = null, $go_back = false, $auto_close_ms = null) {
     $title_json = json_encode($title, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $message_json = json_encode($message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $icon_json = json_encode($icon, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $redirect_json = json_encode($redirect, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $go_back_json = $go_back ? 'true' : 'false';
+    $button_json = $auto_close_ms === null ? '"OK"' : 'false';
+    $timer_json = $auto_close_ms === null ? 'null' : (string) max(0, (int) $auto_close_ms);
 
     echo <<<HTML
 <!doctype html>
@@ -25,7 +27,10 @@ function sweetalert_response($title, $message, $icon = 'info', $redirect = null,
             title: {$title_json},
             text: {$message_json},
             icon: {$icon_json},
-            button: "OK"
+            button: {$button_json},
+            timer: {$timer_json},
+            closeOnClickOutside: false,
+            closeOnEsc: false
         }).then(function () {
             var redirect = {$redirect_json};
             if (redirect) {
@@ -47,6 +52,14 @@ function sweetalert_redirect($message, $redirect, $icon = 'success', $title = nu
     }
 
     sweetalert_response($title, $message, $icon, $redirect);
+}
+
+function sweetalert_redirect_auto($message, $redirect, $icon = 'success', $title = null, $delay_ms = 3000) {
+    if ($title === null) {
+        $title = $icon === 'success' ? 'Berhasil!' : ($icon === 'error' ? 'Gagal!' : 'Informasi');
+    }
+
+    sweetalert_response($title, $message, $icon, $redirect, false, $delay_ms);
 }
 
 function sweetalert_back($message, $icon = 'error', $title = null) {

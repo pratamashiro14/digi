@@ -48,8 +48,11 @@ if (isset($_POST['simpan_karya'])) {
     $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
     $kategori = $_POST['kategori']; 
     $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
-    $harga = $_POST['harga'];
-    $harga_beli_langsung = empty($_POST['harga_beli_langsung']) ? 0 : $_POST['harga_beli_langsung'];
+    // Bersihkan format ribuan (titik) & karakter non-digit, simpan angka murni
+    $harga = preg_replace('/\D/', '', $_POST['harga']);
+    $harga = ($harga === '') ? 0 : $harga;
+    $harga_beli_langsung = preg_replace('/\D/', '', $_POST['harga_beli_langsung'] ?? '');
+    $harga_beli_langsung = ($harga_beli_langsung === '') ? 0 : $harga_beli_langsung;
     $waktu_berakhir = $_POST['waktu_berakhir'];
 
     // Upload Gambar
@@ -113,6 +116,9 @@ if (isset($_POST['simpan_karya'])) {
 
         .form-input-custom { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 5px; }
         .form-input-custom:focus { border-color: #4e8eff; outline: none; }
+        .input-rp { position: relative; }
+        .input-rp .rp-prefix { position: absolute; left: 12px; top: 12px; color: #888; font-size: 14px; pointer-events: none; }
+        .input-rp input { padding-left: 36px; }
 
         .btn-simpan-upload { background: linear-gradient(90deg, #4e8eff, #6b4eff); color: #fff; padding: 12px 30px; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 10px; transition: 0.3s; }
         .btn-simpan-upload:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(78, 142, 255, 0.4); }
@@ -190,11 +196,17 @@ if (isset($_POST['simpan_karya'])) {
                             <div class="row m-b-15">
                                 <div class="col-md-4">
                                     <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#4e8eff;">Harga Awal (Open Bid)</label>
-                                    <input type="number" name="harga" class="form-input-custom" placeholder="Rp 0" required>
+                                    <div class="input-rp">
+                                        <span class="rp-prefix">Rp</span>
+                                        <input type="text" name="harga" class="form-input-custom input-harga" inputmode="numeric" placeholder="0" required>
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#f39c12;">Harga Beli Langsung</label>
-                                    <input type="number" name="harga_beli_langsung" class="form-input-custom" placeholder="Opsional (Rp)">
+                                    <div class="input-rp">
+                                        <span class="rp-prefix">Rp</span>
+                                        <input type="text" name="harga_beli_langsung" class="form-input-custom input-harga" inputmode="numeric" placeholder="Opsional">
+                                    </div>
                                 </div>
                                 <div class="col-md-4">
                                     <label class="stext-102 cl3 p-b-5" style="font-weight:bold; color:#e74c3c;">Batas Waktu Lelang</label>
@@ -290,10 +302,25 @@ if (isset($_POST['simpan_karya'])) {
             }
         }
 
+        // --- FORMAT HARGA: tambahkan titik pemisah ribuan saat mengetik ---
+        function formatRibuan(el) {
+            var digits = el.value.replace(/\D/g, '');
+            el.value = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+        document.querySelectorAll('.input-harga').forEach(function(el) {
+            el.addEventListener('input', function() { formatRibuan(el); });
+        });
+        // Buang titik sebelum form dikirim, supaya backend menerima angka murni
+        function bersihkanHarga(form) {
+            form.querySelectorAll('.input-harga').forEach(function(el) {
+                el.value = el.value.replace(/\D/g, '');
+            });
+        }
+
         // --- 1. SCRIPT POPUP WARNING SEBELUM UPLOAD ---
         $('#formUpload').on('submit', function(e) {
             e.preventDefault(); // Tahan dulu, jangan langsung kirim
-            
+
             swal({
                 title: "Penting!",
                 text: "Sebelum kamu upload karya ini, apabila karya tidak berhasil terjual dalam batas waktu lelang, kamu bisa mempostingnya ulang nanti. Apakah data sudah benar?",
@@ -303,8 +330,9 @@ if (isset($_POST['simpan_karya'])) {
             })
             .then((willUpload) => {
                 if (willUpload) {
-                    // Kalau user klik 'Ya', baru kita kirim form-nya secara manual
-                    this.submit(); 
+                    // Kalau user klik 'Ya', bersihkan titik lalu kirim form-nya secara manual
+                    bersihkanHarga(this);
+                    this.submit();
                 } else {
                     // Kalau 'Cek Lagi', diam saja
                 }

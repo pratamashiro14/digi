@@ -88,17 +88,19 @@ if(isset($_SESSION['keranjang'])) {
 		.btn-gradient-blue { background: linear-gradient(90deg, #4e8eff, #6b4eff); color: #fff; box-shadow: 0 4px 15px rgba(107, 78, 255, 0.3); font-size: 16px; margin-top: 15px; }
 		.btn-gradient-blue:hover { background: linear-gradient(90deg, #3b75dd, #5538e0); color: #fff; transform: translateY(-2px); }
 
-		/* TIMER MERAH DI FOTO PRODUK */
+		/* TIMER (chip di bawah info karya, bukan di atas gambar) */
 		.label-timer {
-			position: absolute; top: 10px; right: 10px;
-			background-color: #d90429; color: #fff;
-			padding: 6px 12px; border-radius: 5px;
-			font-size: 13px; font-weight: 800; letter-spacing: 0.5px;
-			box-shadow: 0 4px 8px rgba(0,0,0,0.3); z-index: 10;
-			display: flex; align-items: center; gap: 6px; border: 1px solid #fff;
+			display: inline-flex; align-items: center; gap: 6px;
+			margin-top: 8px;
+			background-color: #fee2e2; color: #dc2626;
+			padding: 4px 10px; border-radius: 6px;
+			font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+			border: 1px solid #fecaca;
 		}
-		.label-timer i { font-size: 15px; }
-		.label-timer.expired { background-color: #333; border-color: #555; }
+		.label-timer i { font-size: 13px; }
+		.label-timer.expired {
+			background-color: #f1f5f9; color: #64748b; border-color: #e2e8f0;
+		}
 	</style>
 </head>
 <body class="animsition">
@@ -609,13 +611,7 @@ $result = $conn->query($sql);
                      alt="<?php echo $judul; ?>" 
                      style="width: 100%; aspect-ratio: 4/5; object-fit: cover; display: block;">
 
-                <?php if(!empty($waktu_berakhir)) { ?>
-                    <div class="label-timer" data-waktu="<?php echo $waktu_berakhir; ?>">
-                        <i class="fa fa-clock-o"></i> Loading...
-                    </div>
-                <?php } ?>
-
-                <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1" 
+                <a href="#" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04 js-show-modal1"
                    data-id="<?php echo $id; ?>"
                    data-judul="<?php echo htmlspecialchars($judul); ?>"
                    data-harga="<?php echo $harga_awal; ?>"
@@ -643,6 +639,12 @@ $result = $conn->query($sql);
                         <a href="toko_desainer.php?id=<?php echo $row['id_designer']; ?>" class="stext-107 cl5 hov-cl1 trans-04" style="font-size:12px; margin-top:5px;">
                             <i class="fa fa-user-circle-o"></i> <?php echo htmlspecialchars($row['nama_desainer']); ?>
                         </a>
+                    <?php } ?>
+
+                    <?php if(!empty($waktu_berakhir)) { ?>
+                        <div class="label-timer" data-waktu="<?php echo $waktu_berakhir; ?>">
+                            <i class="fa fa-clock-o"></i> Loading...
+                        </div>
                     <?php } ?>
                 </div>
 
@@ -1048,11 +1050,10 @@ $result = $conn->query($sql);
 						var days = Math.floor(t / (1000 * 60 * 60 * 24));
 						var hours = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 						var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
-						var seconds = Math.floor((t % (1000 * 60)) / 1000);
-						
+
 						var tampilan = '<i class="fa fa-clock-o"></i> ';
 						if (days > 0) { tampilan += days + "h "; }
-						tampilan += hours + "j " + minutes + "m " + seconds + "d";
+						tampilan += hours + "j " + minutes + "m";
 						timer.innerHTML = tampilan;
 					} else {
 						timer.innerHTML = "WAKTU HABIS";

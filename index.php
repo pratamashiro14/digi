@@ -902,6 +902,7 @@ function render_designer_stat_card($stat) {
 	</section>
 	<?php } ?>
 
+	<?php if ($role_home !== 'designer') { ?>
 	<footer class="bg3 p-t-75 p-b-32">
 		<div class="container">
 			<div class="row">
@@ -947,6 +948,7 @@ function render_designer_stat_card($stat) {
 			</div>
 		</div>
 	</footer>
+	<?php } ?>
 
 	<div class="btn-back-to-top" id="myBtn"><span class="symbol-btn-back-to-top"><i class="zmdi zmdi-chevron-up"></i></span></div>
 

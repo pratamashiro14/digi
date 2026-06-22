@@ -16,30 +16,57 @@ if (!in_array($works_view, ['all', 'auction-create', 'active'], true)) {
 // 2. LOGIKA HAPUS KARYA
 if (isset($_GET['hapus'])) {
     $id_hapus = (int) $_GET['hapus'];
+    $is_ajax_delete = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+    $delete_error = null;
+    $row = null;
     
     // Ambil info gambar & file master untuk dihapus fisiknya
     $q_data = mysqli_query($koneksi, "SELECT gambar, file_master FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
-    
-    if($row = mysqli_fetch_assoc($q_data)){
-        $path_img = "admin/uploads/" . $row['gambar'];
-        if(file_exists($path_img)) { unlink($path_img); }
 
-        if(!empty($row['file_master'])){
-            $path_master = "admin/uploads/" . $row['file_master'];
-            if(file_exists($path_master)) { unlink($path_master); }
+    if ($q_data) {
+        $row = mysqli_fetch_assoc($q_data);
+    }
+
+    if (!$row) {
+        $delete_error = 'Karya tidak ditemukan atau sudah dihapus.';
+    } else {
+        mysqli_begin_transaction($koneksi);
+        $delete_bidding = mysqli_query($koneksi, "DELETE FROM t_bidding WHERE id_design='$id_hapus'");
+        $delete_transaksi = mysqli_query($koneksi, "DELETE FROM t_transaksi WHERE id_design='$id_hapus'");
+        $delete_design = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
+
+        if ($delete_bidding && $delete_transaksi && $delete_design && mysqli_affected_rows($koneksi) === 1) {
+            mysqli_commit($koneksi);
+
+            $path_img = "admin/uploads/" . $row['gambar'];
+            if (is_file($path_img)) { unlink($path_img); }
+
+            if (!empty($row['file_master'])) {
+                $path_master = "admin/uploads/" . $row['file_master'];
+                if (is_file($path_master)) { unlink($path_master); }
+            }
+        } else {
+            mysqli_rollback($koneksi);
+            $delete_error = 'Karya gagal dihapus. Silakan coba lagi.';
         }
     }
-    
-    // Hapus Jejak di Tabel Lain Dulu
-    mysqli_query($koneksi, "DELETE FROM t_bidding WHERE id_design='$id_hapus'"); 
-    mysqli_query($koneksi, "DELETE FROM t_transaksi WHERE id_design='$id_hapus'");
 
-    // Hapus Data Produk
-    $delete = mysqli_query($koneksi, "DELETE FROM t_design WHERE id_design='$id_hapus' AND id_designer='$id_desainer'");
-    
-    if($delete){
-        sweetalert_redirect('Karya dan riwayat lelang berhasil dihapus.', 'unggahan.php?view=all#daftar-karya', 'success', 'Berhasil Dihapus!');
+    if ($is_ajax_delete) {
+        http_response_code($delete_error === null ? 200 : 422);
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => $delete_error === null,
+            'message' => $delete_error ?? 'Karya dan riwayat lelang berhasil dihapus.'
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
     }
+
+    if ($delete_error === null) {
+        header('Location: unggahan.php?view=all&pesan=hapus_sukses#daftar-karya');
+        exit;
+    }
+
+    sweetalert_redirect($delete_error, 'unggahan.php?view=all#daftar-karya', 'error', 'Gagal Menghapus');
 }
 
 // 2b. LOGIKA HENTIKAN LELANG LEBIH AWAL
@@ -50,6 +77,24 @@ if (isset($_POST['hentikan_lelang'])) {
     require_once __DIR__ . '/bidding_helper.php';
     require_once __DIR__ . '/notifikasi_helper.php';
     $id_lelang = (int) ($_POST['id_design'] ?? 0);
+    $is_ajax_stop = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+    $stop_response = function ($success, $message, $icon, $title, $redirect = null) use ($is_ajax_stop) {
+        if ($is_ajax_stop) {
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'success' => (bool) $success,
+                'message' => $message,
+                'icon' => $icon,
+                'title' => $title
+            ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+
+        if ($redirect !== null) {
+            sweetalert_redirect($message, $redirect, $icon, $title);
+        }
+        sweetalert_back($message, $icon, $title);
+    };
 
     $q_l = mysqli_query($koneksi, "SELECT judul, status, waktu_berakhir
                                    FROM t_design
@@ -57,15 +102,15 @@ if (isset($_POST['hentikan_lelang'])) {
     $dl = $q_l ? mysqli_fetch_assoc($q_l) : null;
 
     if (!$dl) {
-        sweetalert_back('Karya tidak ditemukan.', 'error', 'Gagal');
+        $stop_response(false, 'Karya tidak ditemukan.', 'error', 'Gagal');
     } elseif ($dl['status'] === 'sold') {
-        sweetalert_back('Karya ini sudah terjual.', 'info', 'Tidak Bisa Dihentikan');
+        $stop_response(false, 'Karya ini sudah terjual.', 'info', 'Tidak Bisa Dihentikan');
     } elseif (empty($dl['waktu_berakhir']) || strtotime($dl['waktu_berakhir']) <= time()) {
-        sweetalert_back('Lelang ini sudah berakhir.', 'info', 'Sudah Berakhir');
+        $stop_response(false, 'Lelang ini sudah berakhir.', 'info', 'Sudah Berakhir');
     } else {
         $winner_id = bid_leader_id($koneksi, $id_lelang);
         if (!$winner_id) {
-            sweetalert_back('Belum ada penawaran masuk, jadi lelang belum bisa dihentikan.', 'warning', 'Belum Ada Penawaran');
+            $stop_response(false, 'Belum ada penawaran masuk, jadi lelang belum bisa dihentikan.', 'warning', 'Belum Ada Penawaran');
         } else {
             // Akhiri lelang sekarang juga (set waktu berakhir = sekarang).
             $stmt_end = mysqli_prepare($koneksi, "UPDATE t_design SET waktu_berakhir = NOW()
@@ -82,8 +127,8 @@ if (isset($_POST['hentikan_lelang'])) {
                 'riwayat_bidding.php',
                 'menang_lelang'
             );
-            sweetalert_redirect('Lelang dihentikan. Pemenang sudah diberi tahu untuk melakukan pembayaran.',
-                                'unggahan.php?view=active#daftar-karya', 'success', 'Lelang Diselesaikan');
+            $stop_response(true, 'Lelang dihentikan. Pemenang sudah diberi tahu untuk melakukan pembayaran.',
+                           'success', 'Lelang Diselesaikan', 'unggahan.php?view=active#daftar-karya');
         }
     }
 }
@@ -92,7 +137,19 @@ if (isset($_POST['hentikan_lelang'])) {
 // Kita pakai hidden input 'simpan_karya' karena tombol submit akan di-intercept oleh JS
 if (isset($_POST['simpan_karya'])) {
     $judul = mysqli_real_escape_string($koneksi, $_POST['judul']);
-    $kategori = $_POST['kategori']; 
+    $kategori_pilihan = trim($_POST['kategori'] ?? '');
+    if ($kategori_pilihan === '__custom__') {
+        $kategori_pilihan = trim(strip_tags($_POST['kategori_custom'] ?? ''));
+    }
+    $kategori_pilihan = preg_replace('/[\x00-\x1F\x7F]/u', '', $kategori_pilihan);
+    if ($kategori_pilihan === '') {
+        sweetalert_back('Kategori karya wajib diisi.', 'warning', 'Kategori Belum Diisi');
+    }
+    $panjang_kategori = function_exists('mb_strlen') ? mb_strlen($kategori_pilihan, 'UTF-8') : strlen($kategori_pilihan);
+    if ($panjang_kategori > 50) {
+        sweetalert_back('Nama kategori maksimal 50 karakter.', 'warning', 'Kategori Terlalu Panjang');
+    }
+    $kategori = mysqli_real_escape_string($koneksi, $kategori_pilihan);
     $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi']);
     // Bersihkan format ribuan (titik) & karakter non-digit, simpan angka murni
     $harga = preg_replace('/\D/', '', $_POST['harga']);
@@ -106,8 +163,17 @@ if (isset($_POST['simpan_karya'])) {
     if (!empty($_FILES['gambar']['name'])) {
         $nama_file = $_FILES['gambar']['name'];
         $tmp_file = $_FILES['gambar']['tmp_name'];
-        $nama_gambar = rand(1000,9999) . "_" . $nama_file; 
-        move_uploaded_file($tmp_file, "admin/uploads/" . $nama_gambar);
+        $ekstensi_gambar = strtolower(pathinfo($nama_file, PATHINFO_EXTENSION));
+        $ekstensi_gambar = preg_replace('/[^a-z0-9]/', '', $ekstensi_gambar);
+        // Nama preview dibuat independen dari nama asli agar teks "_MASTER_"
+        // pada nama file pengguna tidak ikut terblokir oleh .htaccess.
+        $nama_gambar = rand(1000,9999) . "_PREVIEW_" . bin2hex(random_bytes(6));
+        if ($ekstensi_gambar !== '') {
+            $nama_gambar .= "." . $ekstensi_gambar;
+        }
+        if (!move_uploaded_file($tmp_file, "admin/uploads/" . $nama_gambar)) {
+            sweetalert_back('Gambar preview gagal diunggah. Silakan coba lagi.', 'error', 'Upload Gagal!');
+        }
     }
 
     // Upload File Master
@@ -115,8 +181,15 @@ if (isset($_POST['simpan_karya'])) {
     if (!empty($_FILES['file_master']['name'])) {
         $nama_master = $_FILES['file_master']['name'];
         $tmp_master = $_FILES['file_master']['tmp_name'];
-        $nama_file_master = rand(1000,9999) . "_MASTER_" . $nama_master;
-        move_uploaded_file($tmp_master, "admin/uploads/" . $nama_file_master);
+        $ekstensi_master = strtolower(pathinfo($nama_master, PATHINFO_EXTENSION));
+        $ekstensi_master = preg_replace('/[^a-z0-9]/', '', $ekstensi_master);
+        $nama_file_master = rand(1000,9999) . "_MASTER_" . bin2hex(random_bytes(6));
+        if ($ekstensi_master !== '') {
+            $nama_file_master .= "." . $ekstensi_master;
+        }
+        if (!move_uploaded_file($tmp_master, "admin/uploads/" . $nama_file_master)) {
+            sweetalert_back('File master gagal diunggah. Silakan coba lagi.', 'error', 'Upload Gagal!');
+        }
     }
 
     // Simpan ke Database
@@ -131,7 +204,10 @@ if (isset($_POST['simpan_karya'])) {
         require_once __DIR__ . '/notifikasi_helper.php';
         notif_karya_baru_ke_favorit($koneksi, $id_desainer, current_name(), $id_design_baru, trim($_POST['judul'] ?? ''));
 
-        sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php?view=active#daftar-karya', 'success', 'Upload Berhasil!');
+        // Post/Redirect/Get: tampilkan halaman Karya Saya lebih dulu agar
+        // notifikasi sukses tidak muncul di atas halaman putih.
+        header('Location: unggahan.php?view=all&pesan=upload_sukses#daftar-karya');
+        exit;
     } else {
         sweetalert_back('Gagal mengunggah karya: ' . mysqli_error($koneksi), 'error', 'Upload Gagal!');
     }
@@ -180,10 +256,24 @@ if (isset($_POST['simpan_karya'])) {
         .table-karya th { background: #f9f9f9; padding: 15px; text-align: center; font-size: 13px; font-weight: 700; color: #555; text-transform: uppercase; }
         .table-karya td { padding: 15px; vertical-align: middle; text-align: center; border-bottom: 1px solid #eee; font-size: 14px; color: #666; }
         .thumb-small { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; }
-        .btn-hapus { background: #ff4e4e; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; text-decoration: none; display: inline-block; }
-        .btn-hapus:hover { background: #d00000; color: #fff; }
-        .btn-stop { background: #f39c12; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer; display: inline-block; }
-        .btn-stop:hover { background: #d9860b; color: #fff; }
+        .table-karya th.action-heading,
+        .table-karya td.action-cell { width: 230px; min-width: 230px; }
+        .table-action-group { display: flex; align-items: center; justify-content: flex-start; gap: 8px; min-height: 38px; }
+        .table-action-form { display: inline-flex; margin: 0; padding: 0; }
+        .account-page .btn-hapus,
+        .account-page .btn-stop {
+            height: 36px; min-height: 36px; padding: 0 13px; border-radius: 9px;
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            box-sizing: border-box; font-size: 12px; font-weight: 600; line-height: 1;
+            text-decoration: none; white-space: nowrap; cursor: pointer;
+            transition: background-color .2s ease, border-color .2s ease, color .2s ease, transform .2s ease, box-shadow .2s ease;
+        }
+        .account-page .btn-hapus { min-width: 78px; border: 1px solid #fecaca; background: #fff1f2; color: #dc2626; }
+        .account-page .btn-hapus:hover { border-color: #fca5a5; background: #fee2e2; color: #b91c1c; transform: translateY(-1px); box-shadow: 0 5px 12px rgba(220,38,38,.10); }
+        .account-page .btn-stop { min-width: 132px; border: 1px solid #fed7aa; background: #fff7ed; color: #c2410c; }
+        .account-page .btn-stop:hover { border-color: #fdba74; background: #ffedd5; color: #9a3412; transform: translateY(-1px); box-shadow: 0 5px 12px rgba(194,65,12,.10); }
+        .account-page .btn-hapus i,
+        .account-page .btn-stop i { width: 13px; font-size: 12px; line-height: 1; text-align: center; }
     </style>
 </head>
 <body class="animsition account-page">
@@ -232,12 +322,15 @@ if (isset($_POST['simpan_karya'])) {
                                 </div>
                                 <div class="col-md-6">
                                     <label class="stext-102 cl3 p-b-5">Kategori</label>
-                                    <select name="kategori" class="form-input-custom">
+                                    <select name="kategori" id="kategoriSelect" class="form-input-custom" required>
                                         <option value="ilustrasi">Ilustrasi</option>
                                         <option value="tipografi">Tipografi</option>
                                         <option value="mockup">Mockup</option>
-                                        <option value="ui-ux">UI/UX</option>
+                                        <option value="uiux">UI/UX</option>
+                                        <option value="__custom__">+ Tambah kategori sendiri</option>
                                     </select>
+                                    <input type="text" name="kategori_custom" id="kategoriCustom" class="form-input-custom m-t-10" maxlength="50" placeholder="Tulis nama kategori baru" style="display:none;">
+                                    <small id="kategoriCustomHint" style="display:none; color:#64748b; font-size:11px; margin-top:5px;">Maksimal 50 karakter.</small>
                                 </div>
                             </div>
 
@@ -294,7 +387,7 @@ if (isset($_POST['simpan_karya'])) {
                                     <th>Harga Awal</th>
                                     <th>Beli Langsung</th>
                                     <th>Deadline</th>
-                                    <th>Aksi</th>
+                                    <th class="action-heading">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -309,7 +402,7 @@ if (isset($_POST['simpan_karya'])) {
                                             && !empty($k['waktu_berakhir'])
                                             && strtotime($k['waktu_berakhir']) > time());
                                 ?>
-                                <tr>
+                                <tr data-work-row="<?php echo (int) $k['id_design']; ?>">
                                     <td><?php echo $no++; ?></td>
                                     <td><img src="admin/uploads/<?php echo $k['gambar']; ?>" class="thumb-small"></td>
                                     <td style="text-align:left;">
@@ -319,21 +412,23 @@ if (isset($_POST['simpan_karya'])) {
                                     <td>Rp <?php echo number_format($k['harga_awal'],0,',','.'); ?></td>
                                     <td><?php echo $k['harga_beli_langsung'] > 0 ? 'Rp ' . number_format($k['harga_beli_langsung'],0,',','.') : '-'; ?></td>
                                     <td style="color: #e74c3c; font-weight: 500;"><?php echo $deadline; ?></td>
-                                    <td>
-                                        <?php if ($lelang_aktif) { ?>
-                                            <form action="unggahan.php?view=<?php echo htmlspecialchars($works_view); ?>" method="POST" style="display:inline; margin:0 4px 0 0;">
-                                                <input type="hidden" name="hentikan_lelang" value="1">
-                                                <input type="hidden" name="id_design" value="<?php echo $k['id_design']; ?>">
-                                                <button type="submit" class="btn-stop" data-confirm-stop><i class="fa fa-gavel"></i> Hentikan Lelang</button>
-                                            </form>
-                                        <?php } ?>
-                                        <a href="unggahan.php?hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" data-swal-confirm="Karya dan riwayat lelang ini akan dihapus permanen."><i class="fa fa-trash"></i> Hapus</a>
+                                    <td class="action-cell">
+                                        <div class="table-action-group">
+                                            <?php if ($lelang_aktif) { ?>
+                                                <form action="unggahan.php?view=<?php echo htmlspecialchars($works_view); ?>" method="POST" class="table-action-form">
+                                                    <input type="hidden" name="hentikan_lelang" value="1">
+                                                    <input type="hidden" name="id_design" value="<?php echo $k['id_design']; ?>">
+                                                    <button type="submit" class="btn-stop" data-confirm-stop><i class="fa fa-gavel"></i><span>Hentikan Lelang</span></button>
+                                                </form>
+                                            <?php } ?>
+                                            <a href="unggahan.php?view=<?php echo urlencode($works_view); ?>&amp;hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" data-swal-confirm="Karya dan riwayat lelang ini akan dihapus permanen." data-swal-ajax><i class="fa fa-trash"></i><span>Hapus</span></a>
+                                        </div>
                                     </td>
                                 </tr>
                                 <?php 
                                     }
                                 } else {
-                                    echo "<tr><td colspan='6' style='padding:30px;'>" . ($works_view === 'active' ? 'Tidak ada lelang yang sedang aktif.' : 'Belum ada karya yang diunggah.') . "</td></tr>";
+                                    echo "<tr><td colspan='7' style='padding:30px;'>" . ($works_view === 'active' ? 'Tidak ada lelang yang sedang aktif.' : 'Belum ada karya yang diunggah.') . "</td></tr>";
                                 }
                                 ?>
                             </tbody>
@@ -366,7 +461,65 @@ if (isset($_POST['simpan_karya'])) {
                 icon: 'warning',
                 buttons: ['Batal', 'Ya, Hentikan'],
                 dangerMode: true
-            }).then(function (ok) { if (ok && form) form.submit(); });
+            }).then(function (ok) {
+                if (!ok || !form) return;
+
+                if (typeof window.fetch !== 'function') {
+                    form.submit();
+                    return;
+                }
+
+                btn.disabled = true;
+                window.fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    credentials: 'same-origin',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(function (response) {
+                    return response.json().then(function (data) {
+                        if (!response.ok) {
+                            throw new Error(data.message || 'Lelang gagal dihentikan.');
+                        }
+                        return data;
+                    });
+                })
+                .then(function (data) {
+                    if (data.success) {
+                        var row = form.closest('tr');
+                        var deadlineCell = row ? row.querySelector('td:nth-child(6)') : null;
+                        form.remove();
+                        if (deadlineCell) {
+                            deadlineCell.textContent = 'Lelang dihentikan';
+                            deadlineCell.style.color = '#64748b';
+                        }
+                    } else {
+                        btn.disabled = false;
+                    }
+
+                    swal({
+                        title: data.title,
+                        text: data.message,
+                        icon: data.icon,
+                        button: false,
+                        timer: 3000,
+                        closeOnClickOutside: false
+                    });
+                })
+                .catch(function (error) {
+                    btn.disabled = false;
+                    swal({
+                        title: 'Gagal',
+                        text: error.message || 'Lelang gagal dihentikan.',
+                        icon: 'error',
+                        button: false,
+                        timer: 3000
+                    });
+                });
+            });
         });
 
         function previewImage(input) {
@@ -388,6 +541,24 @@ if (isset($_POST['simpan_karya'])) {
         document.querySelectorAll('.input-harga').forEach(function(el) {
             el.addEventListener('input', function() { formatRibuan(el); });
         });
+
+        // Tampilkan input ketika desainer memilih kategori buatan sendiri.
+        var kategoriSelect = document.getElementById('kategoriSelect');
+        var kategoriCustom = document.getElementById('kategoriCustom');
+        var kategoriCustomHint = document.getElementById('kategoriCustomHint');
+        function toggleKategoriCustom() {
+            if (!kategoriSelect || !kategoriCustom) return;
+            var isCustom = kategoriSelect.value === '__custom__';
+            kategoriCustom.style.display = isCustom ? 'block' : 'none';
+            kategoriCustom.required = isCustom;
+            if (kategoriCustomHint) kategoriCustomHint.style.display = isCustom ? 'block' : 'none';
+            if (isCustom) kategoriCustom.focus();
+        }
+        if (kategoriSelect) {
+            kategoriSelect.addEventListener('change', toggleKategoriCustom);
+            toggleKategoriCustom();
+        }
+
         // Buang titik sebelum form dikirim, supaya backend menerima angka murni
         function bersihkanHarga(form) {
             form.querySelectorAll('.input-harga').forEach(function(el) {
@@ -423,23 +594,25 @@ if (isset($_POST['simpan_karya'])) {
 
         if(pesan === 'upload_sukses'){
             swal({
-                title: "Berhasil!",
+                title: "Upload Berhasil!",
                 text: "Karya kamu sudah tayang dan lelang telah dimulai!",
                 icon: "success",
-                button: "OK Siap!",
-            }).then(() => {
-                window.history.replaceState(null, null, window.location.pathname);
+                button: false,
+                timer: 3000,
+                closeOnClickOutside: false
             });
+            window.history.replaceState(null, null, 'unggahan.php?view=all#daftar-karya');
         } 
         else if(pesan === 'hapus_sukses'){
             swal({
                 title: "Terhapus!",
                 text: "Data karya dan riwayat lelang berhasil dihapus.",
                 icon: "success",
-                button: "OK",
-            }).then(() => {
-                window.history.replaceState(null, null, window.location.pathname);
+                button: false,
+                timer: 3000,
+                closeOnClickOutside: false
             });
+            window.history.replaceState(null, null, 'unggahan.php?view=all#daftar-karya');
         }
     </script>
 

@@ -431,7 +431,7 @@ if(empty($_SESSION['admin'])){
                 <option value="ilustrasi" <?= $data['kategori']=='ilustrasi' ? 'selected' : ''; ?>>Ilustrasi</option>
                 <option value="tipografi" <?= $data['kategori']=='tipografi' ? 'selected' : ''; ?>>Tipografi</option>
                 <option value="mockup" <?= $data['kategori']=='mockup' ? 'selected' : ''; ?>>Mockup</option>
-                <option value="uiux" <?= $data['kategori']=='uiux' ? 'selected' : ''; ?>>UI/UX</option>
+                <option value="uiux" <?= in_array(strtolower($data['kategori']), ['uiux', 'ui-ux', 'ui/ux', 'ui & ux'], true) ? 'selected' : ''; ?>>UI/UX</option>
                 <option value="animasi" <?= $data['kategori']=='animasi' ? 'selected' : ''; ?>>Animasi</option>
               </select>
             </div>

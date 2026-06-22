@@ -242,15 +242,32 @@ $total_bayar = $harga_barang + $biaya_layanan;
         .grand-total { font-size: 32px; font-weight: bold; color: #000; }
         .timer { float: right; color: #007bff; font-weight: bold; }
         
-        .payment-option {
-            border: 1px solid #ddd; border-radius: 5px; padding: 10px 15px;
-            margin-right: 10px; display: inline-flex; align-items: center;
-            cursor: pointer; transition: 0.2s; margin-bottom: 10px;
+        .payment-logo-row {
+            display: flex; align-items: center; flex-wrap: wrap; gap: 18px;
+            padding: 6px 2px 8px; pointer-events: none; user-select: none;
         }
-        .payment-option:hover { border-color: #333; }
-        .payment-option input[type="radio"] { display: none; } /* Sembunyikan radio asli */
-        .payment-option.selected { border: 2px solid #000; background: #f9f9f9; } /* Style saat dipilih */
-        .payment-option img { height: 20px; width: auto; }
+        .payment-logo {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 62px; min-height: 34px; line-height: 1;
+        }
+        .payment-logo-bank { gap: 5px; font-size: 21px; font-weight: 800; font-style: italic; }
+        .payment-logo-bank i { font-size: 17px; }
+        .payment-logo-bca { color: #0766b2; }
+        .payment-logo-bni { color: #f58220; }
+        .payment-logo-bni small { color: #006a70; font-size: 9px; font-style: normal; margin-right: 1px; }
+        .payment-logo-card i { font-size: 38px; }
+        .payment-logo-visa { color: #1434cb; }
+        .payment-logo-mastercard { color: #eb001b; }
+        .payment-logo-qris {
+            color: #111; font-size: 21px; font-weight: 900; letter-spacing: -1.5px;
+            border-left: 4px solid #e62129; padding-left: 7px;
+        }
+        .payment-logo-gopay { gap: 6px; color: #111; font-size: 20px; font-weight: 700; }
+        .payment-logo-gopay-mark {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 22px; height: 22px; border: 4px solid #00aed6; border-radius: 50%;
+            color: #00aed6; font-size: 9px; font-style: normal;
+        }
 
         .btn-pay-black {
             background: #000; color: #fff; width: 100%; padding: 18px;
@@ -371,44 +388,32 @@ $total_bayar = $harga_barang + $biaya_layanan;
                             
                             <div class="payment-group m-b-20">
                                 <span class="stext-110 cl2 d-block m-b-10">Transfer bank</span>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="bca">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" alt="BCA">
-                                </label>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="bni">
-                                    <img src="https://upload.wikimedia.org/wikipedia/id/5/55/BNI_logo.svg" alt="BNI">
-                                </label>
+                                <div class="payment-logo-row" aria-label="Tersedia BCA dan BNI">
+                                    <span class="payment-logo payment-logo-bank payment-logo-bca" title="BCA"><i class="fa fa-bank"></i>BCA</span>
+                                    <span class="payment-logo payment-logo-bank payment-logo-bni" title="BNI"><small>46</small>BNI</span>
+                                </div>
                             </div>
 
                             <div class="payment-group m-b-20">
                                 <span class="stext-110 cl2 d-block m-b-10">Kartu kredit/ debit</span>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="visa">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="VISA">
-                                </label>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="mastercard">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard">
-                                </label>
+                                <div class="payment-logo-row" aria-label="Tersedia Visa dan Mastercard">
+                                    <span class="payment-logo payment-logo-card payment-logo-visa" title="Visa"><i class="fa fa-cc-visa"></i></span>
+                                    <span class="payment-logo payment-logo-card payment-logo-mastercard" title="Mastercard"><i class="fa fa-cc-mastercard"></i></span>
+                                </div>
                             </div>
 
                             <div class="payment-group m-b-20">
                                 <span class="stext-110 cl2 d-block m-b-10">Gopay/ QRIS</span>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="qris">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Qris_logo.svg/1200px-Qris_logo.svg.png" alt="QRIS" style="height: 15px;">
-                                </label>
-                                <label class="payment-option" onclick="selectPayment(this)">
-                                    <input type="radio" name="payment_method" value="gopay">
-                                    <img src="https://upload.wikimedia.org/wikipedia/commons/8/86/Gopay_logo.svg" alt="GoPay">
-                                </label>
+                                <div class="payment-logo-row" aria-label="Tersedia QRIS dan GoPay">
+                                    <span class="payment-logo payment-logo-qris" title="QRIS">QRIS</span>
+                                    <span class="payment-logo payment-logo-gopay" title="GoPay"><i class="payment-logo-gopay-mark">●</i>gopay</span>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <button type="submit" class="btn-pay-black">
-                        PILIH PEMBAYARAN
+                        PILIH METODE PEMBAYARAN
                     </button>
                 </div>
             </div>
@@ -514,17 +519,6 @@ Copyright &copy;<script>document.write(new Date().getFullYear());</script> All r
         }
         startTimer(timerDuration, display);
 
-        // 2. Select Payment Styling
-        function selectPayment(element) {
-            var options = document.querySelectorAll('.payment-option');
-            options.forEach(function(opt) {
-                opt.classList.remove('selected');
-                opt.style.borderColor = '#ddd';
-            });
-            element.classList.add('selected');
-            element.style.borderColor = '#000';
-            element.querySelector('input').checked = true;
-        }
     </script>
 
 </body>

@@ -575,7 +575,8 @@ $result = $conn->query($sql);
             $harga_display = "Rp " . number_format($harga_awal, 0, ',', '.');
             $gambar2 = "admin/uploads/" . $row['gambar']; 
             $kategori = $row['kategori'];
-            $kategori_class = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(['&', '/', ' '], '', $kategori)));
+            // Normalisasi semua variasi UI/UX (ui-ux, UI/UX, UI & UX) menjadi class "uiux".
+            $kategori_class = preg_replace('/[^a-z0-9]/', '', strtolower($kategori));
             $waktu_berakhir = isset($row['waktu_berakhir']) ? $row['waktu_berakhir'] : '';
             $harga_beli_langsung = isset($row['harga_beli_langsung']) ? $row['harga_beli_langsung'] : 0;
             $lelang_berakhir = !empty($row['lelang_berakhir_db']);

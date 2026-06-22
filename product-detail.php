@@ -265,7 +265,7 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
 
                             <?php } elseif($status_verifikasi == 'verified') { ?>
 
-                                <form action="proses_bidding.php" method="POST">
+                                <form action="proses_bidding.php" method="POST" id="bidForm">
                                     <input type="hidden" name="id_design" value="<?php echo $id_produk; ?>">
                                     <div class="p-b-10">
                                         <label class="stext-102 cl3" style="font-weight:600;">Tawaran Anda:</label>
@@ -280,7 +280,7 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                                 </form>
                                 <?php if(isset($d['harga_beli_langsung']) && $d['harga_beli_langsung'] > 0) { ?>
                                     <hr style="margin: 20px 0;">
-                                    <a href="shoping-cart.php?id_design=<?php echo $id_produk; ?>&beli_langsung=1" class="btn-verif" style="background: linear-gradient(90deg, #2ecc71, #27ae60); box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); text-align: center; border: none; font-size: 14px; padding: 12px;">
+                                    <a href="shoping-cart.php?id_design=<?php echo $id_produk; ?>&beli_langsung=1" class="btn-verif js-buy-direct" data-price="Rp <?php echo number_format($d['harga_beli_langsung'],0,',','.'); ?>" style="background: linear-gradient(90deg, #2ecc71, #27ae60); box-shadow: 0 4px 15px rgba(46, 204, 113, 0.4); text-align: center; border: none; font-size: 14px; padding: 12px;">
                                         <i class="fa fa-flash"></i> BELI LANGSUNG RP <?php echo number_format($d['harga_beli_langsung'],0,',','.'); ?>
                                     </a>
                                 <?php } ?>
@@ -426,6 +426,7 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="vendor/select2/select2.min.js"></script>
     <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+    <script src="vendor/sweetalert/sweetalert.min.js"></script>
     <script src="js/main.js"></script>
 
     <script>
@@ -470,6 +471,49 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
             if(inputBid) inputBid.value = formatted;
             var inputBidAsli = document.getElementById('inputBidAsli');
             if(inputBidAsli) inputBidAsli.value = currentBid; 
+        }
+
+        // KONFIRMASI AJUKAN TAWARAN
+        var bidForm = document.getElementById('bidForm');
+        if (bidForm) {
+            bidForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                var nominalBid = document.getElementById('inputBid').value;
+
+                swal({
+                    title: 'Yakin mengajukan tawaran?',
+                    text: 'Tawaran yang akan diajukan: ' + nominalBid,
+                    icon: 'warning',
+                    buttons: ['Batal', 'Ya, Ajukan'],
+                    dangerMode: false
+                }).then(function(confirmed) {
+                    if (confirmed) {
+                        bidForm.submit();
+                    }
+                });
+            });
+        }
+
+        // KONFIRMASI BELI LANGSUNG
+        var buyDirectButton = document.querySelector('.js-buy-direct');
+        if (buyDirectButton) {
+            buyDirectButton.addEventListener('click', function(event) {
+                event.preventDefault();
+                var destination = buyDirectButton.href;
+                var hargaBeli = buyDirectButton.getAttribute('data-price');
+
+                swal({
+                    title: 'Yakin ingin membeli langsung?',
+                    text: 'Harga beli langsung: ' + hargaBeli,
+                    icon: 'warning',
+                    buttons: ['Batal', 'Ya, Beli'],
+                    dangerMode: false
+                }).then(function(confirmed) {
+                    if (confirmed) {
+                        window.location.href = destination;
+                    }
+                });
+            });
         }
 
         // FUNGSI GANTI TAB LOGIN/DAFTAR (UNTUK MODAL)

@@ -183,6 +183,12 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 .wrap-menu-desktop, .wrap-header-mobile {
     background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%) !important;
 }
+.header-v4 .container-menu-desktop {
+    height: 76px !important;
+}
+.header-v4 .wrap-menu-desktop {
+    top: 0 !important;
+}
 .main-menu > li > a {
     color: #ffffff !important;
 }

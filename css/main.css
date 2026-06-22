@@ -1682,6 +1682,20 @@ button.mfp-close {
   background-color: #333;
 }
 
+.swal-button--cancel {
+  background-color: #dc2626 !important;
+  color: #ffffff !important;
+}
+
+.swal-button--cancel:hover,
+.swal-button--cancel:focus {
+  background-color: #b91c1c !important;
+}
+
+.swal-button--cancel:active {
+  background-color: #991b1b !important;
+}
+
 .swal-title {
   font-family: Poppins-Bold;
   color: #333333;
@@ -3542,7 +3556,12 @@ body {
 
 .header-v4 .container-menu-desktop,
 header:not([class]) .container-menu-desktop {
-  height: 112px;
+  height: 76px;
+}
+
+.header-v4 .fix-menu-desktop.container-menu-desktop,
+header:not([class]) .fix-menu-desktop.container-menu-desktop {
+  height: 76px;
 }
 
 .wrap-menu-desktop {
@@ -3558,6 +3577,11 @@ header:not([class]) .container-menu-desktop {
 header:not([class]) .wrap-menu-desktop,
 .fix-menu-desktop .wrap-menu-desktop {
   background: rgba(255, 255, 255, 0.97);
+}
+
+.header-v4 .wrap-menu-desktop,
+header:not([class]) .wrap-menu-desktop {
+  top: 0;
 }
 
 .fix-menu-desktop .wrap-menu-desktop {

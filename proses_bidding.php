@@ -75,7 +75,7 @@ if (!$data_produk) {
     $simpan = mysqli_stmt_execute($simpan_stmt);
 
     if ($simpan) {
-        sweetalert_redirect('Penawaran Anda berhasil dikirim.', 'product.php?show_bid=' . $id_design, 'success', 'Tawaran Berhasil!');
+        sweetalert_redirect('Penawaran Anda berhasil dikirim.', 'product-detail.php?id=' . $id_design, 'success', 'Tawaran Berhasil!');
     } else {
         sweetalert_back('Gagal menawar: ' . mysqli_error($koneksi), 'error', 'Tawaran Gagal!');
     }

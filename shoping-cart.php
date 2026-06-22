@@ -3,7 +3,8 @@
 // 1. BAGIAN PHP (BACKEND) - AUTO DETECT PEMENANG
 // ==========================================
 require_once __DIR__ . '/auth.php';
-include 'admin/koneksi.php'; 
+include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php'; // bid_leader_id(): pemenang dgn prioritas premium
 
 if (is_designer_login()) {
     redirect_with_alert('Halaman pembelian khusus pembeli. Anda sedang login sebagai Desainer.', 'index.php');
@@ -88,13 +89,10 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
     $result = mysqli_query($koneksi, $query);
     $row = mysqli_fetch_assoc($result);
     if ($row) {
-        // Cek apakah ini bid tertinggi
+        // Cek apakah pembeli ini PEMIMPIN lelang (sudah memperhitungkan prioritas premium:
+        // saat nominal seri, pembeli premium yang dianggap memimpin).
         $id_design = $row['id_design'];
-        $query_max = "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design = '$id_design'";
-        $res_max = mysqli_query($koneksi, $query_max);
-        $d_max = mysqli_fetch_assoc($res_max);
-        
-        if ($row['harga_tawaran'] < $d_max['max_bid']) {
+        if (!is_bid_leader($koneksi, $id_design, $row['id_buyer'])) {
             sweetalert_redirect('Penawaran Anda sudah tersusul. Anda tidak dapat melakukan pembayaran.', 'riwayat.php', 'error', 'Tersusul');
             exit;
         }
@@ -134,12 +132,8 @@ if (isset($_GET['id_design']) && isset($_GET['beli_langsung'])) {
         if ($data_auto) {
             $id_design_cek = $data_auto['id_design'];
             
-            // Cek apakah bid tersebut adalah yang tertinggi
-            $query_max = "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design = '$id_design_cek'";
-            $res_max = mysqli_query($koneksi, $query_max);
-            $d_max = mysqli_fetch_assoc($res_max);
-            
-            if ($data_auto['harga_tawaran'] >= $d_max['max_bid']) {
+            // Cek apakah user ini PEMIMPIN lelang (memperhitungkan prioritas premium saat seri)
+            if (is_bid_leader($koneksi, $id_design_cek, $id_user_login)) {
                 // --- [UPDATE BARU] CEK KE DATABASE TRANSAKSI ---
                 // Kita cek: Apakah desain ini sudah pernah dibayar (settlement) atau sedang proses (pending)?
                 $cek_transaksi = mysqli_query($koneksi, "SELECT * FROM t_transaksi

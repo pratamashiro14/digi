@@ -23,6 +23,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['aksi'], $_POST['id'])
         $stmt = mysqli_prepare($koneksi, "UPDATE t_pencairan SET status='selesai', tanggal_proses=NOW() WHERE id_pencairan=? AND status IN ('pending','diproses')");
         mysqli_stmt_bind_param($stmt, 'i', $id);
         mysqli_stmt_execute($stmt);
+
+        // Notifikasi apresiasi ke desainer bahwa pencairannya sudah disetujui.
+        // Hanya dikirim bila status benar-benar berubah (cegah notif ganda).
+        if (mysqli_stmt_affected_rows($stmt) > 0) {
+            require_once "../../notifikasi_helper.php";
+            $info = mysqli_fetch_assoc(mysqli_query($koneksi,
+                "SELECT id_designer, jumlah, jumlah_diterima FROM t_pencairan WHERE id_pencairan='$id'"));
+            if ($info) {
+                $nominal = (float) ($info['jumlah_diterima'] > 0 ? $info['jumlah_diterima'] : $info['jumlah']);
+                kirim_notifikasi(
+                    $koneksi,
+                    (int) $info['id_designer'],
+                    'Pencairan dana sebesar Rp ' . number_format($nominal, 0, ',', '.') . ' sudah disetujui & diproses admin. Terima kasih sudah berkarya bersama kami! 🎉',
+                    'pencairan.php',
+                    'pencairan'
+                );
+            }
+        }
     } elseif ($aksi === 'tolak') {
         $catatan = trim($_POST['catatan'] ?? '');
         if ($catatan === '') $catatan = 'Ditolak oleh admin.';

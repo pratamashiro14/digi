@@ -105,6 +105,11 @@ function is_premium_buyer() {
     return is_user_login() && user_is_premium(current_id());
 }
 
+/** True jika yang sedang login adalah DESAINER dengan status Premium. */
+function is_premium_designer() {
+    return is_designer_login() && user_is_premium(current_id());
+}
+
 // ------------------------------------------------------------
 // 3. DATA USER YANG SEDANG LOGIN (seragam, apa pun rolenya)
 // ------------------------------------------------------------

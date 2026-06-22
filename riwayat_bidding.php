@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php'; // bid_leader_id(): pemenang dgn prioritas premium
 
 // Cek Login User
 require_user();
@@ -76,11 +77,10 @@ $id_user = current_id();
                 } else {
                     // SUDAH BERAKHIR -> Cek Pemenang
                     
-                    // Ambil penawar tertinggi GLOBAL dari database
-                    $q_max = mysqli_query($koneksi, "SELECT id_buyer FROM t_bidding WHERE id_design='$id_design' ORDER BY harga_tawaran DESC LIMIT 1");
-                    $winner = mysqli_fetch_assoc($q_max);
-                    
-                    if($winner['id_buyer'] == $id_user) {
+                    // Pemenang = pemimpin lelang (sudah memperhitungkan prioritas premium saat seri)
+                    $winner_id = bid_leader_id($koneksi, $id_design);
+
+                    if($winner_id == $id_user) {
                         // SAYA MENANG!
                         $status_lelang = "win";
                         $class_css = "status-win";

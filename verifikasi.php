@@ -54,8 +54,9 @@ if (isset($_POST['upload_ktp'])) {
 <head>
     <title>Verifikasi Akun</title>
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body { background: #f2f2f2; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+        body { background: #f2f2f2; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: 'Poppins', sans-serif; }
         .box-verif { background: white; padding: 40px; border-radius: 10px; width: 100%; max-width: 500px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         .icon-ktp { font-size: 50px; color: #4e8eff; margin-bottom: 20px; }
     </style>

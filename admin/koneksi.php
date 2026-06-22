@@ -69,4 +69,34 @@ mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_blokir_nik (
     PRIMARY KEY (id_blokir),
     UNIQUE KEY uniq_nik (nik)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+// Auto-migration: portofolio desainer (fitur premium "Portofolio Showcase").
+// Galeri karya non-lelang yang tampil di toko desainer untuk menarik klien.
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_portofolio (
+    id_portofolio INT(11) NOT NULL AUTO_INCREMENT,
+    id_designer INT(11) NOT NULL,
+    gambar VARCHAR(255) NOT NULL,
+    judul VARCHAR(150) DEFAULT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_portofolio),
+    KEY id_designer (id_designer)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+// Auto-migration: notifikasi in-app (fitur premium "Notifikasi Custom").
+// Dipakai mis. untuk memberi tahu pembeli premium saat desainer favoritnya
+// mengunggah karya baru. Skema mengikuti tabel t_notifikasi yang sudah ada
+// (id_notifikasi/tipe_notifikasi/url/dibaca) agar konsisten di fresh-install.
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_notifikasi (
+    id_notifikasi BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+    id_user INT(10) UNSIGNED NOT NULL,
+    tipe_notifikasi VARCHAR(50) NOT NULL DEFAULT 'info',
+    pesan TEXT NOT NULL,
+    url VARCHAR(255) DEFAULT NULL,
+    dibaca TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NULL DEFAULT NULL,
+    PRIMARY KEY (id_notifikasi),
+    KEY id_user (id_user),
+    KEY dibaca (dibaca)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 ?>

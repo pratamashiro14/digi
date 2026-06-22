@@ -154,13 +154,113 @@ if(isset($_SESSION['keranjang'])) {
 
 	
 	<!-- Product -->
+	<style>
+		/* === UI TWEAKS (Pills, Card Hover, Colors) === */
+		/* 1. Category Filter Pills */
+		.filter-tope-group button {
+			border-radius: 50px;
+			padding: 8px 24px;
+			border: 1px solid #e2e8f0;
+			background-color: #fff;
+			color: #64748b;
+			margin-right: 10px;
+			font-weight: 500;
+			transition: all 0.3s ease;
+		}
+		.filter-tope-group button:hover {
+			background-color: #f8fafc;
+			color: #1591DC;
+			border-color: #cbd5e1;
+		}
+		.filter-tope-group button.how-active1 {
+			background-color: #facc15 !important;
+			color: #000 !important;
+			border-color: #facc15 !important;
+			box-shadow: 0 4px 10px rgba(250, 204, 21, 0.4);
+		}
+
+		/* Panel header Pasar Desain (banner gradient biru seperti header toko desainer) */
+		.pasar-header-panel {
+			background: linear-gradient(120deg, #1591DC, #6b4eff);
+			border-radius: 16px;
+			padding: 30px 32px;
+			margin-bottom: 30px;
+			box-shadow: 0 10px 30px rgba(21, 145, 220, 0.25);
+			color: #fff;
+		}
+		.pasar-header-panel .pasar-title {
+			margin: 0 0 4px;
+			font-weight: 800;
+			color: #fff !important;
+		}
+		.pasar-header-panel .pasar-subtitle {
+			margin: 0;
+			color: rgba(255, 255, 255, 0.85);
+			font-size: 14px;
+		}
+		.pasar-header-panel .filter-tope-group button {
+			margin-bottom: 6px;
+		}
+		/* Tombol Filter & Search agar kontras di atas banner biru */
+		.pasar-header-panel .js-show-filter,
+		.pasar-header-panel .js-show-search {
+			color: #fff;
+			border-color: rgba(255, 255, 255, 0.55);
+		}
+		.pasar-header-panel .js-show-filter i,
+		.pasar-header-panel .js-show-search i {
+			color: #fff !important;
+		}
+		.pasar-header-panel .js-show-filter:hover,
+		.pasar-header-panel .js-show-search:hover {
+			background: rgba(255, 255, 255, 0.15);
+			border-color: #fff;
+		}
+		@media (max-width: 576px) {
+			.pasar-header-panel { padding: 22px 18px; }
+		}
+
+		/* 2. Premium Product Card Hover & Radius */
+		.block2 {
+			background: #fff;
+			border-radius: 16px;
+			transition: all 0.3s ease;
+			padding: 12px;
+			border: 1px solid transparent;
+		}
+		.block2:hover {
+			box-shadow: 0 15px 35px rgba(0,0,0,0.08);
+			transform: translateY(-5px);
+			border-color: #f1f5f9;
+		}
+		.block2-pic {
+			border-radius: 12px;
+			overflow: hidden;
+		}
+
+		/* 3. Color Harmony for Pricing & Titles */
+		.block2-txt-child1 .stext-105 {
+			color: #1591DC !important;
+			font-weight: 700;
+			font-size: 16px;
+		}
+		.block2-txt-child1 .js-name-b2 {
+			font-weight: 600;
+			color: #1e293b;
+		}
+		.block2-txt-child1 .js-name-b2:hover {
+			color: #1591DC;
+		}
+	</style>
 	<div class="bg0 m-t-23 p-b-140 product-market-page">
 		<div class="container">
 			<div class="product-market-panel">
-				<div class="p-b-10">
-					<h3 class="ltext-103 cl5">Pasar Desain</h3>
+				<div class="pasar-header-panel">
+				<div class="p-b-20">
+					<h3 class="ltext-103 cl5 pasar-title">Pasar Desain</h3>
+					<p class="pasar-subtitle">Jelajahi beragam karya desain dari para desainer. Pilih kategori untuk menyaring karya.</p>
 				</div>
-			<div class="flex-w flex-sb-m p-b-52">
+			<div class="flex-w flex-sb-m">
 				<div class="flex-w flex-l-m filter-tope-group m-tb-10">
 					<button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">
 						Semua Karya
@@ -430,6 +530,7 @@ if(isset($_SESSION['keranjang'])) {
 					</div>
 				</div>
 			</div>
+			</div>
 
 			<?php
 // 1. KONEKSI DATABASE & QUERY (Taruh paling atas sebelum php grid)
@@ -518,6 +619,7 @@ $result = $conn->query($sql);
                    data-judul="<?php echo htmlspecialchars($judul); ?>"
                    data-harga="<?php echo $harga_awal; ?>"
                    data-highest-bid="<?php echo $current_max_bid; ?>"
+                   data-has-bid="<?php echo ($d_bid && $d_bid['max_bid']) ? '1' : '0'; ?>"
                    data-img="<?php echo $gambar2; ?>"
                    data-endtime="<?php echo $waktu_berakhir; ?>"
                    data-auction-ended="<?php echo $lelang_berakhir ? '1' : '0'; ?>"
@@ -959,9 +1061,10 @@ $result = $conn->query($sql);
 		});
 
 		// 2. LOGIKA MODAL QUICK VIEW
-		var modalInterval; 
+		var modalInterval;
 		var currentBidValue = 0;
 		var minBidValue = 0;
+		var isPremiumBuyer = <?php echo is_premium_buyer() ? 'true' : 'false'; ?>; // prioritas bidding premium
 
 		function formatRupiah(value) {
 			return "Rp " + new Intl.NumberFormat('id-ID').format(value);
@@ -1033,6 +1136,7 @@ $result = $conn->query($sql);
 			var judul = $(this).data('judul');
 			var harga = $(this).data('harga'); 
 			var highestBid = $(this).data('highest-bid');
+			var hasBid = String($(this).data('has-bid')) === '1';
 			var img = $(this).data('img');
 			var endtime = $(this).data('endtime');
 			var auctionEnded = String($(this).data('auction-ended')) === '1';
@@ -1058,8 +1162,13 @@ $result = $conn->query($sql);
 				$('#btn-modal-beli-langsung').hide();
 			}
 
-			// Set minimum bid value
-			minBidValue = parseInt(highestBid) + 10000;
+			// Set minimum bid value. Pembeli Premium boleh MENYAMAI harga tertinggi
+			// (langsung memimpin); pembeli biasa wajib +10.000.
+			if (isPremiumBuyer && hasBid) {
+				minBidValue = parseInt(highestBid);
+			} else {
+				minBidValue = parseInt(highestBid) + 10000;
+			}
 			currentBidValue = minBidValue;
 			updateBidInput();
 			setModalBidAvailable(!auctionEnded);

@@ -299,9 +299,31 @@ if ($id_lawan) {
                             </div>
 
                             <?php if ($bisa_chat) { ?>
+                                <?php if (is_designer_login() && is_premium_designer()) {
+                                    // FAST REPLY TOOLS (fitur premium desainer): balasan cepat sekali klik.
+                                    $fast_replies = [
+                                        '👋 Sapa'        => 'Halo kak, terima kasih sudah menghubungi saya 😊 Ada yang bisa saya bantu?',
+                                        '💰 Harga'        => 'Untuk harga custom desain mulai dari Rp ____, tergantung tingkat kerumitan ya kak.',
+                                        '⏱️ Estimasi'     => 'Estimasi pengerjaan sekitar ____ hari kerja setelah brief dan DP diterima.',
+                                        '🔁 Revisi'       => 'Saya menyediakan ____ kali revisi gratis agar hasilnya sesuai keinginan kakak.',
+                                        '📦 Format File'  => 'File final akan saya kirim dalam format ____ (mis. PNG, JPG, PSD, AI). Boleh request kak.',
+                                        '💳 Pembayaran'   => 'Pembayaran bisa lewat tombol pembelian di platform ini ya kak, aman pakai sistem escrow.',
+                                        '🙏 Terima kasih' => 'Terima kasih banyak kak! Senang bisa membantu. Ditunggu orderan berikutnya 🙏',
+                                    ];
+                                ?>
+                                <div class="fast-reply-bar">
+                                    <span class="fast-reply-label"><i class="fa fa-bolt"></i> Balasan Cepat</span>
+                                    <?php foreach ($fast_replies as $label => $teks) { ?>
+                                        <button type="button" class="fast-reply-chip"
+                                                onclick="isiCepat(<?php echo htmlspecialchars(json_encode($teks), ENT_QUOTES); ?>)">
+                                            <?php echo $label; ?>
+                                        </button>
+                                    <?php } ?>
+                                </div>
+                                <?php } ?>
                                 <form action="" method="POST" class="chat-input">
                                     <input type="hidden" name="id_penerima" value="<?php echo $id_lawan; ?>">
-                                    <input type="text" name="isi_pesan" class="input-field" placeholder="Tulis pesan..." autocomplete="off" required>
+                                    <input type="text" name="isi_pesan" id="chatInput" class="input-field" placeholder="Tulis pesan..." autocomplete="off" required>
                                     <button type="submit" name="kirim_pesan" class="btn-send" title="Kirim pesan" aria-label="Kirim pesan"><i class="fa fa-paper-plane"></i></button>
                                 </form>
                             <?php } else { ?>
@@ -325,11 +347,27 @@ if ($id_lawan) {
         </div>
     </div>
 
+    <style>
+        .fast-reply-bar { display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:10px 14px 0; }
+        .fast-reply-label { font-size:11px; font-weight:700; color:#7a7fe2; margin-right:4px; white-space:nowrap; }
+        .fast-reply-chip { background:#eef1ff; color:#4338ca; border:1px solid #dfe3ff; border-radius:50px;
+            font-size:12px; font-weight:600; padding:6px 12px; cursor:pointer; transition:0.2s; }
+        .fast-reply-chip:hover { background:#7a7fe2; color:#fff; border-color:#7a7fe2; }
+    </style>
     <script>
         // Biar chat langsung scroll ke paling bawah pas dibuka
         var chatBox = document.getElementById("chatBox");
         if(chatBox){
             chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        // FAST REPLY: isi kolom input dengan teks template, lalu fokus untuk diedit/kirim.
+        function isiCepat(teks) {
+            var input = document.getElementById('chatInput');
+            if (input) {
+                input.value = teks;
+                input.focus();
+            }
         }
     </script>
 

@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php'; // ranking bid & prioritas premium
 
 // --- 1. LOGIKA HEADER (DARI INDEX.PHP) ---
 
@@ -40,15 +41,23 @@ if(!$d){
     sweetalert_redirect('Produk tidak ditemukan.', 'index.php', 'error', 'Gagal!');
 }
 
-// Ambil Riwayat Bidding
-$q_history = mysqli_query($koneksi, "SELECT b.*, u.nama FROM t_bidding b 
-                                     JOIN t_user u ON b.id_buyer = u.id_user 
-                                     WHERE b.id_design='$id_produk' 
-                                     ORDER BY b.harga_tawaran DESC LIMIT 5");
+// Ambil Riwayat Bidding (urutan = prioritas premium: saat seri, premium di atas)
+$prem_flag_detail = premium_buyer_flag_sql('b.id_buyer');
+$q_history = mysqli_query($koneksi, "SELECT b.*, u.nama FROM t_bidding b
+                                     JOIN t_user u ON b.id_buyer = u.id_user
+                                     WHERE b.id_design='$id_produk'
+                                     ORDER BY b.harga_tawaran DESC, ($prem_flag_detail) DESC, b.tanggal_bid ASC LIMIT 5");
 
 $q_max_bid = mysqli_query($koneksi, "SELECT MAX(harga_tawaran) as max_bid FROM t_bidding WHERE id_design='$id_produk'");
 $d_max_bid = mysqli_fetch_assoc($q_max_bid);
 $highest_bid_detail = ($d_max_bid && $d_max_bid['max_bid']) ? $d_max_bid['max_bid'] : $d['harga_awal'];
+
+// PRIORITAS BIDDING (premium): pembeli premium boleh MENYAMAI harga tertinggi,
+// jadi nilai awal & lantai tawarannya = harga tertinggi (bukan +10.000).
+$ada_bid = ($d_max_bid && $d_max_bid['max_bid']);
+$is_prem_view = is_premium_buyer();
+$bid_start = ($is_prem_view && $ada_bid) ? (int) $highest_bid_detail : (int) $highest_bid_detail + 10000;
+$bid_floor = ($is_prem_view && $ada_bid) ? (int) $highest_bid_detail : (int) $highest_bid_detail + 10000;
 
 $q_sold = mysqli_query($koneksi, "SELECT 1
                                   FROM t_transaksi
@@ -93,25 +102,28 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
     <link rel="stylesheet" type="text/css" href="css/main.css">
 
     <style>
-        .product-img { width: 100%; border-radius: 10px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
-        .btn-chat-desainer { display: inline-flex; align-items: center; justify-content: center; background-color: #25D366; color: white; padding: 10px 20px; border-radius: 5px; font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 20px; transition: 0.3s; }
-        .btn-chat-desainer:hover { background-color: #128C7E; color: white; text-decoration: none; }
-        .timer-box { background: linear-gradient(45deg, #d90429, #ef233c); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-bottom: 20px; font-weight: 700; font-size: 18px; box-shadow: 0 4px 10px rgba(217, 4, 41, 0.3); }
-        .price-tag { font-size: 28px; font-weight: 800; color: #333; display: block; margin-bottom: 5px; }
-        .desainer-tag { font-size: 14px; color: #888; display: block; margin-bottom: 15px; }
+        .product-img { width: 100%; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+        .btn-chat-desainer { display: inline-flex; align-items: center; justify-content: center; background-color: #f0fdf4; color: #166534; padding: 10px 24px; border-radius: 50px; border: 1px solid #bbf7d0; font-size: 14px; font-weight: 600; text-decoration: none; margin-bottom: 20px; transition: all 0.3s ease; }
+        .btn-chat-desainer:hover { background-color: #dcfce7; color: #15803d; border-color: #86efac; text-decoration: none; box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15); }
+        .timer-box { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; padding: 15px; border-radius: 12px; text-align: center; margin-bottom: 20px; font-weight: 700; font-size: 18px; }
+        .price-tag { font-size: 28px; font-weight: 800; color: #1591DC; display: block; }
+        .desainer-tag { font-size: 14px; color: #64748b; display: block; margin-bottom: 15px; }
         .bid-control { display: flex; align-items: center; margin-bottom: 20px; }
-        .btn-bid-qty { width: 45px; height: 45px; border: 1px solid #ddd; background: #fff; font-size: 20px; color: #555; cursor: pointer; border-radius: 5px; transition: 0.2s; }
-        .input-bid-val { height: 45px; border: 1px solid #ddd; text-align: center; font-weight: 700; width: 100%; margin: 0 10px; border-radius: 5px; background: #fff; font-size: 18px; color: #333; }
-        .history-box { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-top: 30px; border: 1px solid #eee; }
-        .history-title { font-weight: 700; margin-bottom: 15px; border-bottom: 2px solid #ddd; padding-bottom: 10px; }
-        .bid-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; font-size: 14px; }
+        .btn-bid-qty { width: 45px; height: 45px; border: 1px solid #cbd5e1; background: #fff; font-size: 20px; color: #475569; cursor: pointer; border-radius: 8px; transition: 0.2s; }
+        .input-bid-val { height: 45px; border: 1px solid #cbd5e1; text-align: center; font-weight: 700; width: 100%; margin: 0 10px; border-radius: 8px; background: #f8fafc; font-size: 18px; color: #0f172a; }
+        .history-box { background: #fff; padding: 25px; border-radius: 16px; margin-top: 30px; border: 1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        .history-title { font-weight: 800; font-size: 18px; color: #0f172a; margin-bottom: 15px; border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; }
+        .bid-item { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 14px; color: #475569; }
         .bid-item:last-child { border-bottom: none; }
         
-        .btn-verif { width: 100%; padding: 15px; border-radius: 50px; font-weight: 700; font-size: 16px; text-transform: uppercase; background: #f39c12; color: #fff; border: none; cursor: pointer; transition: 0.3s; display:block; text-align:center; text-decoration:none;}
-        .btn-verif:hover { background: #e67e22; color: #fff; }
+        .btn-verif { width: 100%; padding: 15px; border-radius: 50px; font-weight: 700; font-size: 16px; text-transform: uppercase; background: #1591DC; color: #fff; border: none; cursor: pointer; transition: 0.3s; display:block; text-align:center; text-decoration:none; box-shadow: 0 4px 15px rgba(21, 145, 220, 0.3); }
+        .btn-verif:hover { background: #1178b6; color: #fff; box-shadow: 0 6px 20px rgba(21, 145, 220, 0.4); transform: translateY(-2px); }
         
-        .btn-lelang { width: 100%; padding: 15px; border-radius: 50px; font-weight: 700; font-size: 16px; text-transform: uppercase; background: linear-gradient(90deg, #4e8eff, #6b4eff); color: #fff; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(78, 142, 255, 0.4); }
-        .btn-lelang:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(78, 142, 255, 0.6); }
+        .btn-lelang { width: 100%; padding: 15px; border-radius: 50px; font-weight: 800; font-size: 16px; text-transform: uppercase; background: #1591DC; color: #fff; border: none; cursor: pointer; transition: 0.3s; box-shadow: 0 4px 15px rgba(21, 145, 220, 0.3); }
+        .btn-lelang:hover { background: #1178b6; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(21, 145, 220, 0.4); }
+
+        .btn-back { display: inline-flex; align-items: center; padding: 8px 16px; background: #f1f5f9; color: #475569; border-radius: 50px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+        .btn-back:hover { background: #e2e8f0; color: #0f172a; }
 
         /* TABS LOGIN (DARI INDEX) */
         .auth-tab { font-family: 'Poppins', sans-serif; font-weight: 600; cursor: pointer; font-size: 18px; padding-bottom: 5px; color: #aaa; border-bottom: 2px solid transparent; }
@@ -166,9 +178,14 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
     </div>
 
     <div class="container">
-        <div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
-            <a href="index.php" class="stext-109 cl8 hov-cl1 trans-04">Beranda <i class="fa fa-angle-right m-l-9 m-r-10"></i></a>
-            <span class="stext-109 cl4"><?php echo $d['judul']; ?></span>
+        <div class="flex-w flex-sb-m p-t-30 p-b-10 p-l-25 p-r-15 p-lr-0-lg">
+            <div class="bread-crumb flex-w">
+                <a href="index.php" class="stext-109 cl8 hov-cl1 trans-04">Beranda <i class="fa fa-angle-right m-l-9 m-r-10"></i></a>
+                <span class="stext-109 cl4" style="text-transform: capitalize;"><?php echo $d['judul']; ?></span>
+            </div>
+            <a href="javascript:history.back()" class="btn-back">
+                <i class="fa fa-arrow-left m-r-5"></i> Kembali
+            </a>
         </div>
     </div>
 
@@ -186,29 +203,37 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                 <div class="col-md-6 col-lg-5 p-b-30">
                     <div class="p-r-50 p-t-5 p-lr-0-lg">
                         
-                        <h4 class="mtext-105 cl2 js-name-detail p-b-5"><?php echo $d['judul']; ?></h4>
-                        <span class="desainer-tag">Karya oleh:
-                            <a href="toko_desainer.php?id=<?php echo $d['id_pemilik']; ?>" style="color:#1591DC; text-decoration:underline;">
-                                <b><?php echo $d['nama_desainer']; ?></b>
+                        <h4 class="mtext-105 cl2 js-name-detail p-b-5" style="font-weight: 800; font-size: 32px; text-transform: capitalize; color: #0f172a; line-height: 1.2; margin-bottom: 10px;"><?php echo $d['judul']; ?></h4>
+                        <span class="desainer-tag">
+                            <i class="fa fa-paint-brush m-r-5"></i> Karya oleh:
+                            <a href="toko_desainer.php?id=<?php echo $d['id_pemilik']; ?>" style="color:#1591DC; font-weight: 600; text-decoration: none;">
+                                <?php echo htmlspecialchars($d['nama_desainer']); ?>
                             </a>
                         </span>
-                        <span class="mtext-106 cl2 price-tag">Open Bid: Rp <?php echo number_format($d['harga_awal'],0,',','.'); ?></span>
-                        <a href="pesan.php?lawan=<?php echo $d['id_pemilik']; ?>" class="btn-chat-desainer"><i class="fa fa-comments"></i> Hubungi Desainer</a>
-                        <p class="stext-102 cl3 p-t-15"><?php echo $d['deskripsi']; ?></p>
+                        <div class="price-box m-t-20 m-b-20 p-l-20 p-r-20 p-t-15 p-b-15" style="background: #f8fafc; border-radius: 12px; border: 1px solid #e2e8f0;">
+                            <span class="stext-102 cl3" style="display:block; margin-bottom: 5px; color: #64748b;">Harga Penawaran Awal (Open Bid)</span>
+                            <span class="mtext-106 cl2 price-tag">Rp <?php echo number_format($d['harga_awal'],0,',','.'); ?></span>
+                        </div>
+                        <a href="pesan.php?lawan=<?php echo $d['id_pemilik']; ?>" class="btn-chat-desainer"><i class="fa fa-comments m-r-5"></i> Hubungi Desainer</a>
+                        
+                        <div class="description-box m-t-20 m-b-30">
+                            <h5 style="font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 10px;">Deskripsi Karya</h5>
+                            <p class="stext-102 cl3" style="line-height: 1.7; color: #475569;"><?php echo $d['deskripsi']; ?></p>
+                        </div>
 
                         <div class="p-t-33">
                             <div class="timer-box"><span id="timer-detail"><i class="fa fa-clock-o"></i> Loading Waktu...</span></div>
 
                             <?php if($is_sold) { ?>
 
-                                <div class="alert alert-secondary text-center" style="font-size:13px;">
-                                    Karya ini sudah terjual dan tidak menerima penawaran baru.
+                                <div class="alert text-center" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 500;">
+                                    <i class="fa fa-info-circle m-r-5"></i> Karya ini sudah terjual dan tidak menerima penawaran baru.
                                 </div>
 
                             <?php } elseif($is_auction_ended) { ?>
 
-                                <div class="alert alert-secondary text-center" style="font-size:13px;">
-                                    Lelang sudah berakhir. Penawaran baru tidak tersedia.
+                                <div class="alert text-center" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 500;">
+                                    <i class="fa fa-info-circle m-r-5"></i> Lelang sudah berakhir. Penawaran baru tidak tersedia.
                                 </div>
 
                             <?php } elseif(current_role() === 'designer') { ?>
@@ -246,10 +271,10 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                                         <label class="stext-102 cl3" style="font-weight:600;">Tawaran Anda:</label>
                                         <div class="bid-control">
                                             <button type="button" class="btn-bid-qty" onclick="changeBid(-10000)">-</button>
-                                            <input type="text" name="harga_tawaran" id="inputBid" class="input-bid-val" value="Rp <?php echo number_format($highest_bid_detail+10000,0,',','.'); ?>" readonly>
+                                            <input type="text" name="harga_tawaran" id="inputBid" class="input-bid-val" value="Rp <?php echo number_format($bid_start,0,',','.'); ?>" readonly>
                                             <button type="button" class="btn-bid-qty" onclick="changeBid(10000)">+</button>
                                         </div>
-                                        <input type="hidden" name="angka_tawaran_asli" id="inputBidAsli" value="<?php echo $highest_bid_detail+10000; ?>">
+                                        <input type="hidden" name="angka_tawaran_asli" id="inputBidAsli" value="<?php echo $bid_start; ?>">
                                     </div>
                                     <button type="submit" class="btn-lelang">AJUKAN TAWARAN</button>
                                 </form>
@@ -429,11 +454,12 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
             document.getElementById("timer-detail").innerHTML = "Waktu Tidak Terbatas";
         }
 
-        // LOGIKA INPUT BID
-        var currentBid = <?php echo $highest_bid_detail + 10000; ?>;
+        // LOGIKA INPUT BID (premium boleh menyamai harga tertinggi -> lantai = bid_floor)
+        var currentBid = <?php echo $bid_start; ?>;
+        var bidFloor = <?php echo $bid_floor; ?>;
         function changeBid(amount) {
             var newBid = currentBid + amount;
-            if(newBid > <?php echo $highest_bid_detail; ?>) {
+            if(newBid >= bidFloor) {
                 currentBid = newBid;
                 updateView();
             }

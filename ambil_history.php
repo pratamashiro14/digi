@@ -1,16 +1,18 @@
 <?php
 include 'admin/koneksi.php';
+require_once __DIR__ . '/bidding_helper.php'; // urutan dgn prioritas premium
 
 $id_design = (int) ($_GET['id'] ?? 0);
 
-// Mengambil data bidding digabung dengan nama user
-// Menggunakan 'id_buyer' sesuai tabel kamu
+// Mengambil data bidding digabung dengan nama user.
+// Urutan = prioritas premium: nominal tertinggi, lalu premium saat seri, lalu lebih awal.
+$prem_flag_hist = premium_buyer_flag_sql('t_bidding.id_buyer');
 $stmt = mysqli_prepare($koneksi, "
     SELECT t_bidding.*, t_user.nama
     FROM t_bidding
     JOIN t_user ON t_bidding.id_buyer = t_user.id_user
     WHERE id_design = ?
-    ORDER BY harga_tawaran DESC
+    ORDER BY harga_tawaran DESC, ($prem_flag_hist) DESC, tanggal_bid ASC
     LIMIT 5
 ");
 mysqli_stmt_bind_param($stmt, 'i', $id_design);

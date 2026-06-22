@@ -1,47 +1,75 @@
-<?php 
-require_once __DIR__ . '/auth.php'; 
-include 'admin/koneksi.php'; 
+<?php
+require_once __DIR__ . '/auth.php';
+include 'admin/koneksi.php';
 
-if (!is_login()) {
-    sweetalert_redirect('Silakan login terlebih dahulu untuk chat dengan admin.', 'login.php', 'info', 'Login Diperlukan');
-}
+$sudah_login = is_login();
+$id_saya     = $sudah_login ? (int) current_id() : 0;
 
-$id_saya = (int) current_id();
-$q_admin_chat = mysqli_query($koneksi, "
-    SELECT id_user
-    FROM t_user
-    WHERE role='admin'
-      AND (status='aktif' OR status IS NULL)
-      AND id_user <> '$id_saya'
-    ORDER BY id_user ASC
-    LIMIT 1
-");
-
-if (!$q_admin_chat || mysqli_num_rows($q_admin_chat) === 0) {
-    $q_admin_chat = mysqli_query($koneksi, "
-        SELECT id_user
-        FROM t_user
-        WHERE role='admin'
-          AND id_user <> '$id_saya'
-        ORDER BY id_user ASC
-        LIMIT 1
+/**
+ * Cari satu akun admin sebagai penerima keluhan.
+ * Prioritaskan admin yang berstatus aktif; jika tidak ada, ambil admin mana pun.
+ */
+function cari_admin_penerima($koneksi, $id_saya) {
+    $q = mysqli_query($koneksi, "
+        SELECT id_user FROM t_user
+        WHERE role='admin' AND (status='aktif' OR status IS NULL) AND id_user <> '$id_saya'
+        ORDER BY id_user ASC LIMIT 1
     ");
+    if (!$q || mysqli_num_rows($q) === 0) {
+        $q = mysqli_query($koneksi, "
+            SELECT id_user FROM t_user
+            WHERE role='admin' AND id_user <> '$id_saya'
+            ORDER BY id_user ASC LIMIT 1
+        ");
+    }
+    if ($q && mysqli_num_rows($q) > 0) {
+        $row = mysqli_fetch_assoc($q);
+        return (int) $row['id_user'];
+    }
+    return 0;
 }
 
-if ($q_admin_chat && mysqli_num_rows($q_admin_chat) > 0) {
-    $admin_chat = mysqli_fetch_assoc($q_admin_chat);
-    header('Location: pesan.php?lawan=' . (int) $admin_chat['id_user']);
+$id_admin_tujuan = cari_admin_penerima($koneksi, $id_saya);
+
+// ====== PROSES KIRIM KELUHAN ======
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['kirim_keluhan'])) {
+    if (!$sudah_login) {
+        sweetalert_redirect('Silakan login terlebih dahulu untuk mengirim keluhan ke admin.', 'login.php', 'info', 'Login Diperlukan');
+    }
+    if ($id_admin_tujuan <= 0) {
+        sweetalert_redirect('Belum ada akun admin yang tersedia untuk menerima keluhan saat ini.', 'contact.php', 'warning', 'Admin Tidak Tersedia');
+    }
+
+    $kategori = trim($_POST['kategori'] ?? '');
+    $subjek   = trim($_POST['subjek'] ?? '');
+    $isi      = trim($_POST['pesan'] ?? '');
+
+    if ($isi === '') {
+        sweetalert_redirect('Pesan keluhan tidak boleh kosong.', 'contact.php', 'warning', 'Lengkapi Keluhan');
+    }
+
+    // Susun isi pesan keluhan yang rapi untuk dibaca admin di Moderisasi Chat.
+    $kategori_label = $kategori !== '' ? $kategori : 'Umum';
+    $isi_chat  = "📩 KELUHAN — " . $kategori_label . "\n";
+    if ($subjek !== '') {
+        $isi_chat .= "Subjek: " . $subjek . "\n";
+    }
+    $isi_chat .= "\n" . $isi;
+
+    $stmt = mysqli_prepare($koneksi, "INSERT INTO t_chat (id_pengirim, id_penerima, isi_pesan, waktu_kirim)
+                                      VALUES (?, ?, ?, NOW())");
+    mysqli_stmt_bind_param($stmt, 'iis', $id_saya, $id_admin_tujuan, $isi_chat);
+    if (mysqli_stmt_execute($stmt)) {
+        sweetalert_redirect('Keluhan Anda sudah terkirim ke admin. Anda bisa melanjutkan percakapan di halaman Pesan.', 'pesan.php?lawan=' . $id_admin_tujuan, 'success', 'Keluhan Terkirim');
+    } else {
+        sweetalert_redirect('Maaf, keluhan gagal dikirim. Silakan coba lagi.', 'contact.php', 'error', 'Gagal Mengirim');
+    }
     exit;
 }
 
-sweetalert_redirect('Belum ada akun admin yang tersedia untuk chat saat ini.', 'index.php', 'warning', 'Admin Tidak Tersedia');
-
-// Cek Login
-$is_designer_logged_in = isset($_SESSION['status_designer']) && $_SESSION['status_designer'] == "login";
-$nama_desainer = isset($_SESSION['nama_desainer']) ? $_SESSION['nama_desainer'] : 'Desainer';
-
-$is_user_logged_in = isset($_SESSION['status']) && $_SESSION['status'] == "login";
-$nama_user = isset($_SESSION['nama']) ? $_SESSION['nama'] : 'User';
+// Data user untuk prefill form
+$nama_saya  = $sudah_login ? current_name()  : '';
+$email_saya = $sudah_login ? current_email() : '';
 
 // Hitung Keranjang
 $jumlah_item_keranjang = 0;
@@ -125,26 +153,7 @@ if(isset($_SESSION['keranjang'])) {
 				<div class="w-full">
 					<div class="header-cart-total w-full p-tb-40">Total: Rp <?php echo number_format($total_harga_sidebar,0,',','.'); ?></div>
 					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">Check Out</a>>
-								1 x $17.00
-							</span>
-						</div>
-					</li>
-				</ul>
-				
-				<div class="w-full">
-					<div class="header-cart-total w-full p-tb-40">
-						Total: $75.00
-					</div>
-
-					<div class="header-cart-buttons flex-w w-full">
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-r-8 m-b-10">
-							View Cart
-						</a>
-
-						<a href="shoping-cart.html" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">
-							Check Out
-						</a>
+						<a href="shoping-cart.php" class="flex-c-m stext-101 cl0 size-107 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-b-10">Check Out</a>
 					</div>
 				</div>
 			</div>
@@ -156,8 +165,12 @@ if(isset($_SESSION['keranjang'])) {
 	<section class="bg-img1 txt-center p-lr-15 p-tb-92" style="background-color: #f5f5f5;">
 		<div class="container">
 			<div style="text-align: center; margin-bottom: 40px;">
-				<h1 style="font-size: 4rem; font-weight: 700; margin: 30px 0; color: #222;">Hubungi Kami</h1>
-				
+				<h1 style="font-size: 4rem; font-weight: 700; margin: 30px 0 10px; color: #222;">Hubungi Kami</h1>
+				<p style="font-size: 1.1rem; color: #666; max-width: 640px; margin: 0 auto 10px; line-height: 1.7;">
+					Punya kendala atau keluhan saat menggunakan DensCreative? Sampaikan langsung kepada admin
+					melalui form di bawah, atau hubungi kami lewat kontak yang tersedia.
+				</p>
+
 				<!-- Team Photos -->
 				<div style="display: flex; justify-content: center; gap: 30px; align-items: center; flex-wrap: wrap; margin: 30px 0;">
 					<div style="text-align: center;">
@@ -177,91 +190,102 @@ if(isset($_SESSION['keranjang'])) {
 	<!-- Content page -->
 	<section class="bg0 p-t-104 p-b-116">
 		<div class="container">
-			<div class="flex-w flex-tr">
-				<div class="size-210 bor10 p-lr-70 p-t-55 p-b-70 p-lr-15-lg w-full-md" style="background: #f9f9f9; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-					<form>
-						<h4 class="mtext-105 cl2 txt-center p-b-30" style="font-weight: 700; color: #333;">
-							Kirimkan Pesan
+			<div class="flex-w flex-tr" style="display:flex; flex-wrap:wrap; gap:30px; align-items:stretch; justify-content:center;">
+				<div class="bor10 p-lr-70 p-t-55 p-b-70 p-lr-15-lg" style="background: #f9f9f9; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); flex:1 1 360px; max-width:560px; width:auto;">
+					<form method="post" action="contact.php">
+						<h4 class="mtext-105 cl2 txt-center p-b-10" style="font-weight: 700; color: #333;">
+							Sampaikan Keluhan
 						</h4>
+						<p class="stext-113 cl6 txt-center p-b-30" style="color:#777; line-height:1.6;">
+							Ada masalah pembayaran, karya, akun, atau lainnya? Tulis keluhan Anda di bawah ini.
+							Pesan akan langsung diteruskan ke admin dan dapat Anda lanjutkan di halaman Pesan.
+						</p>
 
+						<?php if (!$sudah_login) { ?>
+							<div class="m-b-25" style="background:#fff7e6; border:1px solid #ffe0a3; color:#8a6d3b; border-radius:8px; padding:14px 16px; line-height:1.5;">
+								<i class="fa fa-info-circle m-r-6"></i>
+								Anda perlu <a href="login.php" style="color:#c97b00; font-weight:700;">login</a> terlebih dahulu untuk mengirim keluhan ke admin.
+							</div>
+						<?php } ?>
+
+						<?php if ($sudah_login) { ?>
 						<div class="bor8 m-b-20 how-pos4-parent">
-							<input class="stext-111 cl2 plh3 size-116 p-l-62 p-r-30" type="text" name="email" placeholder="Email Anda" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px;">
+							<input class="stext-111 cl2 plh3 size-116 p-l-62 p-r-30" type="text" value="<?php echo htmlspecialchars($nama_saya); ?>" readonly style="border: 1px solid #e2e2e2; border-radius: 8px; padding: 12px 15px; background:#f1f1f1;">
 							<img class="how-pos4 pointer-none" src="images/icons/icon-email.png" alt="ICON">
+						</div>
+						<?php } ?>
+
+						<div class="bor8 m-b-20">
+							<select name="kategori" class="stext-111 cl2 plh3 size-116 p-l-20 p-r-30" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; width:100%; background:#fff; height:auto;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
+								<option value="Umum">Keluhan Umum</option>
+								<option value="Pembayaran">Masalah Pembayaran</option>
+								<option value="Karya / Pesanan">Masalah Karya / Pesanan</option>
+								<option value="Akun">Masalah Akun</option>
+								<option value="Bidding / Lelang">Masalah Bidding / Lelang</option>
+								<option value="Lainnya">Lainnya</option>
+							</select>
+						</div>
+
+						<div class="bor8 m-b-20">
+							<input class="stext-111 cl2 plh3 size-116 p-l-20 p-r-30" type="text" name="subjek" placeholder="Subjek (opsional)" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
 						</div>
 
 						<div class="bor8 m-b-30">
-							<textarea class="stext-111 cl2 plh3 size-120 p-lr-28 p-tb-25" name="msg" placeholder="Ada yang bisa dibantu?" style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; min-height: 120px;"></textarea>
+							<textarea class="stext-111 cl2 plh3 size-120 p-lr-28 p-tb-25" name="pesan" placeholder="Tuliskan keluhan Anda secara jelas..." style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; min-height: 120px;" <?php echo $sudah_login ? 'required' : 'disabled'; ?>></textarea>
 						</div>
 
-						<button class="flex-c-m stext-101 cl0 size-121 bg3 bor1 hov-btn3 p-lr-15 trans-04 pointer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 12px 30px; cursor: pointer; font-weight: 600;">
-							KIRIM
+						<button type="submit" name="kirim_keluhan" class="flex-c-m stext-101 cl0 size-121 bg3 bor1 hov-btn3 p-lr-15 trans-04 pointer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 12px 30px; cursor: pointer; font-weight: 600;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
+							KIRIM KELUHAN
 						</button>
 					</form>
 				</div>
 
-				<div class="size-210 bor10 flex-w flex-col-m p-lr-93 p-tb-30 p-lr-15-lg w-full-md" style="background: #f9f9f9; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-					<h4 class="mtext-105 cl2 p-b-30 w-full" style="font-weight: 700; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 20px;">
+				<div class="bor10 p-lr-15-lg" style="background: #f9f9f9; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); flex:1 1 360px; max-width:560px; width:auto; padding:55px 50px 70px;">
+					<h4 class="mtext-105 cl2" style="font-weight: 700; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 18px; margin-bottom: 30px;">
 						Informasi Kontak
 					</h4>
 
-					<div class="flex-w w-full p-b-42">
-						<span class="fs-18 cl5 txt-center size-211" style="color: #667eea; font-size: 24px;">
-							<i class="lnr lnr-map-marker"></i>
-						</span>
-
-						<div class="size-212 p-t-2">
-							<span class="mtext-110 cl2" style="font-weight: 600; color: #333;">
-								Alamat
+					<div style="display:flex; flex-direction:column; gap:26px;">
+						<div style="display:flex; align-items:flex-start; gap:16px;">
+							<span style="flex:0 0 46px; width:46px; height:46px; border-radius:50%; background:#eef0ff; color:#667eea; display:flex; align-items:center; justify-content:center; font-size:20px;">
+								<i class="lnr lnr-map-marker"></i>
 							</span>
-
-							<p class="stext-115 cl6 size-213 p-t-18" style="color: #666; line-height: 1.6;">
-								Jl. Sariasih No.54, Sarijadi, Kec. Sukasari, Kota Bandung, Jawa Barat 40151
-							</p>
+							<div style="flex:1; min-width:0;">
+								<span style="display:block; font-weight:600; color:#333; margin-bottom:6px;">Alamat</span>
+								<p style="color:#666; line-height:1.6; margin:0;">
+									Jl. Sariasih No.54, Sarijadi, Kec. Sukasari, Kota Bandung, Jawa Barat 40151
+								</p>
+							</div>
 						</div>
-					</div>
 
-					<div class="flex-w w-full p-b-42">
-						<span class="fs-18 cl5 txt-center size-211" style="color: #667eea; font-size: 24px;">
-							<i class="lnr lnr-phone-handset"></i>
-						</span>
-
-						<div class="size-212 p-t-2">
-							<span class="mtext-110 cl2" style="font-weight: 600; color: #333;">
-								No. Telp
+						<div style="display:flex; align-items:flex-start; gap:16px;">
+							<span style="flex:0 0 46px; width:46px; height:46px; border-radius:50%; background:#eef0ff; color:#667eea; display:flex; align-items:center; justify-content:center; font-size:20px;">
+								<i class="lnr lnr-phone-handset"></i>
 							</span>
-
-							<p class="stext-115 cl1 size-213 p-t-18" style="color: #667eea; font-weight: 600;">
-								+62 881010229410
-							</p>
+							<div style="flex:1; min-width:0;">
+								<span style="display:block; font-weight:600; color:#333; margin-bottom:6px;">No. Telp</span>
+								<p style="color:#667eea; font-weight:600; margin:0;">
+									+62 881010229410
+								</p>
+							</div>
 						</div>
-					</div>
 
-					<div class="flex-w w-full">
-						<span class="fs-18 cl5 txt-center size-211" style="color: #667eea; font-size: 24px;">
-							<i class="lnr lnr-envelope"></i>
-						</span>
-
-						<div class="size-212 p-t-2">
-							<span class="mtext-110 cl2" style="font-weight: 600; color: #333;">
-								Email
+						<div style="display:flex; align-items:flex-start; gap:16px;">
+							<span style="flex:0 0 46px; width:46px; height:46px; border-radius:50%; background:#eef0ff; color:#667eea; display:flex; align-items:center; justify-content:center; font-size:20px;">
+								<i class="lnr lnr-envelope"></i>
 							</span>
-
-							<p class="stext-115 cl1 size-213 p-t-18" style="color: #667eea; font-weight: 600;">
-								DensCreative@gmail.com
-							</p>
+							<div style="flex:1; min-width:0;">
+								<span style="display:block; font-weight:600; color:#333; margin-bottom:6px;">Email</span>
+								<p style="color:#667eea; font-weight:600; margin:0; word-break:break-word;">
+									DensCreative@gmail.com
+								</p>
+							</div>
 						</div>
 					</div>
 				</div>
 			</div>
 		</div>
-	</section>	
-	
-	
-	<!-- Map -->
-	<div class="map">
-		<div class="size-303" id="google_map" data-map-x="-6.8743050039142375" data-map-y="107.57572125303169" data-pin="images/icons/pin.png?v=<?php echo time(); ?>" data-scrollwhell="0" data-draggable="1" data-zoom="11"></div>
-	</div>
-
+	</section>
 
 
 	<!-- Footer -->
@@ -394,9 +418,6 @@ if(isset($_SESSION['keranjang'])) {
 			})
 		});
 	</script>
-<!--===============================================================================================-->
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKFWBqlKAGCeS1rMVoaNlwyayu0e0YRes"></script>
-	<script src="js/map-custom.js"></script>
 <!--===============================================================================================-->
 	<script src="js/main.js"></script>
 

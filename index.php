@@ -381,50 +381,346 @@ function render_designer_stat_card($stat) {
 		</div>
 	</section>
 
-	<section class="home-market-section p-t-45 p-b-140">
+	<?php
+	// ===== DESAINER PREMIUM (fitur "Tampilan di halaman utama website") =====
+	$sql_premdes = "SELECT u.id_user, u.nama, u.foto_profil, u.foto,
+	                  (SELECT COUNT(*) FROM t_design d
+	                   WHERE d.id_designer = u.id_user AND d.status IN ('approved','sold')) AS total_karya
+	                FROM t_user u
+	                WHERE u.role = 'designer'
+	                  AND (u.status_member='premium' OR u.premium=1
+	                       OR EXISTS (SELECT 1 FROM t_premium p
+	                                  WHERE p.id_user=u.id_user AND p.status='aktif'
+	                                    AND p.tanggal_berakhir>=CURDATE()))
+	                ORDER BY u.id_user DESC LIMIT 10";
+	$res_premdes = mysqli_query($koneksi, $sql_premdes);
+	if ($res_premdes && mysqli_num_rows($res_premdes) > 0) { ?>
+	<section class="home-premdes-section">
 		<div class="container">
+			<div class="home-premdes-head">
+				<h3><i class="fa fa-diamond" style="color: #f1c40f; margin-right: 8px;"></i>Desainer Premium</h3>
+				<p>Kreator pilihan dengan keanggotaan premium — tampil utama untukmu.</p>
+			</div>
+			<div class="home-premdes-grid">
+				<?php while ($pd = mysqli_fetch_assoc($res_premdes)) {
+					$foto_pd = !empty($pd['foto_profil']) ? $pd['foto_profil'] : ($pd['foto'] ?? '');
+					$ava_pd  = $foto_pd ? 'admin/uploads/' . $foto_pd : 'images/icons/logo-01.png';
+				?>
+					<a href="toko_desainer.php?id=<?php echo $pd['id_user']; ?>" class="home-premdes-card">
+						<span class="home-premdes-badge"><i class="fa fa-star"></i></span>
+						<img src="<?php echo htmlspecialchars($ava_pd); ?>"
+						     onerror="this.src='images/icons/logo-01.png'; this.onerror=null;" alt="Desainer">
+						<span class="home-premdes-name"><?php echo htmlspecialchars($pd['nama']); ?></span>
+						<span class="home-premdes-karya"><?php echo (int) $pd['total_karya']; ?> karya</span>
+					</a>
+				<?php } ?>
+			</div>
+		</div>
+		<style>
+			.home-premdes-section { padding: 60px 0 30px; background: linear-gradient(180deg, #fffdf0 0%, #ffffff 100%); position: relative; }
+			.home-premdes-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #f1c40f, #e67e22, #f1c40f); }
+			.home-premdes-head { text-align: center; margin-bottom: 28px; }
+			.home-premdes-head h3 { font-size: 28px; font-weight: 800; color: #1f2937; margin: 0 0 6px; }
+			.home-premdes-head p { color: #6b7280; margin: 0; font-size: 14px; }
+			.home-premdes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 18px; }
+			.home-premdes-card { position: relative; display: flex; flex-direction: column; align-items: center; text-align: center;
+				background: #fff; border: 1px solid #fef3c7; border-radius: 16px; padding: 22px 14px; text-decoration: none; transition: 0.25s; box-shadow: 0 4px 15px rgba(241, 196, 15, 0.08); }
+			.home-premdes-card:hover { box-shadow: 0 12px 28px rgba(241, 196, 15, 0.25); transform: translateY(-5px); border-color: #f1c40f; }
+			.home-premdes-badge { position: absolute; top: 12px; right: 12px; width: 26px; height: 26px; border-radius: 50%;
+				background: linear-gradient(45deg,#f1c40f,#e67e22); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+			.home-premdes-card img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid #fef3c7; margin-bottom: 12px; }
+			.home-premdes-name { font-weight: 700; color: #1f2937; font-size: 15px; }
+			.home-premdes-karya { color: #6b7280; font-size: 12px; margin-top: 3px; }
+			
+			/* === NEW UI TWEAKS (Pills, Card Hover, Colors) === */
+			/* 1. Category Filter Pills */
+			.filter-tope-group button {
+				border-radius: 50px;
+				padding: 8px 24px;
+				border: 1px solid #e2e8f0;
+				background-color: #fff;
+				color: #64748b;
+				margin-right: 10px;
+				font-weight: 500;
+				transition: all 0.3s ease;
+			}
+			.filter-tope-group button:hover {
+				background-color: #f8fafc;
+				color: #1591DC;
+				border-color: #cbd5e1;
+			}
+			.filter-tope-group button.how-active1 {
+				background-color: #1591DC !important;
+				color: #fff !important;
+				border-color: #1591DC !important;
+				box-shadow: 0 4px 10px rgba(21, 145, 220, 0.3);
+			}
+
+			/* 2. Premium Product Card Hover & Radius */
+			.block2 {
+				background: #fff;
+				border-radius: 12px;
+				transition: all 0.3s ease;
+				padding: 10px;
+				border: 1px solid #f1f5f9;
+				box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+			}
+			.block2:hover {
+				box-shadow: 0 15px 35px rgba(0,0,0,0.12);
+				transform: translateY(-4px);
+				border-color: #e2e8f0;
+			}
+			.block2-pic {
+				border-radius: 8px;
+				overflow: hidden;
+			}
+
+			/* 3. Color Harmony for Pricing & Titles */
+			.block2-txt-child1 .stext-105 {
+				color: #1591DC !important;
+				font-weight: 700;
+				font-size: 16px;
+			}
+			.block2-txt-child1 .js-name-b2 {
+				font-weight: 600;
+				color: #1e293b;
+			}
+			.block2-txt-child1 .js-name-b2:hover {
+				color: #1591DC;
+			}
+
+			/* Responsive tweaks for Hero Search */
+			@media (max-width: 576px) {
+				.hero-search-container { bottom: 20px; }
+				.hero-search-container form { padding-left: 15px; }
+			}
+
+			/* === NEW PASAR KARYA LAYOUT === */
+			.home-market-section {
+				position: relative;
+				background: linear-gradient(180deg, #f4f7fb 0%, #ffffff 100%);
+			}
+			.home-market-section::before {
+				content: '';
+				position: absolute;
+				top: 0; left: 0; right: 0;
+				height: 4px;
+				background: linear-gradient(90deg, #f1c40f, #e67e22, #f1c40f);
+			}
+			.home-market-section .container-fluid {
+				padding-left: 5%;
+				padding-right: 5%;
+			}
+			.pasar-karya-header {
+				text-align: center;
+				margin-bottom: 24px;
+			}
+			.pasar-karya-header h3 {
+				font-size: 32px;
+				font-weight: 800;
+				color: #1e293b;
+				letter-spacing: 1px;
+				text-transform: uppercase;
+				margin: 0 0 6px;
+			}
+			.pasar-karya-header p {
+				color: #6b7280;
+				margin: 0;
+				font-size: 15px;
+			}
+			.home-category-row {
+				display: flex;
+				margin-bottom: 24px;
+				border-radius: 16px;
+				background: #fff;
+				box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+				border: 1px solid #f1f5f9;
+				overflow: hidden;
+			}
+			.home-category-sidebar {
+				width: 80px;
+				background: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+			}
+			.home-category-title {
+				writing-mode: vertical-rl;
+				transform: rotate(180deg);
+				font-size: 20px;
+				font-weight: 800;
+				letter-spacing: 2px;
+				color: #ffffff;
+				text-transform: uppercase;
+				white-space: nowrap;
+			}
+			.home-category-content {
+				flex-grow: 1;
+				padding: 10px 10px 10px 0;
+				min-width: 0; 
+			}
+			.home-category-scroll {
+				display: flex;
+				flex-wrap: nowrap;
+				overflow-x: auto;
+				scroll-behavior: smooth;
+				gap: 12px;
+				padding: 15px 15px 25px 15px;
+				-ms-overflow-style: none;
+				scrollbar-width: none;
+			}
+			.home-category-scroll::-webkit-scrollbar {
+				display: none;
+			}
+			.home-card-wrapper {
+				flex: 0 0 180px;
+				max-width: 180px;
+			}
+			/* Text sizing overrides inside the categories to look clean on smaller cards */
+			.home-category-scroll .js-name-b2 {
+				font-size: 13px !important;
+				line-height: 1.3;
+			}
+			.home-category-scroll .stext-105 {
+				font-size: 14px !important;
+			}
+			.home-category-scroll .block2-txt {
+				padding-top: 8px !important;
+			}
+			/* Adjust inner elements for smaller cards */
+			.label-timer-inline {
+				display: inline-flex;
+				align-items: center;
+				gap: 5px;
+				background-color: #fee2e2;
+				color: #ef4444;
+				padding: 4px 8px;
+				border-radius: 6px;
+				font-size: 11px;
+				font-weight: 700;
+				border: 1px solid #fecaca;
+				margin-bottom: 8px;
+				line-height: 1;
+			}
+			.label-timer-inline i {
+				font-size: 12px;
+			}
+			.label-timer-inline.expired {
+				background-color: #f1f5f9;
+				color: #64748b;
+				border-color: #e2e8f0;
+			}
+			.label-premium-designer {
+				position: absolute;
+				top: 10px;
+				left: 10px;
+				background: linear-gradient(45deg,#f1c40f,#e67e22);
+				color: #fff;
+				font-size: 11px;
+				font-weight: 700;
+				padding: 4px 10px;
+				border-radius: 50px;
+				z-index: 2;
+				box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+			}
+			.home-category-scroll .label-premium-designer {
+				font-size: 10px;
+				padding: 3px 8px;
+				top: 8px;
+				left: 8px;
+			}
+			/* Keep card image square/compact so cards aren't too tall (lonjong) */
+			.home-category-scroll .block2-pic img {
+				height: 160px !important;
+				aspect-ratio: auto !important;
+				object-fit: cover;
+			}
+			/* Remove margin-bottom from cards inside horizontal scroll */
+			.home-category-scroll .isotope-item {
+				padding-bottom: 0 !important;
+				padding-left: 0 !important;
+				padding-right: 0 !important;
+			}
+			
+			@media (max-width: 768px) {
+				.home-market-section .container-fluid {
+					padding-left: 15px;
+					padding-right: 15px;
+				}
+				.home-category-row {
+					flex-direction: column;
+					margin-bottom: 16px;
+				}
+				.home-category-sidebar {
+					width: 100%;
+					height: auto;
+					padding: 15px;
+					background: linear-gradient(90deg, #1e40af 0%, #1e3a8a 100%);
+				}
+				.home-category-title {
+					writing-mode: horizontal-tb;
+					transform: none;
+					font-size: 18px;
+				}
+				.home-card-wrapper {
+					flex: 0 0 145px;
+					max-width: 145px;
+				}
+				.home-category-scroll .block2-pic img {
+					height: 130px !important;
+				}
+				.home-category-scroll {
+					padding: 15px 10px 20px 10px;
+					gap: 8px;
+				}
+				.home-category-content {
+					padding: 0;
+				}
+				.home-category-scroll .label-timer-inline {
+					font-size: 9px;
+					padding: 3px 6px;
+				}
+				.home-category-scroll .label-premium-designer {
+					font-size: 9px;
+					padding: 2px 6px;
+					top: 6px;
+					left: 6px;
+				}
+			}
+		</style>
+	</section>
+	<?php } ?>
+
+	<section class="home-market-section p-t-45 p-b-140">
+		<div class="container-fluid">
             <div class="home-market-panel">
-                <div class="p-b-10"><h3 class="ltext-103 cl5">Pasar Karya</h3></div>
-                <div class="flex-w flex-sb-m p-b-52 home-market-toolbar">
-                    <div class="flex-w flex-l-m filter-tope-group m-tb-10">
-                        <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5 how-active1" data-filter="*">Semua Karya</button>
-                        <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".ilustrasi">Ilustrasi</button>
-                        <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".tipografi">Tipografi</button>
-                        <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".uiux">UI/UX</button>
-                        <button class="stext-106 cl6 hov1 bor3 trans-04 m-r-32 m-tb-5" data-filter=".animasi">Animasi</button>
-                    </div>
-                    <div class="flex-w flex-c-m m-tb-10">
-                        <div class="flex-c-m stext-106 cl6 size-104 bor4 pointer hov-btn3 trans-04 m-r-8 m-tb-4 js-show-filter">
-                            <i class="icon-filter cl2 m-r-6 fs-15 trans-04 zmdi zmdi-filter-list"></i> Filter
-                        </div>
-                        <div class="flex-c-m stext-106 cl6 size-105 bor4 pointer hov-btn3 trans-04 m-tb-4 js-show-search">
-                            <i class="icon-search cl2 m-r-6 fs-15 trans-04 zmdi zmdi-search"></i> Pencarian
-                        </div>
-                    </div>
-                    <div class="dis-none panel-search w-full p-t-10 p-b-15">
-                        <div class="bor8 dis-flex p-l-15">
-                            <button class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04"><i class="zmdi zmdi-search"></i></button>
-                            <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="text" name="search-product" placeholder="Cari karya atau desainer">
-                        </div>
-                    </div>
-                    <div class="dis-none panel-filter w-full p-t-10">
-                        <div class="wrap-filter flex-w bg6 w-full p-lr-40 p-t-27 p-lr-15-sm">
-                            <div class="product-bid-filter-col p-r-15 p-b-27">
-                                <div class="mtext-102 cl2 p-b-15">Waktu Bid</div>
-                                <ul>
-                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04 filter-link-active" data-bid-filter="all">Semua Waktu</a></li>
-                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="long">Waktu masih lama</a></li>
-                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="soon">Sebentar lagi</a></li>
-                                    <li class="p-b-6"><a href="#" class="filter-link stext-106 trans-04" data-bid-filter="ended">Waktu sudah habis</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
+                <div class="pasar-karya-header">
+                    <h3><i class="fa fa-shopping-bag" style="color: #3b82f6; margin-right: 10px;"></i>Pasar Karya</h3>
+                    <p>Koleksi desain digital eksklusif dan terbaik dari kreator pilihan kami.</p>
                 </div>
 
-                <div class="row isotope-grid">
+                <div class="market-products-wrapper">
                 <?php
-                $sql_produk = "SELECT d.*, u.nama AS nama_desainer
+                // Fetch and group products
+                $kategori_utama = [
+                    'Ilustrasi' => 'Ilustrasi',
+                    'Tipografi' => 'Tipografi',
+                    'UI/UX' => 'UI/UX',
+                    'Animasi' => 'Animasi'
+                ];
+                $grouped_products = [];
+                foreach ($kategori_utama as $key => $name) {
+                    $grouped_products[$key] = [];
+                }
+                $grouped_products['Lainnya'] = [];
+
+                // Karya desainer PREMIUM didahulukan (fitur "Tampilan di halaman utama").
+                $sql_produk = "SELECT d.*, u.nama AS nama_desainer,
+                                 (u.status_member='premium' OR u.premium=1
+                                  OR EXISTS (SELECT 1 FROM t_premium p
+                                             WHERE p.id_user=u.id_user AND p.status='aktif'
+                                               AND p.tanggal_berakhir>=CURDATE())) AS is_premium_designer
                                FROM t_design d
                                LEFT JOIN t_user u ON d.id_designer = u.id_user
                                WHERE d.status = 'approved'
@@ -434,66 +730,101 @@ function render_designer_stat_card($stat) {
                                      WHERE t.id_design = d.id_design
                                        AND t.status_pembayaran IN ('berhasil', 'settlement', 'capture')
                                  )
-                               ORDER BY d.id_design DESC";
+                               ORDER BY is_premium_designer DESC, d.id_design DESC";
                 $result_produk = mysqli_query($koneksi, $sql_produk);
-                if (mysqli_num_rows($result_produk) > 0) {
+                
+                if ($result_produk && mysqli_num_rows($result_produk) > 0) {
                     while($row = mysqli_fetch_assoc($result_produk)) {
-                        $id_produk = $row['id_design'];
-                        $gambar = "admin/uploads/" . $row['gambar']; 
-                        $kategori = $row['kategori'];
-                        $kategori_class = preg_replace('/[^a-z0-9_-]/', '', strtolower(str_replace(['&', '/', ' '], '', $kategori)));
-                        $waktu_berakhir = $row['waktu_berakhir'] ?? '';
-                        $bid_state = 'long';
-                        if (!empty($waktu_berakhir)) {
-                            $sisa_detik = strtotime($waktu_berakhir) - time();
-                            if ($sisa_detik <= 0) {
-                                $bid_state = 'ended';
-                            } elseif ($sisa_detik <= 86400) {
-                                $bid_state = 'soon';
+                        $kat_db = trim($row['kategori']);
+                        $matched = false;
+                        foreach ($kategori_utama as $key => $name) {
+                            if (strcasecmp(str_replace([' ', '/', '&', '-'], '', $kat_db), str_replace([' ', '/', '&', '-'], '', $key)) === 0) {
+                                $grouped_products[$key][] = $row;
+                                $matched = true;
+                                break;
                             }
                         }
-                        $search_text = strtolower(trim($row['judul'] . ' ' . ($row['nama_desainer'] ?? '') . ' ' . $kategori));
+                        if (!$matched) {
+                            $grouped_products['Lainnya'][] = $row;
+                        }
+                    }
+                }
+
+                // Render each category block
+                foreach ($grouped_products as $cat_key => $products) {
+                    if (count($products) > 0) {
                 ?>
-                <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item <?php echo htmlspecialchars($kategori_class); ?>" data-bid-state="<?php echo htmlspecialchars($bid_state); ?>" data-search="<?php echo htmlspecialchars($search_text); ?>">
-                    <div class="block2">
-                        <div class="block2-pic hov-img0" style="position: relative;"> 
-                            <img src="<?php echo $gambar; ?>" alt="IMG-PRODUCT" style="width: 100%; aspect-ratio: 4/5; object-fit: cover;">
-                            
-                            <?php if(!empty($row['waktu_berakhir'])) { ?>
-                                <div class="label-timer" data-waktu="<?php echo $row['waktu_berakhir']; ?>">
-                                    <i class="fa fa-clock-o"></i> Loading...
-                                </div>
-                            <?php } ?>
-                            
-                            <a href="product-detail.php?id=<?php echo $id_produk; ?>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
-    Lihat Detail
-</a>
+                    <div class="home-category-row" data-category-row="<?php echo htmlspecialchars($cat_key); ?>">
+                        <div class="home-category-sidebar">
+                            <span class="home-category-title"><?php echo htmlspecialchars($cat_key); ?></span>
                         </div>
-                        <div class="block2-txt flex-w flex-t p-t-14">
-                            <div class="block2-txt-child1 flex-col-l ">
-                                <a href="product-detail.php?id=<?php echo $id_produk; ?>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"><?php echo $row['judul']; ?></a>
-                                <span class="stext-105 cl3">Rp <?php echo number_format($row['harga_awal'],0,',','.'); ?></span>
-                            </div>
-                            <div class="block2-txt-child2 flex-r p-t-3">
-                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
-                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
-                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
-                                </a>
+                        <div class="home-category-content">
+                            <div class="home-category-scroll">
+                                <?php
+                                foreach ($products as $row) {
+                                    $id_produk = $row['id_design'];
+                                    $gambar = "admin/uploads/" . $row['gambar']; 
+                                    $waktu_berakhir = $row['waktu_berakhir'] ?? '';
+                                    $bid_state = 'long';
+                                    if (!empty($waktu_berakhir)) {
+                                        $sisa_detik = strtotime($waktu_berakhir) - time();
+                                        if ($sisa_detik <= 0) {
+                                            $bid_state = 'ended';
+                                        } elseif ($sisa_detik <= 86400) {
+                                            $bid_state = 'soon';
+                                        }
+                                    }
+                                    $search_text = strtolower(trim($row['judul'] . ' ' . ($row['nama_desainer'] ?? '') . ' ' . $row['kategori']));
+                                ?>
+                                <div class="home-card-wrapper isotope-item" data-bid-state="<?php echo htmlspecialchars($bid_state); ?>" data-search="<?php echo htmlspecialchars($search_text); ?>">
+                                    <div class="block2">
+                                        <div class="block2-pic hov-img0" style="position: relative;">
+                                            <img src="<?php echo $gambar; ?>" alt="IMG-PRODUCT" style="width: 100%; aspect-ratio: 1/1; object-fit: cover;">
+                                            <?php if(!empty($row['is_premium_designer'])) { ?>
+                                                <span class="label-premium-designer"><i class="fa fa-star"></i> Premium</span>
+                                            <?php } ?>
+                                            <a href="product-detail.php?id=<?php echo $id_produk; ?>" class="block2-btn flex-c-m stext-103 cl2 size-102 bg0 bor2 hov-btn1 p-lr-15 trans-04">
+                                                Lihat Detail
+                                            </a>
+                                        </div>
+                                        <div class="block2-txt flex-w flex-t p-t-14">
+                                            <div class="block2-txt-child1 flex-col-l ">
+                                                <?php if(!empty($row['waktu_berakhir'])) { ?>
+                                                    <div class="label-timer-inline" data-waktu="<?php echo $row['waktu_berakhir']; ?>">
+                                                        <i class="fa fa-clock-o"></i> Loading...
+                                                    </div>
+                                                <?php } ?>
+                                                <a href="product-detail.php?id=<?php echo $id_produk; ?>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6"><?php echo htmlspecialchars($row['judul']); ?></a>
+                                                <span class="stext-105 cl3">Rp <?php echo number_format($row['harga_awal'],0,',','.'); ?></span>
+                                            </div>
+                                            <div class="block2-txt-child2 flex-r p-t-3">
+                                                <a href="#" class="btn-addwish-b2 dis-block pos-relative js-addwish-b2">
+                                                    <img class="icon-heart1 dis-block trans-04" src="images/icons/icon-heart-01.png" alt="ICON">
+                                                    <img class="icon-heart2 dis-block trans-04 ab-t-l" src="images/icons/icon-heart-02.png" alt="ICON">
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php } ?>
                             </div>
                         </div>
                     </div>
+                <?php 
+                    }
+                } 
+                ?>
                 </div>
-                <?php } } ?>
-                </div>
+
                 <div class="market-empty-state" aria-live="polite">
                     <div class="market-empty-icon"><i class="zmdi zmdi-collection-image-o"></i></div>
-                    <h3>Belum ada karya di kategori ini</h3>
-                    <p>Coba pilih kategori lain atau tampilkan semua karya yang tersedia.</p>
+                    <h3>Karya tidak ditemukan</h3>
+                    <p>Silakan coba kata kunci lain atau ubah filter yang Anda pilih.</p>
                     <button type="button" class="market-empty-action" data-empty-reset>
-                        <i class="zmdi zmdi-refresh"></i> Lihat Semua Karya
+                        <i class="zmdi zmdi-refresh"></i> Reset Pencarian
                     </button>
                 </div>
-                <div class="market-load-more flex-c-m flex-w w-full p-t-45">
+                <div class="market-load-more flex-c-m flex-w w-full p-t-45" style="display:none;">
                     <a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">Lihat Lebih Banyak</a>
                 </div>
             </div>
@@ -706,54 +1037,43 @@ function render_designer_stat_card($stat) {
     <script>
         (function($) {
             var $panel = $('.home-market-panel');
-            var $grid = $panel.find('.isotope-grid');
-            var activeCategory = '*';
+            var $rows = $panel.find('.home-category-row');
             var activeBidState = 'all';
             var activeSearch = '';
 
-            if (!$panel.length || !$grid.length) {
+            if (!$panel.length || !$rows.length) {
                 return;
             }
 
             function updateHomeEmptyState() {
-                var isotope = $grid.data('isotope');
-                var visibleCount = isotope ? isotope.filteredItems.length : $grid.find('.isotope-item:visible').length;
-                $panel.find('.market-empty-state').toggleClass('is-visible', visibleCount === 0);
-                $panel.find('.market-load-more').toggle(visibleCount > 0);
+                var totalVisible = 0;
+                $rows.each(function() {
+                    var visibleInRow = $(this).find('.isotope-item:visible').length;
+                    if (visibleInRow === 0) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                        totalVisible += visibleInRow;
+                    }
+                });
+                
+                $panel.find('.market-empty-state').toggleClass('is-visible', totalVisible === 0);
             }
 
             function homeItemMatches(item) {
                 var $item = $(item);
-                var matchesCategory = activeCategory === '*' || $item.is(activeCategory);
                 var matchesBidState = activeBidState === 'all' || $item.data('bid-state') === activeBidState;
                 var searchableText = ($item.data('search') || '').toString().toLowerCase();
                 var matchesSearch = activeSearch === '' || searchableText.indexOf(activeSearch) !== -1;
-
-                return matchesCategory && matchesBidState && matchesSearch;
+                return matchesBidState && matchesSearch;
             }
 
             function applyHomeFilter() {
-                if ($.fn.isotope && $grid.data('isotope')) {
-                    $grid.isotope({
-                        filter: function() {
-                            return homeItemMatches(this);
-                        }
-                    });
-                } else {
-                    $grid.find('.isotope-item').each(function() {
-                        $(this).toggle(homeItemMatches(this));
-                    });
-                }
-                setTimeout(updateHomeEmptyState, 60);
+                $panel.find('.isotope-item').each(function() {
+                    $(this).toggle(homeItemMatches(this));
+                });
+                setTimeout(updateHomeEmptyState, 10);
             }
-
-            $panel.find('.filter-tope-group button').off('click').on('click', function(e) {
-                e.preventDefault();
-                activeCategory = $(this).attr('data-filter') || '*';
-                $panel.find('.filter-tope-group button').removeClass('how-active1');
-                $(this).addClass('how-active1');
-                applyHomeFilter();
-            });
 
             $panel.find('[data-bid-filter]').off('click').on('click', function(e) {
                 e.preventDefault();
@@ -783,27 +1103,22 @@ function render_designer_stat_card($stat) {
             });
 
             $panel.find('[data-empty-reset]').off('click').on('click', function() {
-                var $allButton = $panel.find('.filter-tope-group button[data-filter="*"]').first();
-                activeCategory = '*';
                 activeBidState = 'all';
                 activeSearch = '';
-                $panel.find('.filter-tope-group button').removeClass('how-active1');
-                $allButton.addClass('how-active1');
                 $panel.find('[data-bid-filter]').removeClass('filter-link-active');
                 $panel.find('[data-bid-filter="all"]').addClass('filter-link-active');
                 $panel.find('input[name="search-product"]').val('');
                 applyHomeFilter();
             });
 
-            $grid.on('arrangeComplete', updateHomeEmptyState);
-            setTimeout(updateHomeEmptyState, 200);
+            setTimeout(updateHomeEmptyState, 50);
         })(jQuery);
     </script>
 
     <script>
         // 1. SCRIPT TIMER LABEL DI GAMBAR PRODUK
         setInterval(function() {
-            var timers = document.querySelectorAll('.label-timer');
+            var timers = document.querySelectorAll('.label-timer, .label-timer-inline');
             timers.forEach(function(timer) {
                 var waktuStr = timer.getAttribute('data-waktu').replace(" ", "T");
                 var deadline = new Date(waktuStr).getTime();
@@ -814,14 +1129,23 @@ function render_designer_stat_card($stat) {
                     var days = Math.floor(t / (1000 * 60 * 60 * 24));
                     var hours = Math.floor((t % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                     var minutes = Math.floor((t % (1000 * 60 * 60)) / (1000 * 60));
-                    var seconds = Math.floor((t % (1000 * 60)) / 1000);
                     
                     var tampilan = '<i class="fa fa-clock-o"></i> ';
                     if (days > 0) { tampilan += days + "h "; }
-                    tampilan += hours + "j " + minutes + "m " + seconds + "d";
+                    
+                    if (timer.classList.contains('label-timer-inline')) {
+                        tampilan += hours + "j " + minutes + "m";
+                    } else {
+                        var seconds = Math.floor((t % (1000 * 60)) / 1000);
+                        tampilan += hours + "j " + minutes + "m " + seconds + "d";
+                    }
                     timer.innerHTML = tampilan;
                 } else {
-                    timer.innerHTML = "WAKTU HABIS";
+                    if (timer.classList.contains('label-timer-inline')) {
+                        timer.innerHTML = '<i class="fa fa-clock-o"></i> WAKTU HABIS';
+                    } else {
+                        timer.innerHTML = "WAKTU HABIS";
+                    }
                     timer.classList.add('expired');
                 }
             });

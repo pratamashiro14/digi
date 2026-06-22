@@ -54,6 +54,20 @@ if (($is_user_logged_in || $is_designer_logged_in) && !empty($koneksi)) {
     }
 }
 
+// Notifikasi in-app untuk PEMBELI & DESAINER.
+// Isi bisa beragam: karya baru dari desainer favorit (khusus pembeli premium),
+// menang lelang (pemenang mana pun), pencairan disetujui (desainer), dll.
+$show_notif_bell = false;
+$notif_unread = 0;
+$notif_list = [];
+if (($is_user_logged_in || $is_designer_logged_in) && function_exists('current_id') && !empty($koneksi)) {
+    require_once __DIR__ . '/notifikasi_helper.php';
+    $show_notif_bell = true;
+    $uid_notif    = (int) current_id();
+    $notif_unread = notif_unread_count($koneksi, $uid_notif);
+    $notif_list   = notif_recent($koneksi, $uid_notif, 8);
+}
+
 if ($is_admin_logged_in) {
     $main_menu = [
         ['href' => 'admin/beranda.php', 'label' => 'Dashboard', 'active' => 'admin-dashboard'],
@@ -68,6 +82,7 @@ if ($is_admin_logged_in) {
         ['href' => 'penjualan.php', 'label' => 'Penjualan', 'active' => 'designer-sales'],
         ['href' => 'pencairan.php', 'label' => 'Pencairan', 'active' => 'designer-finance'],
         ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages', 'badge' => $unread_count],
+        ['href' => 'premium.php', 'label' => 'Fitur Unggulan', 'active' => 'premium'],
         ['href' => 'profil_desainer.php', 'label' => 'Profil', 'active' => 'designer-profile'],
     ];
 } else {
@@ -138,6 +153,21 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
     min-width: 17px; height: 17px; border-radius: 50px; padding: 0 4px;
     margin-left: 5px; vertical-align: middle; line-height: 1;
 }
+/* Lonceng Notifikasi (pembeli premium) */
+.notif-dd { position: relative; display: inline-flex; align-items: center; margin-right: 6px; }
+.notif-toggle { position: relative; color: #fff !important; font-size: 20px; line-height: 1; padding: 0 6px; display: inline-flex; align-items: center; cursor: pointer; }
+.notif-count { position: absolute; top: -6px; right: -3px; background: #e53935; color: #fff; font-size: 9px; font-weight: 700; min-width: 16px; height: 16px; border-radius: 50px; padding: 0 4px; display: flex; align-items: center; justify-content: center; line-height: 1; }
+.notif-menu { position: absolute; top: 150%; right: 0; width: 320px; max-height: 430px; overflow-y: auto; background: #fff; border-radius: 12px; box-shadow: 0 12px 34px rgba(0,0,0,0.16); z-index: 10000; display: none; }
+.notif-dd.open .notif-menu { display: block; }
+.notif-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid #f0f0f0; font-weight: 700; color: #333; font-size: 14px; }
+.notif-head a { font-size: 12px; color: #1591DC !important; font-weight: 600; text-decoration: none; }
+.notif-item { display: flex; gap: 10px; padding: 11px 16px; border-bottom: 1px solid #f5f5f5; text-decoration: none; color: #444 !important; transition: 0.15s; }
+.notif-item:hover { background: #f7f9ff; }
+.notif-item.is-unread { background: #eff6ff; }
+.notif-item i { color: #1591DC; font-size: 18px; margin-top: 2px; flex-shrink: 0; }
+.notif-item p { margin: 0; font-size: 13px; line-height: 1.4; color: #333; }
+.notif-item small { color: #999; font-size: 11px; }
+.notif-empty { padding: 26px 16px; text-align: center; color: #9ca3af; font-size: 13px; }
 #msgToast {
     position: fixed; top: 80px; right: 20px; z-index: 99999;
     background: #fff; border-radius: 14px; padding: 14px 16px 14px 18px;
@@ -150,8 +180,37 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 #msgToast .toast-close:hover { color:#555; }
 
 /* THEME ALIGNMENT WITH ADMIN (OVERRIDE) */
-.top-bar {
-    background-color: #1591DC !important;
+.wrap-menu-desktop, .wrap-header-mobile {
+    background: linear-gradient(90deg, #1e293b 0%, #0f172a 100%) !important;
+}
+.main-menu > li > a {
+    color: #ffffff !important;
+}
+.main-menu > li > a:hover {
+    color: #e0f2fe !important;
+}
+.main-menu > li.active-menu > a {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+    color: #ffffff !important;
+    box-shadow: none !important;
+    border-radius: 8px;
+}
+.logo img {
+    background-color: #ffffff !important;
+    padding: 6px 12px !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    max-height: 44px !important;
+}
+.logo-mobile img {
+    background-color: #ffffff !important;
+    padding: 4px 10px !important;
+    border-radius: 6px !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+    max-height: 35px !important;
+}
+.hamburger-inner, .hamburger-inner:before, .hamburger-inner:after {
+    background-color: #ffffff !important;
 }
 .left-top-bar,
 .right-top-bar > a,
@@ -165,9 +224,94 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
     color: #1591DC !important;
     background: #f3f4ff !important;
 }
-.main-menu > li.active-menu > a {
-    background-color: #1591DC !important;
-    box-shadow: 0 10px 22px rgba(21, 145, 220, 0.18) !important;
+
+/* Styling untuk icon header di navbar utama agar rapi & tidak acak-acakan */
+.wrap-menu-desktop .wrap-icon-header {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex-grow: 0 !important;
+    flex-shrink: 0 !important;
+    gap: 15px !important;
+    padding-left: 10px;
+}
+.wrap-menu-desktop .role-chip {
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    color: #ffffff !important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    padding: 4px 10px !important;
+    border-radius: 50px !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    margin: 0 !important;
+    height: 30px !important;
+}
+.wrap-menu-desktop .account-dd {
+    position: relative !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    height: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+.wrap-menu-desktop .account-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 6px !important;
+    color: #ffffff !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    padding: 6px 12px !important;
+    border-radius: 50px !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transition: background 0.2s ease;
+    height: 30px !important;
+    min-height: 30px !important;
+}
+.wrap-menu-desktop .account-toggle:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+.wrap-menu-desktop .notif-dd {
+    margin: 0 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+}
+.wrap-menu-desktop .notif-toggle {
+    color: #ffffff !important;
+    font-size: 20px !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 50% !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+    transition: background 0.2s ease;
+    padding: 0 !important;
+}
+.wrap-menu-desktop .notif-toggle:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+.wrap-menu-desktop .notif-count {
+    background: #e53935 !important;
+    color: #ffffff !important;
+    font-size: 9px !important;
+    font-weight: 700 !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    border-radius: 50% !important;
+    position: absolute !important;
+    top: -4px !important;
+    right: -4px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    border: 1px solid #1591DC !important;
 }
 .bg3 {
     background-color: #f6f7fb !important;
@@ -247,13 +391,63 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 
 <header class="header-v4 role-<?php echo htmlspecialchars($role); ?>">
     <div class="container-menu-desktop">
-        <div class="top-bar">
-            <div class="content-topbar flex-sb-m h-full container">
-                <div class="left-top-bar"><?php echo htmlspecialchars($topbar_text); ?></div>
-                <div class="right-top-bar flex-w h-full">
+        <!-- Top bar dihilangkan dan isinya dipindah ke wrap-icon-header -->
+
+        <div class="wrap-menu-desktop">
+            <nav class="limiter-menu-desktop container">
+                <a href="index.php" class="logo"><img src="images/icons/dens.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a>
+                <div class="menu-desktop">
+                    <ul class="main-menu">
+                        <?php foreach ($main_menu as $item) { ?>
+                            <li <?php echo ($active_page === $item['active']) ? 'class="active-menu"' : ''; ?>>
+                                <a href="<?php echo htmlspecialchars($item['href']); ?>" style="position:relative;">
+                                    <?php echo htmlspecialchars($item['label']); ?>
+                                    <?php if (!empty($item['badge'])) { ?>
+                                        <span class="msg-badge"><?php echo $item['badge']; ?></span>
+                                    <?php } ?>
+                                </a>
+                            </li>
+                        <?php } ?>
+                    </ul>
+                </div>
+
+                <div class="wrap-icon-header flex-w flex-r-m">
                     <?php if ($is_admin_logged_in || $is_designer_logged_in || $is_user_logged_in) { ?>
+                        <?php if ($show_notif_bell) { ?>
+                        <div class="notif-dd" id="notifDD">
+                            <a href="#" class="notif-toggle" onclick="toggleNotif(event)" title="Notifikasi">
+                                <i class="zmdi zmdi-notifications"></i>
+                                <?php if ($notif_unread > 0) { ?>
+                                    <span class="notif-count"><?php echo $notif_unread > 9 ? '9+' : $notif_unread; ?></span>
+                                <?php } ?>
+                            </a>
+                            <div class="notif-menu">
+                                <div class="notif-head">
+                                    <span>Notifikasi</span>
+                                    <?php if ($notif_unread > 0) { ?>
+                                        <a href="notif_go.php?all=1&go=<?php echo urlencode($_cur); ?>">Tandai semua dibaca</a>
+                                    <?php } ?>
+                                </div>
+                                <?php if (count($notif_list) > 0) { ?>
+                                    <?php foreach ($notif_list as $n) { ?>
+                                        <a href="notif_go.php?id=<?php echo (int) $n['id_notifikasi']; ?>"
+                                           class="notif-item <?php echo $n['dibaca'] ? '' : 'is-unread'; ?>">
+                                            <i class="zmdi zmdi-collection-image"></i>
+                                            <div>
+                                                <p><?php echo htmlspecialchars($n['pesan']); ?></p>
+                                                <small><?php echo date('d M Y, H:i', strtotime($n['created_at'])); ?></small>
+                                            </div>
+                                        </a>
+                                    <?php } ?>
+                                <?php } else { ?>
+                                    <div class="notif-empty"><i class="zmdi zmdi-notifications-none" style="font-size:28px; display:block; margin-bottom:8px;"></i>Belum ada notifikasi.</div>
+                                <?php } ?>
+                                <a href="notifikasi.php" style="display:block; text-align:center; padding:11px; font-size:13px; font-weight:600; color:#1591DC; text-decoration:none; border-top:1px solid #f0f0f0;">Lihat semua notifikasi</a>
+                            </div>
+                        </div>
+                        <?php } ?>
                         <span class="role-chip"><?php echo htmlspecialchars($role_label); ?></span>
-                        <div class="account-dd p-lr-25">
+                        <div class="account-dd">
                             <a href="#" class="account-toggle" onclick="return false;">
                                 <i class="zmdi zmdi-account"></i>
                                 <?php echo htmlspecialchars($display_name); ?>
@@ -276,32 +470,9 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
                             </div>
                         </div>
                     <?php } else { ?>
-                        <a href="#" class="flex-c-m trans-04 p-lr-25">Bantuan</a>
-                        <a href="login.php" class="flex-c-m trans-04 p-lr-25">Masuk / Daftar</a>
+                        <a href="login.php" class="flex-c-m trans-04 p-lr-15" style="color: #fff; font-weight: 500;">Masuk / Daftar</a>
                     <?php } ?>
                 </div>
-            </div>
-        </div>
-
-        <div class="wrap-menu-desktop">
-            <nav class="limiter-menu-desktop container">
-                <a href="index.php" class="logo"><img src="images/icons/dens.png?v=<?php echo time(); ?>" alt="IMG-LOGO"></a>
-                <div class="menu-desktop">
-                    <ul class="main-menu">
-                        <?php foreach ($main_menu as $item) { ?>
-                            <li <?php echo ($active_page === $item['active']) ? 'class="active-menu"' : ''; ?>>
-                                <a href="<?php echo htmlspecialchars($item['href']); ?>" style="position:relative;">
-                                    <?php echo htmlspecialchars($item['label']); ?>
-                                    <?php if (!empty($item['badge'])) { ?>
-                                        <span class="msg-badge"><?php echo $item['badge']; ?></span>
-                                    <?php } ?>
-                                </a>
-                            </li>
-                        <?php } ?>
-                    </ul>
-                </div>
-
-                <div class="wrap-icon-header flex-w flex-r-m"></div>
             </nav>
         </div>
     </div>
@@ -319,6 +490,9 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
                 <div class="right-top-bar flex-w h-full">
                     <?php if ($is_admin_logged_in || $is_designer_logged_in || $is_user_logged_in) { ?>
                         <span class="role-chip"><?php echo htmlspecialchars($role_label); ?></span>
+                        <?php if ($show_notif_bell) { ?>
+                            <a href="notifikasi.php" class="flex-c-m p-lr-10 trans-04">Notifikasi<?php echo $notif_unread > 0 ? ' (' . $notif_unread . ')' : ''; ?></a>
+                        <?php } ?>
                         <?php foreach ($account_links as $link) { ?>
                             <?php if (empty($link['divider'])) { ?>
                                 <a href="<?php echo htmlspecialchars($link['href']); ?>" class="flex-c-m p-lr-10 trans-04"><?php echo htmlspecialchars($link['label']); ?></a>
@@ -347,3 +521,18 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
         </div>
     </div>
 </header>
+
+<?php if ($show_notif_bell) { ?>
+<script>
+    // Buka/tutup dropdown notifikasi + tutup saat klik di luar.
+    function toggleNotif(e) {
+        e.preventDefault(); e.stopPropagation();
+        var d = document.getElementById('notifDD');
+        if (d) d.classList.toggle('open');
+    }
+    document.addEventListener('click', function(e) {
+        var d = document.getElementById('notifDD');
+        if (d && !d.contains(e.target)) d.classList.remove('open');
+    });
+</script>
+<?php } ?>

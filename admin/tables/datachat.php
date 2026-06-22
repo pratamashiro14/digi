@@ -410,8 +410,8 @@ $query = mysqli_query($koneksi, "
             FROM t_chat c2
             INNER JOIN t_user pengirim2 ON pengirim2.id_user = c2.id_pengirim
             INNER JOIN t_user penerima2 ON penerima2.id_user = c2.id_penerima
-            WHERE (pengirim2.role = 'admin' AND penerima2.role = 'pelanggan')
-               OR (pengirim2.role = 'pelanggan' AND penerima2.role = 'admin')
+            WHERE (pengirim2.role = 'admin' AND penerima2.role <> 'admin')
+               OR (pengirim2.role <> 'admin' AND penerima2.role = 'admin')
             GROUP BY id_pelanggan
         ) last_chat
           ON last_chat.waktu_terakhir = c.waktu_kirim
@@ -419,8 +419,8 @@ $query = mysqli_query($koneksi, "
              WHEN pengirim.role = 'admin' THEN c.id_penerima
              ELSE c.id_pengirim
          END
-        WHERE (pengirim.role = 'admin' AND penerima.role = 'pelanggan')
-           OR (pengirim.role = 'pelanggan' AND penerima.role = 'admin')
+        WHERE (pengirim.role = 'admin' AND penerima.role <> 'admin')
+           OR (pengirim.role <> 'admin' AND penerima.role = 'admin')
     ) latest
     INNER JOIN t_user pengirim_latest ON pengirim_latest.id_user = latest.id_pengirim
     INNER JOIN t_user penerima_latest ON penerima_latest.id_user = latest.id_penerima
@@ -439,7 +439,7 @@ $query = mysqli_query($koneksi, "
         FROM t_chat c3
         INNER JOIN t_user pengirim3 ON pengirim3.id_user = c3.id_pengirim
         INNER JOIN t_user penerima3 ON penerima3.id_user = c3.id_penerima
-        WHERE pengirim3.role = 'pelanggan'
+        WHERE pengirim3.role <> 'admin'
           AND penerima3.role = 'admin'
           AND c3.is_read = 0
         GROUP BY c3.id_pengirim
@@ -454,8 +454,8 @@ $query = mysqli_query($koneksi, "
         FROM t_chat c4
         INNER JOIN t_user pengirim4 ON pengirim4.id_user = c4.id_pengirim
         INNER JOIN t_user penerima4 ON penerima4.id_user = c4.id_penerima
-        WHERE (pengirim4.role = 'admin' AND penerima4.role = 'pelanggan')
-           OR (pengirim4.role = 'pelanggan' AND penerima4.role = 'admin')
+        WHERE (pengirim4.role = 'admin' AND penerima4.role <> 'admin')
+           OR (pengirim4.role <> 'admin' AND penerima4.role = 'admin')
         GROUP BY id_pelanggan
     ) total ON total.id_pelanggan = pelanggan.id_user
     ORDER BY latest.waktu_kirim DESC, latest.id_chat DESC
@@ -478,7 +478,7 @@ $query = mysqli_query($koneksi, "
                         <thead class="table-light">
                             <tr>
                                 <th>No</th>
-                                <th>Pelanggan</th>
+                                <th>Pengguna</th>
                                 <th>Admin Tujuan</th>
                                 <th>Pesan Terakhir</th>
                                 <th>Total Pesan</th>

@@ -18,6 +18,10 @@ if (!$kelayakan['ok']) {
 
 $id_design = (int) ($_POST['id_design'] ?? 0);
 
+// PRIORITAS BIDDING (premium): pembeli premium boleh MENYAMAI tawaran tertinggi
+// dan langsung memimpin; pembeli biasa tetap wajib menawar lebih tinggi.
+$is_prem_buyer = is_premium_buyer();
+
 // Bersihkan format Rupiah (Contoh: "Rp 120.000" jadi "120000")
 $harga_raw = $_POST['harga_tawaran'] ?? '';
 $harga_bersih = (int) preg_replace('/[^0-9]/', '', $harga_raw);
@@ -56,8 +60,11 @@ if (!$data_produk) {
     sweetalert_back('Karya ini sudah terjual. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
 } elseif ($lelang_berakhir) {
     sweetalert_back('Lelang untuk karya ini sudah berakhir. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
-} elseif ($harga_bersih <= $tertinggi_sekarang) {
-    sweetalert_back('Tawaran harus lebih tinggi dari penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ').', 'error', 'Tawaran Ditolak!');
+} elseif ($is_prem_buyer ? ($harga_bersih < $tertinggi_sekarang) : ($harga_bersih <= $tertinggi_sekarang)) {
+    $pesan_tolak = $is_prem_buyer
+        ? 'Sebagai pembeli Premium, tawaran minimal harus SAMA dengan penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ') untuk langsung memimpin.'
+        : 'Tawaran harus lebih tinggi dari penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ').';
+    sweetalert_back($pesan_tolak, 'error', 'Tawaran Ditolak!');
 } elseif ($harga_bersih < $harga_awal) {
     sweetalert_back('Tawaran tidak boleh lebih rendah dari harga awal.', 'error', 'Tawaran Ditolak!');
 } else {

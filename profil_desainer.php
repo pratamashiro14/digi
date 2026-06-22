@@ -104,6 +104,12 @@ $email = $data['email'] ?? '';
 $foto = $data['foto'] ?? 'default.jpg'; 
 $status_verifikasi = $data['status_verifikasi'] ?? 'unverified';
 $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
+
+// Portofolio Showcase (fitur premium) — ambil item & status premium desainer
+$is_prem_designer = is_premium_designer();
+$portofolio = [];
+$q_porto = mysqli_query($koneksi, "SELECT * FROM t_portofolio WHERE id_designer='$id_user' ORDER BY id_portofolio DESC");
+if ($q_porto) { while ($p = mysqli_fetch_assoc($q_porto)) $portofolio[] = $p; }
 ?>
 
 <!DOCTYPE html>
@@ -135,6 +141,23 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
         .portfolio-box { width: 100%; height: 150px; border: 2px dashed #ddd; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: #fafafa; }
         .portfolio-box:hover { border-color: #4e8eff; background: #f0f8ff; }
         .plus-icon { font-size: 40px; color: #ccc; }
+        /* Portofolio Showcase */
+        .porto-flag { font-size: 12px; font-weight: 700; padding: 6px 12px; border-radius: 50px; white-space: nowrap; }
+        .porto-flag.is-on { background: #fff3cd; color: #856404; }
+        .porto-flag.is-off { background: #eef2ff; color: #4338ca; }
+        .porto-locked { display: flex; gap: 14px; align-items: center; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 20px; margin-top: 18px; color: #475569; }
+        .porto-locked i { font-size: 26px; color: #f59e0b; }
+        .porto-locked a { color: #4e8eff; font-weight: 700; text-decoration: none; }
+        .porto-upload { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 18px 0 22px; padding: 16px; background: #f9fafb; border: 1px solid #eee; border-radius: 12px; }
+        .porto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
+        .porto-card { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid #eee; background: #fff; }
+        .porto-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
+        .porto-judul { position: absolute; left: 0; right: 0; bottom: 0; background: linear-gradient(transparent, rgba(0,0,0,0.65)); color: #fff; font-size: 12px; padding: 16px 10px 8px; }
+        .porto-del { position: absolute; top: 8px; right: 8px; margin: 0; }
+        .porto-del button { background: rgba(220,38,38,0.92); color: #fff; border: none; width: 30px; height: 30px; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+        .porto-del button:hover { background: #b91c1c; }
+        .porto-empty { text-align: center; color: #9ca3af; padding: 40px 20px; }
+        .porto-empty i { font-size: 44px; display: block; margin-bottom: 10px; }
     </style>
 </head>
 <body class="animsition account-page">
@@ -207,13 +230,73 @@ $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
                             
                             <div class="p-t-10">
                                 <label class="stext-102 cl3 p-b-5" style="font-weight:600;">Portofolio</label>
-                                <div class="portfolio-box"><span class="plus-icon">+</span></div>
+                                <p style="font-size:12px; color:#888; margin:0;">
+                                    <i class="fa fa-arrow-down"></i> Kelola galeri portofolio di bagian bawah halaman ini.
+                                </p>
                             </div>
 
                             <button type="submit" name="simpan_profil" class="btn-save">Simpan Perubahan</button>
                         </div>
                     </div>
             </form>
+
+            <!-- ===== PORTOFOLIO SHOWCASE (FITUR PREMIUM) ===== -->
+            <div id="portofolio" class="account-panel" style="margin-top:30px;">
+                <div class="account-page-header" style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div>
+                        <h1 style="font-size:22px; margin:0;">Portofolio Showcase</h1>
+                        <p style="margin:4px 0 0;">Galeri karya pilihan yang tampil di toko publikmu untuk menarik klien.</p>
+                    </div>
+                    <span class="porto-flag <?php echo $is_prem_designer ? 'is-on' : 'is-off'; ?>">
+                        <i class="fa fa-star"></i> <?php echo $is_prem_designer ? 'Premium Aktif' : 'Khusus Premium'; ?>
+                    </span>
+                </div>
+
+                <?php if (!$is_prem_designer) { ?>
+                    <div class="porto-locked">
+                        <i class="fa fa-lock"></i>
+                        <div>
+                            <b>Portofolio Showcase adalah fitur Premium Desainer.</b>
+                            <p style="margin:4px 0 0;">Tampilkan karya terbaikmu di toko agar lebih dipercaya calon klien.
+                                <a href="premium.php">Upgrade sekarang →</a></p>
+                        </div>
+                    </div>
+                <?php } else { ?>
+                    <!-- Form upload -->
+                    <form action="proses_portofolio.php" method="POST" enctype="multipart/form-data" class="porto-upload">
+                        <input type="hidden" name="upload_portofolio" value="1">
+                        <input type="text" name="judul_portofolio" class="custom-input" placeholder="Judul karya (opsional)" maxlength="150" style="flex:1; min-width:160px;">
+                        <input type="file" name="gambar_portofolio" accept="image/jpeg,image/png,image/webp" required style="flex:1; min-width:160px;">
+                        <button type="submit" class="btn-edit-foto" style="background:#4e8eff;">+ Tambah</button>
+                    </form>
+
+                    <!-- Galeri -->
+                    <?php if (count($portofolio) > 0) { ?>
+                        <div class="porto-grid">
+                            <?php foreach ($portofolio as $p) { ?>
+                                <div class="porto-card">
+                                    <img src="admin/uploads/<?php echo htmlspecialchars($p['gambar']); ?>"
+                                         onerror="this.src='images/item-cart-04.jpg'; this.onerror=null;"
+                                         alt="<?php echo htmlspecialchars($p['judul'] ?? 'Portofolio'); ?>">
+                                    <?php if (!empty($p['judul'])) { ?>
+                                        <span class="porto-judul"><?php echo htmlspecialchars($p['judul']); ?></span>
+                                    <?php } ?>
+                                    <form action="proses_portofolio.php" method="POST" class="porto-del"
+                                          onsubmit="return confirm('Hapus karya ini dari portofolio?');">
+                                        <input type="hidden" name="hapus" value="<?php echo (int) $p['id_portofolio']; ?>">
+                                        <button type="submit" title="Hapus"><i class="fa fa-trash"></i></button>
+                                    </form>
+                                </div>
+                            <?php } ?>
+                        </div>
+                    <?php } else { ?>
+                        <div class="porto-empty">
+                            <i class="zmdi zmdi-collection-image-o"></i>
+                            <p>Belum ada karya di portofolio. Unggah karya pertamamu di atas.</p>
+                        </div>
+                    <?php } ?>
+                <?php } ?>
+            </div>
         </main>
     </div>
 

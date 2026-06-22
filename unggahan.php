@@ -42,6 +42,52 @@ if (isset($_GET['hapus'])) {
     }
 }
 
+// 2b. LOGIKA HENTIKAN LELANG LEBIH AWAL
+// Desainer boleh menutup lelang kapan saja bila harga bid dirasa sudah cukup.
+// Penawar tertinggi saat ini (dengan prioritas premium) langsung jadi pemenang
+// dan diberi notifikasi untuk membayar — tanpa menunggu batas waktu.
+if (isset($_POST['hentikan_lelang'])) {
+    require_once __DIR__ . '/bidding_helper.php';
+    require_once __DIR__ . '/notifikasi_helper.php';
+    $id_lelang = (int) ($_POST['id_design'] ?? 0);
+
+    $q_l = mysqli_query($koneksi, "SELECT judul, status, waktu_berakhir
+                                   FROM t_design
+                                   WHERE id_design='$id_lelang' AND id_designer='$id_desainer' LIMIT 1");
+    $dl = $q_l ? mysqli_fetch_assoc($q_l) : null;
+
+    if (!$dl) {
+        sweetalert_back('Karya tidak ditemukan.', 'error', 'Gagal');
+    } elseif ($dl['status'] === 'sold') {
+        sweetalert_back('Karya ini sudah terjual.', 'info', 'Tidak Bisa Dihentikan');
+    } elseif (empty($dl['waktu_berakhir']) || strtotime($dl['waktu_berakhir']) <= time()) {
+        sweetalert_back('Lelang ini sudah berakhir.', 'info', 'Sudah Berakhir');
+    } else {
+        $winner_id = bid_leader_id($koneksi, $id_lelang);
+        if (!$winner_id) {
+            sweetalert_back('Belum ada penawaran masuk, jadi lelang belum bisa dihentikan.', 'warning', 'Belum Ada Penawaran');
+        } else {
+            // Akhiri lelang sekarang juga (set waktu berakhir = sekarang).
+            $stmt_end = mysqli_prepare($koneksi, "UPDATE t_design SET waktu_berakhir = NOW()
+                                                  WHERE id_design=? AND id_designer=?");
+            mysqli_stmt_bind_param($stmt_end, 'ii', $id_lelang, $id_desainer);
+            mysqli_stmt_execute($stmt_end);
+            mysqli_stmt_close($stmt_end);
+
+            // Beri tahu pemenang agar segera membayar.
+            kirim_notifikasi(
+                $koneksi,
+                $winner_id,
+                'Selamat! Kamu memenangkan lelang "' . $dl['judul'] . '". Segera selesaikan pembayaran ya.',
+                'riwayat_bidding.php',
+                'menang_lelang'
+            );
+            sweetalert_redirect('Lelang dihentikan. Pemenang sudah diberi tahu untuk melakukan pembayaran.',
+                                'unggahan.php?view=active#daftar-karya', 'success', 'Lelang Diselesaikan');
+        }
+    }
+}
+
 // 3. PROSES UPLOAD KARYA BARU
 // Kita pakai hidden input 'simpan_karya' karena tombol submit akan di-intercept oleh JS
 if (isset($_POST['simpan_karya'])) {
@@ -80,6 +126,11 @@ if (isset($_POST['simpan_karya'])) {
         ('$id_desainer', '$judul', '$deskripsi', '$kategori', '$harga', '$harga_beli_langsung', '$nama_gambar', NOW(), 'approved', '$waktu_berakhir', '$nama_file_master')";
 
     if (mysqli_query($koneksi, $query_insert)) {
+        // Notifikasi Custom (premium): beri tahu pembeli premium yang memfavoritkan desainer ini.
+        $id_design_baru = mysqli_insert_id($koneksi);
+        require_once __DIR__ . '/notifikasi_helper.php';
+        notif_karya_baru_ke_favorit($koneksi, $id_desainer, current_name(), $id_design_baru, trim($_POST['judul'] ?? ''));
+
         sweetalert_redirect('Karya sudah tayang dan lelang telah dimulai.', 'unggahan.php?view=active#daftar-karya', 'success', 'Upload Berhasil!');
     } else {
         sweetalert_back('Gagal mengunggah karya: ' . mysqli_error($koneksi), 'error', 'Upload Gagal!');
@@ -131,6 +182,8 @@ if (isset($_POST['simpan_karya'])) {
         .thumb-small { width: 60px; height: 60px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; }
         .btn-hapus { background: #ff4e4e; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; text-decoration: none; display: inline-block; }
         .btn-hapus:hover { background: #d00000; color: #fff; }
+        .btn-stop { background: #f39c12; color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; border: none; cursor: pointer; display: inline-block; }
+        .btn-stop:hover { background: #d9860b; color: #fff; }
     </style>
 </head>
 <body class="animsition account-page">
@@ -252,6 +305,9 @@ if (isset($_POST['simpan_karya'])) {
                                 if(mysqli_num_rows($q_karya) > 0){
                                     while($k = mysqli_fetch_assoc($q_karya)){
                                         $deadline = ($k['waktu_berakhir']) ? date('d M Y, H:i', strtotime($k['waktu_berakhir'])) : '-';
+                                        $lelang_aktif = ($k['status'] === 'approved'
+                                            && !empty($k['waktu_berakhir'])
+                                            && strtotime($k['waktu_berakhir']) > time());
                                 ?>
                                 <tr>
                                     <td><?php echo $no++; ?></td>
@@ -264,6 +320,13 @@ if (isset($_POST['simpan_karya'])) {
                                     <td><?php echo $k['harga_beli_langsung'] > 0 ? 'Rp ' . number_format($k['harga_beli_langsung'],0,',','.') : '-'; ?></td>
                                     <td style="color: #e74c3c; font-weight: 500;"><?php echo $deadline; ?></td>
                                     <td>
+                                        <?php if ($lelang_aktif) { ?>
+                                            <form action="unggahan.php?view=<?php echo htmlspecialchars($works_view); ?>" method="POST" style="display:inline; margin:0 4px 0 0;">
+                                                <input type="hidden" name="hentikan_lelang" value="1">
+                                                <input type="hidden" name="id_design" value="<?php echo $k['id_design']; ?>">
+                                                <button type="submit" class="btn-stop" data-confirm-stop><i class="fa fa-gavel"></i> Hentikan Lelang</button>
+                                            </form>
+                                        <?php } ?>
                                         <a href="unggahan.php?hapus=<?php echo $k['id_design']; ?>" class="btn-hapus" data-swal-confirm="Karya dan riwayat lelang ini akan dihapus permanen."><i class="fa fa-trash"></i> Hapus</a>
                                     </td>
                                 </tr>
@@ -291,6 +354,21 @@ if (isset($_POST['simpan_karya'])) {
     <script src="js/main.js"></script>
 
     <script>
+        // Konfirmasi sebelum menghentikan lelang lebih awal (POST form).
+        document.addEventListener('click', function (e) {
+            var btn = e.target.closest('[data-confirm-stop]');
+            if (!btn || typeof swal !== 'function') return;
+            e.preventDefault();
+            var form = btn.closest('form');
+            swal({
+                title: 'Hentikan lelang sekarang?',
+                text: 'Penawar tertinggi saat ini akan langsung menjadi pemenang dan diminta membayar. Tindakan ini tidak bisa dibatalkan.',
+                icon: 'warning',
+                buttons: ['Batal', 'Ya, Hentikan'],
+                dangerMode: true
+            }).then(function (ok) { if (ok && form) form.submit(); });
+        });
+
         function previewImage(input) {
             if (input.files && input.files[0]) {
                 var reader = new FileReader();

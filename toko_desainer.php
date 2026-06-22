@@ -29,6 +29,13 @@ $total_karya = (int) (mysqli_fetch_assoc(mysqli_query($koneksi,
 $total_pengikut = (int) (mysqli_fetch_assoc(mysqli_query($koneksi,
     "SELECT COUNT(*) c FROM t_favorit_desainer WHERE id_designer = '$id_designer'"))['c'] ?? 0);
 
+// Portofolio Showcase — hanya ditampilkan untuk desainer Premium.
+$portofolio_toko = [];
+if ($designer_premium) {
+    $q_pt = mysqli_query($koneksi, "SELECT * FROM t_portofolio WHERE id_designer = '$id_designer' ORDER BY id_portofolio DESC");
+    while ($q_pt && $r = mysqli_fetch_assoc($q_pt)) { $portofolio_toko[] = $r; }
+}
+
 // 4. Kumpulan id_design yang SUDAH TERJUAL (ada transaksi berhasil)
 $sold_ids = [];
 $q_sold = mysqli_query($koneksi, "SELECT DISTINCT t.id_design FROM t_transaksi t
@@ -234,6 +241,31 @@ $avatar_src = $foto_desainer ? 'admin/uploads/' . $foto_desainer : $avatar_fallb
                 <h3>Desainer ini belum punya karya</h3>
                 <p>Belum ada karya yang dipublikasikan.</p>
             </div>
+        <?php } ?>
+
+        <?php if ($designer_premium && count($portofolio_toko) > 0) { ?>
+            <h2 class="toko-section-title" style="margin-top:40px;">
+                <i class="fa fa-star" style="color:#f1c40f;"></i> Portofolio
+            </h2>
+            <div class="porto-showcase-grid">
+                <?php foreach ($portofolio_toko as $p) { ?>
+                    <figure class="porto-showcase-item">
+                        <img src="admin/uploads/<?php echo htmlspecialchars($p['gambar']); ?>"
+                             onerror="this.src='images/item-cart-04.jpg'; this.onerror=null;"
+                             alt="<?php echo htmlspecialchars($p['judul'] ?? 'Portofolio'); ?>" loading="lazy">
+                        <?php if (!empty($p['judul'])) { ?>
+                            <figcaption><?php echo htmlspecialchars($p['judul']); ?></figcaption>
+                        <?php } ?>
+                    </figure>
+                <?php } ?>
+            </div>
+            <style>
+                .porto-showcase-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(160px,1fr)); gap:14px; }
+                .porto-showcase-item { position:relative; margin:0; border-radius:12px; overflow:hidden; border:1px solid #eee; background:#fff; }
+                .porto-showcase-item img { width:100%; height:160px; object-fit:cover; display:block; transition:0.3s; }
+                .porto-showcase-item:hover img { transform:scale(1.05); }
+                .porto-showcase-item figcaption { position:absolute; left:0; right:0; bottom:0; background:linear-gradient(transparent, rgba(0,0,0,0.7)); color:#fff; font-size:12px; padding:18px 10px 8px; }
+            </style>
         <?php } ?>
 
     </div>

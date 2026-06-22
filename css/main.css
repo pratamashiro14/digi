@@ -71,8 +71,19 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 
 @font-face {
   font-family: Poppins-SemiBold;
-  src: url('../fonts/Poppins/Poppins-SemiBold.ttf'); 
+  src: url('../fonts/Poppins/Poppins-SemiBold.ttf');
 }
+
+/* Alias keluarga "Poppins" (satu nama, banyak ketebalan) supaya semua
+   pemakaian font-family:'Poppins' di inline-style ikut Poppins tanpa
+   bergantung Google Fonts / font yang terinstall di OS pengguna. */
+@font-face { font-family: 'Poppins'; font-weight: 300; font-style: normal; src: url('../fonts/Poppins/Poppins-Light.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 400; font-style: normal; src: url('../fonts/Poppins/Poppins-Regular.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 400; font-style: italic; src: url('../fonts/Poppins/Poppins-Italic.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 500; font-style: normal; src: url('../fonts/Poppins/Poppins-Medium.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 600; font-style: normal; src: url('../fonts/Poppins/Poppins-SemiBold.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 700; font-style: normal; src: url('../fonts/Poppins/Poppins-Bold.ttf'); }
+@font-face { font-family: 'Poppins'; font-weight: 800; font-style: normal; src: url('../fonts/Poppins/Poppins-ExtraBold.ttf'); }
 
 
 /*---------------------------------------------*/
@@ -2217,7 +2228,7 @@ input.num-product::-webkit-inner-spin-button {
 
 .label-new::after {
   content: attr(data-label);
-  font-family: Montserrat-Regular;
+  font-family: Poppins-Regular;
   font-size: 12px;
   color: #fff;
   line-height: 1.2;
@@ -2368,7 +2379,7 @@ input.num-product::-webkit-inner-spin-button {
 
 /*---------------------------------------------*/
 .stext-301 {
-  font-family: Montserrat-Bold;
+  font-family: Poppins-SemiBold;
   font-size: 15px;
   line-height: 1.6;
   text-transform: uppercase;
@@ -2520,14 +2531,14 @@ input.num-product::-webkit-inner-spin-button {
 
 /*---------------------------------------------*/
 .ltext-201 {
-  font-family: PlayfairDisplay-Bold;
+  font-family: Poppins-Bold;
   font-size: 60px;
   line-height: 1.1;
   text-transform: uppercase;
 }
 
 .ltext-202 {
-  font-family: PlayfairDisplay-Regular;
+  font-family: Poppins-Regular;
   font-size: 28px;
   line-height: 1.2857;
 }

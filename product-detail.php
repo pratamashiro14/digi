@@ -427,6 +427,7 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
     <script src="vendor/select2/select2.min.js"></script>
     <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
     <script src="vendor/sweetalert/sweetalert.min.js"></script>
+    <script src="js/bidding-ajax.js"></script>
     <script src="js/main.js"></script>
 
     <script>
@@ -488,7 +489,9 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                     dangerMode: false
                 }).then(function(confirmed) {
                     if (confirmed) {
-                        bidForm.submit();
+                        submitBidAjax(bidForm, function () {
+                            bidFloor = currentBid;
+                        });
                     }
                 });
             });

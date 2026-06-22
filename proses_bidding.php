@@ -7,13 +7,30 @@ require_once __DIR__ . '/bidding_helper.php';
 require_user();
 
 $id_user = (int) current_id(); // ID User yang sedang login
+$is_ajax_bid = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
+$bid_response = function ($success, $message, $icon, $title, $redirect = null) use ($is_ajax_bid) {
+    if ($is_ajax_bid) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode([
+            'success' => (bool) $success,
+            'message' => $message,
+            'icon' => $icon,
+            'title' => $title
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
+    }
+
+    if ($redirect !== null) {
+        sweetalert_redirect($message, $redirect, $icon, $title);
+    }
+    sweetalert_back($message, $icon, $title);
+};
 
 // 1b. GERBANG KELAYAKAN BID: harus aktif, KTP verified, NIK tidak diblokir.
 //     Wajib dicek di server agar gate tidak bisa dilewati lewat endpoint langsung.
 $kelayakan = status_bid_user($koneksi, $id_user);
 if (!$kelayakan['ok']) {
-    sweetalert_back($kelayakan['reason'], 'warning', 'Tidak Dapat Menawar');
-    exit;
+    $bid_response(false, $kelayakan['reason'], 'warning', 'Tidak Dapat Menawar');
 }
 
 $id_design = (int) ($_POST['id_design'] ?? 0);
@@ -55,18 +72,18 @@ $lelang_berakhir = !empty($data_produk['lelang_berakhir']);
 
 // 3. Validasi: Pengecekan tenggat waktu lelang & nominal tawaran
 if (!$data_produk) {
-    sweetalert_back('Karya tidak ditemukan.', 'error', 'Tawaran Ditolak!');
+    $bid_response(false, 'Karya tidak ditemukan.', 'error', 'Tawaran Ditolak!');
 } elseif ($status_design === 'sold' || $sudah_terjual) {
-    sweetalert_back('Karya ini sudah terjual. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
+    $bid_response(false, 'Karya ini sudah terjual. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
 } elseif ($lelang_berakhir) {
-    sweetalert_back('Lelang untuk karya ini sudah berakhir. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
+    $bid_response(false, 'Lelang untuk karya ini sudah berakhir. Anda tidak dapat mengajukan penawaran lagi.', 'error', 'Tawaran Ditolak!');
 } elseif ($is_prem_buyer ? ($harga_bersih < $tertinggi_sekarang) : ($harga_bersih <= $tertinggi_sekarang)) {
     $pesan_tolak = $is_prem_buyer
         ? 'Sebagai pembeli Premium, tawaran minimal harus SAMA dengan penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ') untuk langsung memimpin.'
         : 'Tawaran harus lebih tinggi dari penawar tertinggi saat ini (Rp ' . number_format($tertinggi_sekarang, 0, ',', '.') . ').';
-    sweetalert_back($pesan_tolak, 'error', 'Tawaran Ditolak!');
+    $bid_response(false, $pesan_tolak, 'error', 'Tawaran Ditolak!');
 } elseif ($harga_bersih < $harga_awal) {
-    sweetalert_back('Tawaran tidak boleh lebih rendah dari harga awal.', 'error', 'Tawaran Ditolak!');
+    $bid_response(false, 'Tawaran tidak boleh lebih rendah dari harga awal.', 'error', 'Tawaran Ditolak!');
 } else {
     // 4. Simpan ke Database (Sesuai kolom tabel kamu: id_buyer, tanggal_bid, status_bid)
     $simpan_stmt = mysqli_prepare($koneksi, "INSERT INTO t_bidding (id_design, id_buyer, harga_tawaran, tanggal_bid, status_bid)
@@ -75,9 +92,9 @@ if (!$data_produk) {
     $simpan = mysqli_stmt_execute($simpan_stmt);
 
     if ($simpan) {
-        sweetalert_redirect('Penawaran Anda berhasil dikirim.', 'product-detail.php?id=' . $id_design, 'success', 'Tawaran Berhasil!');
+        $bid_response(true, 'Penawaran Anda berhasil dikirim.', 'success', 'Tawaran Berhasil!', 'product-detail.php?id=' . $id_design);
     } else {
-        sweetalert_back('Gagal menawar: ' . mysqli_error($koneksi), 'error', 'Tawaran Gagal!');
+        $bid_response(false, 'Gagal menawar: ' . mysqli_error($koneksi), 'error', 'Tawaran Gagal!');
     }
 }
 ?>

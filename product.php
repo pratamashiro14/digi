@@ -820,6 +820,7 @@ $result = $conn->query($sql);
 	<script src="vendor/isotope/isotope.pkgd.min.js"></script>
 <!--===============================================================================================-->
 	<script src="vendor/sweetalert/sweetalert.min.js"></script>
+	<script src="js/bidding-ajax.js"></script>
 	<script>
 		$('.js-addwish-b2, .js-addwish-detail').on('click', function(e){
 			e.preventDefault();
@@ -1115,19 +1116,26 @@ $result = $conn->query($sql);
 
 		// Handle form submit
 		$('#biddingForm').on('submit', function(e) {
+			e.preventDefault();
 			var bidAmount = parseRupiah($('#modalBidInput').val());
 			
 			if(bidAmount < minBidValue) {
-				e.preventDefault();
 				swal('Tawaran Ditolak!', 'Penawaran minimum adalah ' + formatRupiah(minBidValue) + '.', 'error');
 				return false;
 			}
 			
 			if(bidAmount <= 0) {
-				e.preventDefault();
 				swal('Tawaran Ditolak!', 'Masukkan jumlah penawaran yang valid.', 'error');
 				return false;
 			}
+
+			var form = this;
+			submitBidAjax(form, function () {
+				currentBidValue = bidAmount;
+				minBidValue = bidAmount;
+				$('.modal-price').text('Highest Bid: ' + formatRupiah(bidAmount));
+			});
+			return false;
 		});
 
 		$('.js-show-modal1').on('click', function(e){

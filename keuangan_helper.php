@@ -7,14 +7,14 @@
  *  - Uang hasil penjualan ditahan platform.
  *  - Desainer mengajukan pencairan, admin transfer manual & menandai selesai.
  *
- * Fee dipotong PER PENARIKAN (bukan dari total penghasilan):
+ * Pencairan TANPA potongan biaya admin (platform sudah untung dari fee per
+ * transaksi pembelian). Desainer menerima penuh nominal yang ditarik:
  *  - Saldo tersedia = total penjualan 'berhasil' - total yang sudah/sedang dicairkan.
- *  - Saat menarik nominal X: biaya admin = X * FEE_PERSEN%, desainer menerima (X - biaya).
- *    Nominal X tetap yang mengurangi saldo; biaya admin diambil dari nominal tarik.
+ *  - Saat menarik nominal X: desainer menerima X penuh.
  */
 
 if (!defined('FEE_PERSEN')) {
-    define('FEE_PERSEN', 2.5);       // Biaya admin per penarikan (%)
+    define('FEE_PERSEN', 0);         // Tanpa biaya admin per penarikan (%)
 }
 if (!defined('MIN_PENARIKAN')) {
     define('MIN_PENARIKAN', 50000);  // Minimum nominal sekali tarik (Rp)

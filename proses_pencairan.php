@@ -41,7 +41,7 @@ if ($bank === '' || $no_rekening === '' || $nama_rek === '') {
     mysqli_stmt_bind_param($stmt, 'idddsss', $id_desainer, $jumlah, $fee, $diterima, $bank, $no_rekening, $nama_rek);
 
     if (mysqli_stmt_execute($stmt)) {
-        sweetalert_redirect('Pengajuan pencairan ' . rupiah($jumlah) . ' berhasil dikirim (biaya admin ' . rupiah($fee) . ', diterima ' . rupiah($diterima) . '). Tunggu diproses Admin.', 'pencairan.php?view=history', 'success', 'Pengajuan Terkirim!');
+        sweetalert_redirect('Pengajuan pencairan ' . rupiah($jumlah) . ' berhasil dikirim (diterima penuh tanpa potongan). Tunggu diproses Admin.', 'pencairan.php?view=history', 'success', 'Pengajuan Terkirim!');
     } else {
         sweetalert_back('Gagal mengajukan pencairan: ' . mysqli_error($koneksi), 'error', 'Gagal!');
     }

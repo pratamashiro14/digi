@@ -134,16 +134,25 @@ if ($is_admin_logged_in) {
 ?>
 
 <?php
-// Cek apakah perlu tampilkan toast notif
+// Toast pesan: HANYA muncul saat ada pesan BARU (jumlah unread bertambah).
+// - Membuka halaman pesan/detail dianggap "mengakui" jumlah unread saat ini,
+//   sehingga toast tidak pop lagi untuk pesan yang sudah pernah dilihat di inbox.
+// - Membaca 1 thread (unread turun) TIDAK memunculkan toast.
 $_show_toast = false;
-if ($unread_count > 0 && !in_array($_cur, ['pesan.php', 'detail_chat.php'])) {
-    $_last = $_SESSION['msg_toast_count'] ?? -1;
-    if ($unread_count !== (int)$_last) {
+$_on_msg_page = in_array($_cur, ['pesan.php', 'detail_chat.php'], true);
+
+if ($unread_count === 0) {
+    unset($_SESSION['msg_toast_count']);
+} elseif ($_on_msg_page) {
+    // Sinkronkan baseline tanpa menampilkan toast.
+    $_SESSION['msg_toast_count'] = $unread_count;
+} else {
+    $_last = (int) ($_SESSION['msg_toast_count'] ?? 0);
+    if ($unread_count > $_last) {       // hanya bila benar-benar ada pesan baru
         $_show_toast = true;
-        $_SESSION['msg_toast_count'] = $unread_count;
     }
+    $_SESSION['msg_toast_count'] = $unread_count;
 }
-if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 ?>
 
 <style>
@@ -169,15 +178,35 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 .notif-item small { color: #999; font-size: 11px; }
 .notif-empty { padding: 26px 16px; text-align: center; color: #9ca3af; font-size: 13px; }
 #msgToast {
-    position: fixed; top: 80px; right: 20px; z-index: 99999;
-    background: #fff; border-radius: 14px; padding: 14px 16px 14px 18px;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.13); display: flex; align-items: center;
-    gap: 12px; max-width: 290px; border-left: 4px solid #1591DC;
-    animation: toastSlide .35s ease;
+    position: fixed; bottom: 24px; right: 24px; z-index: 99999;
+    width: 320px; max-width: calc(100vw - 32px);
+    background: #fff; border-radius: 16px; padding: 14px 16px;
+    box-shadow: 0 16px 44px rgba(15,23,42,0.18); display: flex; align-items: flex-start;
+    gap: 12px; border: 1px solid #eef0f5; overflow: hidden;
+    transform: translateY(24px) scale(.97); opacity: 0;
+    animation: msgToastIn .45s cubic-bezier(.22,1,.36,1) forwards;
 }
-@keyframes toastSlide { from { transform:translateX(120px); opacity:0; } to { transform:translateX(0); opacity:1; } }
-#msgToast .toast-close { background:none; border:none; cursor:pointer; color:#bbb; font-size:20px; padding:0; line-height:1; margin-left:auto; }
-#msgToast .toast-close:hover { color:#555; }
+#msgToast.hide { animation: msgToastOut .3s ease forwards; }
+@keyframes msgToastIn  { to { transform: translateY(0) scale(1); opacity: 1; } }
+@keyframes msgToastOut { to { transform: translateY(24px) scale(.97); opacity: 0; } }
+#msgToast .mt-icon {
+    width: 42px; height: 42px; border-radius: 13px; flex-shrink: 0; font-size: 20px;
+    background: #eff6ff; display: flex; align-items: center; justify-content: center;
+}
+#msgToast .mt-body { flex: 1; min-width: 0; }
+#msgToast .mt-title { font-weight: 700; color: #1e293b; font-size: 14px; margin: 0 0 2px; }
+#msgToast .mt-text { color: #64748b; font-size: 12.5px; line-height: 1.4; margin: 0; }
+#msgToast .mt-text b { color: #1591DC; }
+#msgToast .mt-link { display: inline-block; margin-top: 8px; font-size: 12.5px; color: #1591DC; font-weight: 600; text-decoration: none; }
+#msgToast .mt-link:hover { text-decoration: underline; }
+#msgToast .mt-close { position: absolute; top: 9px; right: 9px; background: none; border: none; cursor: pointer;
+    color: #cbd5e1; font-size: 18px; line-height: 1; padding: 3px; border-radius: 7px; transition: .15s; }
+#msgToast .mt-close:hover { color: #64748b; background: #f1f5f9; }
+#msgToast .mt-progress { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%;
+    background: linear-gradient(90deg, #4e8eff, #1591DC); transform-origin: left;
+    animation: msgToastBar 5s linear forwards; }
+@keyframes msgToastBar { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+@media (prefers-reduced-motion: reduce) { #msgToast, #msgToast .mt-progress { animation-duration: .01ms !important; } }
 
 /* THEME ALIGNMENT WITH ADMIN (OVERRIDE) */
 .wrap-menu-desktop, .wrap-header-mobile {
@@ -379,20 +408,29 @@ if ($unread_count === 0) unset($_SESSION['msg_toast_count']);
 </style>
 
 <?php if ($_show_toast) { ?>
-<div id="msgToast">
-    <div style="font-size:26px; flex-shrink:0;">💬</div>
-    <div>
-        <div style="font-weight:700; color:#333; font-size:13.5px;">Pesan Baru!</div>
-        <div style="color:#888; font-size:12px; margin:2px 0 6px;">
-            <b><?php echo $unread_count; ?></b> pesan belum dibaca
-        </div>
-        <a href="pesan.php" style="font-size:12px; color:#4e8eff; font-weight:600; text-decoration:none;">
-            Lihat Sekarang →
-        </a>
+<div id="msgToast" role="status" aria-live="polite">
+    <div class="mt-icon">💬</div>
+    <div class="mt-body">
+        <p class="mt-title">Pesan Baru</p>
+        <p class="mt-text"><b><?php echo $unread_count; ?></b> pesan belum dibaca</p>
+        <a href="pesan.php" class="mt-link">Lihat sekarang →</a>
     </div>
-    <button class="toast-close" onclick="document.getElementById('msgToast').style.display='none'">×</button>
+    <button class="mt-close" onclick="dismissMsgToast()" aria-label="Tutup">×</button>
+    <span class="mt-progress"></span>
 </div>
-<script>setTimeout(function(){ var t=document.getElementById('msgToast'); if(t) t.style.display='none'; }, 6000);</script>
+<script>
+(function () {
+    var t = document.getElementById('msgToast');
+    if (!t) return;
+    var timer;
+    window.dismissMsgToast = function () {
+        clearTimeout(timer);
+        t.classList.add('hide');
+        setTimeout(function () { if (t && t.parentNode) t.parentNode.removeChild(t); }, 320);
+    };
+    timer = setTimeout(window.dismissMsgToast, 5000);
+})();
+</script>
 <?php } ?>
 
 <header class="header-v4 role-<?php echo htmlspecialchars($role); ?>">

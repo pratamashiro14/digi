@@ -187,7 +187,7 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                 <div class="withdraw-cta">
                     <div class="desc">
                         <div style="font-weight:700; color:#333; font-size:16px;">Mau cairkan saldo?</div>
-                        <small>Biaya admin <?php echo fee_label(); ?>% dipotong per penarikan &middot; minimal <?php echo rupiah(MIN_PENARIKAN); ?>.</small>
+                        <small>Tanpa potongan biaya admin &middot; dana diterima penuh &middot; minimal <?php echo rupiah(MIN_PENARIKAN); ?>.</small>
                     </div>
                     <?php if ($bisa_tarik) { ?>
                         <button type="button" class="btn-cair" onclick="bukaModalCair()"><i class="fa fa-paper-plane"></i> Ajukan Pencairan</button>
@@ -206,27 +206,25 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                                 <tr>
                                     <th>Tanggal</th>
                                     <th>Tujuan</th>
-                                    <th>Nominal</th>
-                                    <th>Biaya (<?php echo fee_label(); ?>%)</th>
-                                    <th>Diterima</th>
+                                    <th>Nominal Diterima</th>
                                     <th>Status</th>
                                     <th>Catatan Admin</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <?php if (count($riwayat) === 0) { ?>
-                                    <tr><td colspan="7" style="text-align:center; padding:30px; color:#999;">Belum ada pengajuan pencairan.</td></tr>
+                                    <tr><td colspan="5" style="text-align:center; padding:30px; color:#999;">Belum ada pengajuan pencairan.</td></tr>
                                 <?php } else {
-                                    foreach ($riwayat as $r) { ?>
+                                    foreach ($riwayat as $r) {
+                                        // Dana diterima: untuk data lama yang sempat terpotong fee, tetap pakai jumlah_diterima.
+                                        $diterima = ($r['jumlah_diterima'] > 0) ? $r['jumlah_diterima'] : $r['jumlah']; ?>
                                     <tr>
                                         <td><?php echo date('d M Y H:i', strtotime($r['tanggal_request'])); ?></td>
                                         <td>
                                             <strong><?php echo htmlspecialchars($r['bank']); ?></strong><br>
                                             <small><?php echo htmlspecialchars($r['no_rekening']); ?> &middot; <?php echo htmlspecialchars($r['nama_pemilik_rek']); ?></small>
                                         </td>
-                                        <td><?php echo rupiah($r['jumlah']); ?></td>
-                                        <td style="color:#c0392b;">- <?php echo rupiah($r['fee']); ?></td>
-                                        <td style="font-weight:700; color:#1b7d3f;"><?php echo rupiah($r['jumlah_diterima']); ?></td>
+                                        <td style="font-weight:700; color:#1b7d3f;"><?php echo rupiah($diterima); ?></td>
                                         <td><?php echo pencairan_badge($r['status']); ?></td>
                                         <td><?php echo $r['catatan_admin'] ? htmlspecialchars($r['catatan_admin']) : '<span style="color:#bbb;">-</span>'; ?></td>
                                     </tr>
@@ -341,9 +339,8 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                     </div>
 
                     <div class="fee-box">
-                        <div class="fee-row"><span>Nominal ditarik</span><span id="feeNominal">Rp 0</span></div>
-                        <div class="fee-row"><span>Biaya admin (<?php echo fee_label(); ?>%)</span><span id="feeFee" style="color:#c0392b;">- Rp 0</span></div>
                         <div class="fee-row total"><span>Dana diterima</span><span id="feeDiterima">Rp 0</span></div>
+                        <div class="fee-row" style="padding-top:6px;"><span style="font-size:11px; color:#64748b;">Tanpa potongan biaya admin — diterima penuh.</span></div>
                     </div>
 
                     <button type="submit" class="btn-submit-cair mt-3"><i class="fa fa-paper-plane"></i> Kirim Pengajuan</button>
@@ -383,13 +380,10 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
             if (o) { o.classList.remove('show'); document.body.style.overflow = ''; }
         }
         function hitungFee() {
+            // Tanpa potongan biaya admin: dana diterima = nominal yang ditarik.
             var n = parseInt(document.getElementById('inputNominal').value || '0', 10);
             if (isNaN(n) || n < 0) n = 0;
-            var fee = Math.round(n * FEE_PERSEN / 100);
-            var diterima = n - fee;
-            document.getElementById('feeNominal').textContent = rupiahJS(n);
-            document.getElementById('feeFee').textContent = '- ' + rupiahJS(fee);
-            document.getElementById('feeDiterima').textContent = rupiahJS(diterima < 0 ? 0 : diterima);
+            document.getElementById('feeDiterima').textContent = rupiahJS(n);
         }
 
         // Tutup modal saat klik area gelap / tombol Esc

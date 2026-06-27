@@ -36,7 +36,7 @@ if (!$result) {
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
 
     <style>
         .container-riwayat { width: 90%; max-width: 1000px; margin: 50px auto; font-family: 'Poppins', sans-serif; }
@@ -133,7 +133,7 @@ if (!$result) {
 
                 <tr>
                     <td>
-                        <img src="admin/uploads/<?php echo $row['gambar']; ?>" class="img-thumb" onerror="this.src='images/icons/logo-01.png'">
+                        <img src="admin/uploads/<?php echo $row['gambar']; ?>" class="img-thumb" onerror="this.src='images/icons/dens.png'">
                     </td>
                     <td>
                         <span class="order-id">Order ID: <?php echo $row['id_midtrans_order']; ?></span>

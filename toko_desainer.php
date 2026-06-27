@@ -60,7 +60,7 @@ $q_karya = mysqli_query($koneksi, "SELECT * FROM t_design
                                    ORDER BY (waktu_berakhir IS NOT NULL AND waktu_berakhir < NOW()) ASC, id_design DESC");
 
 // 7. Avatar desainer
-$avatar_fallback = 'images/icons/logo-01.png';
+$avatar_fallback = 'images/icons/dens.png';
 $foto_desainer = !empty($designer['foto_profil']) ? $designer['foto_profil'] : ($designer['foto'] ?? '');
 $avatar_src = $foto_desainer ? 'admin/uploads/' . $foto_desainer : $avatar_fallback;
 ?>
@@ -78,7 +78,7 @@ $avatar_src = $foto_desainer ? 'admin/uploads/' . $foto_desainer : $avatar_fallb
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
 
     <style>
         .toko-wrap { max-width: 1100px; margin: 30px auto 60px; padding: 0 15px; font-family: 'Poppins', sans-serif; }
@@ -160,7 +160,7 @@ $avatar_src = $foto_desainer ? 'admin/uploads/' . $foto_desainer : $avatar_fallb
         <!-- HEADER TOKO -->
         <div class="toko-header">
             <img src="<?php echo htmlspecialchars($avatar_src); ?>" class="toko-avatar"
-                 onerror="this.src='images/icons/logo-01.png'; this.onerror=null;" alt="Avatar">
+                 onerror="this.src='images/icons/dens.png'; this.onerror=null;" alt="Avatar">
 
             <div class="toko-info">
                 <h1 class="toko-nama">

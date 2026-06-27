@@ -59,7 +59,7 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
     <link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
 
     <style>
         body { background-color: #fff; font-family: 'Poppins', sans-serif; }

@@ -107,7 +107,7 @@ $premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', str
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
 
 </head>
 <body class="animsition account-page">
@@ -137,72 +137,67 @@ $premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', str
                     <div><h1>Profil Saya</h1><p>Kelola informasi akun dan keamanan profil pembeli.</p></div>
                 </div>
                 <form action="" method="POST" enctype="multipart/form-data" class="account-panel customer-profile-panel profile-form">
-                    <div class="row m-b-30">
-                        <div class="col-12">
-                            <h4 class="account-panel-title">Pengaturan Profil Pembeli</h4>
+                    <h4 class="account-panel-title">Pengaturan Profil Pembeli</h4>
+
+                    <!-- Header identitas: foto + nama + email + status -->
+                    <div class="cust-profile-head">
+                        <div class="photo-circle account-photo-circle">
+                            <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.htmlspecialchars($foto) : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
+                        </div>
+                        <div class="cust-head-info">
+                            <h3><?php echo htmlspecialchars($nama ?: 'Pembeli'); ?></h3>
+                            <p><i class="fa fa-envelope-o"></i> <?php echo htmlspecialchars($email ?: '-'); ?></p>
+                            <div class="cust-head-badges">
+                                <span class="status-member-badge <?php echo $is_premium ? 'is-premium' : 'is-free'; ?>">
+                                    <i class="fa <?php echo $is_premium ? 'fa-star' : 'fa-user-o'; ?> m-r-5"></i><?php echo $status_premium; ?>
+                                </span>
+                                <?php if ($is_premium && $premium_expired): ?>
+                                    <small>sampai <?php echo $premium_expired; ?></small>
+                                <?php endif; ?>
+                            </div>
+                            <button type="button" class="btn-edit-foto" onclick="document.getElementById('inputFoto').click()"><i class="fa fa-camera m-r-5"></i> Ubah Foto</button>
+                            <input type="file" name="foto" id="inputFoto" class="sr-file-input" accept="image/jpeg,image/png,image/webp" onchange="tampilkanPreview(this)">
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-4 text-center p-b-30 customer-profile-side">
-                            <div class="photo-circle account-photo-circle">
-                                <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.htmlspecialchars($foto) : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
-                            </div>
-                            <button type="button" class="btn-edit-foto m-t-15" onclick="document.getElementById('inputFoto').click()"><i class="fa fa-camera m-r-5"></i> Ubah Foto</button>
-                            <input type="file" name="foto" id="inputFoto" class="sr-file-input" accept="image/jpeg,image/png,image/webp" onchange="tampilkanPreview(this)">
+                    <hr class="account-form-divider">
+
+                    <h5 class="account-section-title"><i class="fa fa-address-card-o m-r-10"></i>Informasi Dasar</h5>
+                    <div class="row field-grid">
+                        <div class="col-md-6 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">Nama Lengkap</label>
+                            <input class="custom-input" type="text" name="nama" value="<?php echo htmlspecialchars($nama); ?>">
                         </div>
-
-                        <div class="col-md-8 p-l-40 p-l-15-sm">
-                            <h5 class="account-section-title"><i class="fa fa-address-card-o m-r-10"></i>Informasi Dasar</h5>
-                            <div class="row">
-                                <div class="col-md-6 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">Nama Lengkap</label>
-                                    <input class="custom-input" type="text" name="nama" value="<?php echo htmlspecialchars($nama); ?>">
-                                </div>
-                                <div class="col-md-6 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">No. WhatsApp / Telepon</label>
-                                    <input class="custom-input" type="text" name="no_telp" value="<?php echo htmlspecialchars($telp); ?>" placeholder="Contoh: 08123456789">
-                                </div>
-                                <div class="col-md-6 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">Email</label>
-                                    <input class="custom-input is-readonly" type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
-                                </div>
-                                <div class="col-md-6 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">NIK</label>
-                                    <input class="custom-input is-readonly" type="text" value="<?php echo htmlspecialchars($nik ?: 'Belum diisi'); ?>" disabled>
-                                </div>
-                                <div class="col-md-6 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">Status Premium</label>
-                                    <div class="status-member-box">
-                                        <span class="status-member-badge <?php echo $is_premium ? 'is-premium' : 'is-free'; ?>">
-                                            <i class="fa <?php echo $is_premium ? 'fa-star' : 'fa-user-o'; ?> m-r-5"></i>
-                                            <?php echo $status_premium; ?>
-                                        </span>
-                                        <?php if ($is_premium && $premium_expired): ?>
-                                            <small>sampai <?php echo $premium_expired; ?></small>
-                                        <?php endif; ?>
-                                    </div>
-                                </div>
-                                <div class="col-md-12 p-b-20">
-                                    <label class="stext-102 cl3 p-b-5">Alamat Lengkap</label>
-                                    <input class="custom-input" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat); ?>" placeholder="Masukkan alamat pengiriman...">
-                                </div>
-                            </div>
-
-                            <hr class="account-form-divider">
-
-                            <h5 class="account-section-title"><i class="fa fa-lock m-r-10"></i>Keamanan Akun</h5>
-                            <div class="row">
-                                <div class="col-md-12 p-b-15">
-                                    <label class="stext-102 cl3 p-b-5">Kata Sandi Baru</label>
-                                    <input class="custom-input" type="password" name="password" placeholder="Biarkan kosong jika tidak ingin mengubah password">
-                                </div>
-                            </div>
-                            
-                            <div class="account-form-actions">
-                                <button type="submit" name="simpan_profil" class="btn-save"><i class="fa fa-save m-r-5"></i> Simpan Perubahan</button>
-                            </div>
+                        <div class="col-md-6 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">No. WhatsApp / Telepon</label>
+                            <input class="custom-input" type="text" name="no_telp" value="<?php echo htmlspecialchars($telp); ?>" placeholder="Contoh: 08123456789">
                         </div>
+                        <div class="col-md-6 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">NIK</label>
+                            <input class="custom-input is-readonly" type="text" value="<?php echo htmlspecialchars($nik ?: 'Belum diisi'); ?>" disabled>
+                        </div>
+                        <div class="col-md-6 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">Email</label>
+                            <input class="custom-input is-readonly" type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
+                        </div>
+                        <div class="col-md-12 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">Alamat Lengkap</label>
+                            <input class="custom-input" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat); ?>" placeholder="Masukkan alamat pengiriman...">
+                        </div>
+                    </div>
+
+                    <hr class="account-form-divider">
+
+                    <h5 class="account-section-title"><i class="fa fa-lock m-r-10"></i>Keamanan Akun</h5>
+                    <div class="row field-grid">
+                        <div class="col-md-12 p-b-15">
+                            <label class="stext-102 cl3 p-b-5">Kata Sandi Baru</label>
+                            <input class="custom-input" type="password" name="password" placeholder="Biarkan kosong jika tidak ingin mengubah password">
+                        </div>
+                    </div>
+
+                    <div class="account-form-actions">
+                        <button type="submit" name="simpan_profil" class="btn-save"><i class="fa fa-save m-r-5"></i> Simpan Perubahan</button>
                     </div>
                 </form>
             </div>

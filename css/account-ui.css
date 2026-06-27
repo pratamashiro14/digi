@@ -996,6 +996,82 @@ body.account-page {
   text-align: center;
 }
 
+/* ===== Profil Pembeli — header identitas + field lega ===== */
+.customer-profile-panel .account-panel-title {
+  margin-bottom: 26px;
+}
+
+.customer-profile-panel .cust-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  margin-bottom: 4px;
+}
+
+.customer-profile-panel .cust-profile-head .account-photo-circle {
+  flex: 0 0 auto;
+  width: 116px !important;
+  height: 116px !important;
+  margin: 0 !important;
+}
+
+.cust-head-info {
+  min-width: 0;
+}
+
+.cust-head-info h3 {
+  margin: 0 0 5px;
+  color: var(--account-ink);
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.cust-head-info > p {
+  margin: 0 0 14px;
+  color: var(--account-muted);
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.cust-head-info > p i {
+  margin-right: 7px;
+  color: #94a3b8;
+}
+
+.cust-head-badges {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.cust-head-badges small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.customer-profile-panel .account-section-title {
+  margin-top: 4px;
+}
+
+.customer-profile-panel .field-grid > [class*="col-"] {
+  padding-bottom: 18px;
+}
+
+@media (max-width: 575px) {
+  .customer-profile-panel .cust-profile-head {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+
+  .cust-head-badges {
+    justify-content: center;
+  }
+}
+
 @media (min-width: 768px) and (max-width: 991px) {
   .designer-layout-grid {
     grid-template-columns: 180px minmax(0, 1fr);

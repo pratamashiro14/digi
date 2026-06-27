@@ -32,7 +32,7 @@ $q = mysqli_query($koneksi, "SELECT f.id_designer, f.created_at,
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
 
     <style>
         .fav-wrap { max-width: 1000px; margin: 40px auto 70px; padding: 0 15px; font-family: 'Poppins', sans-serif; }
@@ -95,13 +95,13 @@ $q = mysqli_query($koneksi, "SELECT f.id_designer, f.created_at,
             <div class="fav-grid">
                 <?php while ($d = mysqli_fetch_assoc($q)) {
                     $foto = !empty($d['foto_profil']) ? $d['foto_profil'] : ($d['foto'] ?? '');
-                    $avatar = $foto ? 'admin/uploads/' . $foto : 'images/icons/logo-01.png';
+                    $avatar = $foto ? 'admin/uploads/' . $foto : 'images/icons/dens.png';
                     $is_prem = strtolower($d['status_member'] ?? '') === 'premium';
                     $is_verif = ($d['status_verifikasi'] ?? '') === 'verified';
                 ?>
                     <div class="fav-card">
                         <img src="<?php echo htmlspecialchars($avatar); ?>" class="fav-avatar"
-                             onerror="this.src='images/icons/logo-01.png'; this.onerror=null;" alt="Avatar">
+                             onerror="this.src='images/icons/dens.png'; this.onerror=null;" alt="Avatar">
                         <div class="fav-nama"><?php echo htmlspecialchars($d['nama']); ?></div>
                         <?php if ($is_prem) { ?>
                             <span class="fav-badge badge-premium"><i class="fa fa-star"></i> Premium</span>

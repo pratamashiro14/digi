@@ -562,12 +562,12 @@ function render_designer_stat_card($stat) {
 			<div class="home-premdes-grid">
 				<?php while ($pd = mysqli_fetch_assoc($res_premdes)) {
 					$foto_pd = !empty($pd['foto_profil']) ? $pd['foto_profil'] : ($pd['foto'] ?? '');
-					$ava_pd  = $foto_pd ? 'admin/uploads/' . $foto_pd : 'images/icons/logo-01.png';
+					$ava_pd  = $foto_pd ? 'admin/uploads/' . $foto_pd : 'images/icons/dens.png';
 				?>
 					<a href="toko_desainer.php?id=<?php echo $pd['id_user']; ?>" class="home-premdes-card">
 						<span class="home-premdes-badge"><i class="fa fa-star"></i></span>
 						<img src="<?php echo htmlspecialchars($ava_pd); ?>"
-						     onerror="this.src='images/icons/logo-01.png'; this.onerror=null;" alt="Desainer">
+						     onerror="this.src='images/icons/dens.png'; this.onerror=null;" alt="Desainer">
 						<span class="home-premdes-name"><?php echo htmlspecialchars($pd['nama']); ?></span>
 						<span class="home-premdes-karya"><?php echo (int) $pd['total_karya']; ?> karya</span>
 					</a>

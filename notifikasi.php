@@ -30,7 +30,7 @@ mysqli_query($koneksi, "UPDATE t_notifikasi SET is_read=1 WHERE id_user=$id_user
     <link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
     <link rel="stylesheet" type="text/css" href="css/util.css">
     <link rel="stylesheet" type="text/css" href="css/main.css">
-    <link rel="stylesheet" type="text/css" href="css/account-ui.css">
+    <link rel="stylesheet" type="text/css" href="css/account-ui.css?v=<?php echo filemtime(__DIR__ . '/css/account-ui.css'); ?>">
     <style>
         .notif-wrap { max-width: 760px; margin: 40px auto 70px; padding: 0 15px; font-family: 'Poppins', sans-serif; }
         .notif-wrap h1 { font-size: 28px; font-weight: 800; color: #1f2937; margin: 0 0 6px; }

@@ -10,17 +10,60 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
     <style>
-        :root { --brand: #4e60ff; --brand-dark: #3b4dcc; }
+        :root {
+            --brand: #4e60ff; --brand-dark: #3b4dcc;
+            --navy: #0b1437; --navy-2: #111c4e; --navy-3: #1a2a6e;
+        }
+        * { box-sizing: border-box; }
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #eef1ff 0%, #f8f9ff 100%);
+            background: var(--navy);
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; margin: 0; padding: 20px;
+            position: relative; overflow: hidden;
         }
+
+        /* Animated navy gradient backdrop */
+        body::before {
+            content: ""; position: fixed; inset: -20%;
+            background: radial-gradient(circle at 20% 20%, var(--navy-3) 0%, transparent 45%),
+                        radial-gradient(circle at 80% 30%, #243a8a 0%, transparent 40%),
+                        radial-gradient(circle at 50% 85%, var(--navy-2) 0%, transparent 50%),
+                        var(--navy);
+            background-size: 200% 200%;
+            animation: gradientShift 18s ease-in-out infinite;
+            z-index: 0;
+        }
+        @keyframes gradientShift {
+            0%   { background-position: 0% 0%; }
+            50%  { background-position: 100% 100%; }
+            100% { background-position: 0% 0%; }
+        }
+
+        /* Slow-floating soft glow orbs */
+        .orb { position: fixed; border-radius: 50%; filter: blur(60px); opacity: .45; z-index: 0; pointer-events: none; }
+        .orb-1 { width: 340px; height: 340px; background: #4e60ff; top: -80px; left: -60px; animation: float1 16s ease-in-out infinite; }
+        .orb-2 { width: 300px; height: 300px; background: #2f6bff; bottom: -90px; right: -50px; animation: float2 20s ease-in-out infinite; }
+        .orb-3 { width: 220px; height: 220px; background: #6a3bff; top: 55%; left: 8%; animation: float1 24s ease-in-out infinite reverse; }
+        @keyframes float1 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(40px, 50px); } }
+        @keyframes float2 { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-50px, -40px); } }
+
         .auth-card {
-            width: 100%; max-width: 440px; background: #fff;
+            position: relative; z-index: 2;
+            width: 100%; max-width: 440px;
+            background: rgba(255,255,255,0.97);
             border-radius: 18px; padding: 36px 32px;
-            box-shadow: 0 12px 40px rgba(78, 96, 255, 0.12);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255,255,255,0.18);
+            animation: cardIn .7s cubic-bezier(.22,1,.36,1) both;
+        }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(24px) scale(.98); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            body::before, .orb, .auth-card { animation: none !important; }
         }
         .auth-brand {
             display: flex; justify-content: center; align-items: center;
@@ -62,8 +105,8 @@
         .admin-link { display:block; text-align:center; margin-top:22px; font-size:13px; color:#888; text-decoration:none; }
         .admin-link:hover { color: var(--brand); }
         .badge-role { font-size: 11px; background:#eef1ff; color:var(--brand); padding:3px 9px; border-radius:50px; }
-        .back-home { position: absolute; top: 22px; left: 24px; color:#888; text-decoration:none; font-size:14px; }
-        .back-home:hover { color: var(--brand); }
+        .back-home { position: fixed; top: 22px; left: 24px; z-index: 3; color:rgba(255,255,255,.8); text-decoration:none; font-size:14px; transition:.2s; }
+        .back-home:hover { color: #fff; transform: translateX(-3px); }
         .role-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap:8px; margin-bottom:22px; }
         .role-option {
             border:1px solid #e5e7ff; background:#fff; border-radius:10px; padding:14px 8px;
@@ -78,6 +121,10 @@
     </style>
 </head>
 <body>
+
+    <span class="orb orb-1"></span>
+    <span class="orb orb-2"></span>
+    <span class="orb orb-3"></span>
 
     <a href="index.php" class="back-home">&larr; Beranda</a>
 

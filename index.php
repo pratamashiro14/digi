@@ -65,10 +65,10 @@ if ($is_designer_logged_in) {
     }
 
     $designer_dashboard_stats = [
-        ['label' => 'Total Karya', 'value' => number_format($designer_metrics['total_karya'], 0, ',', '.'), 'icon' => 'zmdi-collection-image-o'],
-        ['label' => 'Lelang Aktif', 'value' => number_format($designer_metrics['lelang_aktif'], 0, ',', '.'), 'icon' => 'zmdi-time'],
-        ['label' => 'Pesanan', 'value' => number_format($designer_metrics['pesanan'], 0, ',', '.'), 'icon' => 'zmdi-receipt'],
-        ['label' => 'Total Penjualan', 'value' => 'Rp' . number_format($designer_metrics['total_penjualan'], 0, ',', '.'), 'icon' => 'zmdi-balance-wallet'],
+        ['label' => 'Total Karya', 'value' => number_format($designer_metrics['total_karya'], 0, ',', '.'), 'icon' => 'zmdi-palette'],
+        ['label' => 'Lelang Aktif', 'value' => number_format($designer_metrics['lelang_aktif'], 0, ',', '.'), 'icon' => 'zmdi-hourglass-alt'],
+        ['label' => 'Pesanan', 'value' => number_format($designer_metrics['pesanan'], 0, ',', '.'), 'icon' => 'zmdi-shopping-cart'],
+        ['label' => 'Total Penjualan', 'value' => 'Rp' . number_format($designer_metrics['total_penjualan'], 0, ',', '.'), 'icon' => 'zmdi-trending-up'],
     ];
 
     $recent_works_query = mysqli_query(
@@ -191,6 +191,164 @@ function render_designer_stat_card($stat) {
     ?>
 
     <?php if ($role_home === 'designer') { ?>
+        <style>        /* PREMIUM DESIGNER DASHBOARD OVERRIDES */
+        /* Button styles (Navy theme) */
+        .designer-dashboard-button {
+            border-radius: 10px !important;
+            transition: all 0.2s ease !important;
+            font-weight: 700 !important;
+            font-size: 13px !important;
+        }
+        .designer-dashboard-button.is-primary {
+            background: #0f172a !important; /* Navy */
+            border: 1px solid #0f172a !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15) !important;
+        }
+        .designer-dashboard-button.is-primary:hover {
+            background: #1e293b !important;
+            border-color: #1e293b !important;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.25) !important;
+            color: #ffffff !important;
+        }
+        .designer-dashboard-button:not(.is-primary) {
+            background: #ffffff !important;
+            border: 1px solid #cbd5e1 !important;
+            color: #0f172a !important;
+        }
+        .designer-dashboard-button:not(.is-primary):hover {
+            background: #f8fafc !important;
+            border-color: #0f172a !important;
+            color: #0f172a !important;
+            transform: translateY(-2px);
+        }
+
+        /* Stats Grid & Stat Cards (Mixed Navy themes) */
+        .designer-stats-grid {
+            margin-top: 28px !important;
+        }
+        .designer-stat-card {
+            border-radius: 16px !important;
+            padding: 20px !important;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .designer-stat-card:hover {
+            transform: translateY(-3px) !important;
+        }
+        .designer-stat-card i {
+            width: 44px !important;
+            height: 44px !important;
+            font-size: 20px !important;
+            border-radius: 12px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05) !important;
+            color: #ffffff !important;
+        }
+        .designer-stat-card strong {
+            color: #0f172a !important;
+            font-size: 22px !important;
+            font-weight: 800 !important;
+        }
+        .designer-stat-card span {
+            color: #64748b !important;
+            font-size: 13px !important;
+            margin-top: 2px !important;
+        }
+
+        .designer-stat-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%) !important;
+            border: 1px solid #e2e8f0 !important;
+            border-left: 4px solid #0f172a !important; /* Navy border-left */
+        }
+        .designer-stat-card:hover {
+            box-shadow: 0 12px 24px -10px rgba(15, 23, 42, 0.15) !important;
+        }
+        .designer-stat-card i {
+            background: linear-gradient(135deg, #0f172a 0%, #3b82f6 100%) !important; /* Navy-Blue gradient mix */
+        }
+
+        /* Workspace Panels (Karya Terbaru, Penjualan Terbaru) */
+        .designer-workspace-section { background: #f8fafc !important; }
+        .designer-workspace-panel {
+            background: #fff !important;
+            border: none !important;
+            box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08) !important;
+            border-radius: 20px !important;
+            padding: 30px !important;
+        }
+        .designer-panel-header {
+            margin-bottom: 24px !important;
+            border-bottom: 1px dashed #e2e8f0 !important;
+            padding-bottom: 20px !important;
+        }
+        .designer-panel-header span {
+            color: #3b82f6 !important;
+            font-size: 12px !important;
+            letter-spacing: 1px !important;
+        }
+        .designer-panel-header h2 {
+            color: #0f172a !important;
+            font-size: 22px !important;
+        }
+        .designer-panel-header a {
+            color: #3b82f6 !important;
+            font-weight: 600 !important;
+            padding: 8px 16px;
+            background: #eff6ff;
+            border-radius: 50px;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+        .designer-panel-header a:hover {
+            background: #3b82f6;
+            color: #fff !important;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        }
+        .designer-work-item, .designer-sale-item {
+            border-bottom: 1px solid #f1f5f9;
+            padding: 16px 10px !important;
+            transition: all 0.2s ease;
+            border-radius: 12px;
+            margin-bottom: 4px;
+        }
+        .designer-work-item:last-child, .designer-sale-item:last-child {
+            border-bottom: none;
+        }
+        .designer-work-item:hover, .designer-sale-item:hover {
+            background: #f8fafc;
+            transform: translateX(4px);
+        }
+        .designer-work-item img {
+            border-radius: 10px !important;
+            width: 50px !important; height: 50px !important;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .designer-sale-icon {
+            background: #eff6ff !important;
+            color: #3b82f6 !important;
+            width: 46px !important; height: 46px !important;
+            border-radius: 10px !important;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 20px !important;
+        }
+        .designer-work-info strong, .designer-sale-info strong {
+            color: #1e293b !important;
+            font-size: 15px !important;
+        }
+        .designer-work-info span, .designer-sale-info span {
+            color: #64748b !important;
+        }
+        .designer-sale-value strong {
+            color: #10b981 !important;
+            font-size: 16px !important;
+        }
+        </style>
         <section class="designer-dashboard-section" aria-labelledby="designer-dashboard-title">
             <div class="container">
                 <article class="designer-dashboard-card">

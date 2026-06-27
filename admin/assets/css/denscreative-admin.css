@@ -20,9 +20,7 @@ body {
   background: var(--dd-admin-bg);
 }
 
-.sidebar[data-background-color="dark"],
-.sidebar .sidebar-logo,
-.sidebar .logo-header {
+.sidebar[data-background-color="dark"] {
   background: var(--dd-admin-sidebar) !important;
   border-right: 0 !important;
 }
@@ -31,10 +29,19 @@ body {
   background: var(--dd-admin-sidebar) !important;
 }
 
+.sidebar .sidebar-logo {
+  background: #fff !important;
+  border-right: 1px solid var(--dd-admin-border) !important;
+  border-bottom: 1px solid var(--dd-admin-border) !important;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
+}
+
 .sidebar .logo-header {
+  background: #fff !important;
   height: 72px !important;
   padding: 0 18px !important;
-  border-bottom: 1px solid rgba(255,255,255,0.15) !important;
+  border: 0 !important;
+  box-shadow: none;
 }
 
 .sidebar .logo-header .logo {
@@ -45,10 +52,15 @@ body {
 
 .sidebar .logo-header .navbar-brand,
 .main-header-logo .navbar-brand {
-  height: 36px !important;
-  max-height: 36px !important;
+  height: 44px !important;
+  max-height: 44px !important;
   width: auto !important;
   object-fit: contain;
+}
+
+.sidebar .logo-header .nav-toggle .btn,
+.sidebar .logo-header .topbar-toggler {
+  color: var(--dd-admin-sidebar) !important;
 }
 
 .sidebar .sidebar-wrapper {
@@ -109,16 +121,16 @@ body {
 
 .main-panel > .main-header {
   height: 72px;
-  background: transparent;
+  background: #fff;
   box-shadow: none;
 }
 
 .navbar-header {
   min-height: 72px !important;
-  background: rgba(255, 255, 255, 0.96) !important;
+  background: #fff !important;
   border-bottom: 1px solid var(--dd-admin-border) !important;
-  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.06);
-  backdrop-filter: blur(14px);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .navbar-header .container-fluid {
@@ -433,6 +445,107 @@ body {
   border: 1px solid var(--dd-admin-border);
 }
 
+.admin-profile {
+  row-gap: 22px;
+}
+
+.admin-profile .card-profile {
+  overflow: hidden;
+}
+
+.admin-profile .admin-profile-cover {
+  min-height: 142px;
+  background: linear-gradient(135deg, var(--dd-admin-sidebar), var(--dd-admin-blue)) !important;
+  border-bottom: 0 !important;
+}
+
+.admin-profile .card-profile .profile-picture {
+  transform: translateY(50%);
+}
+
+.admin-profile .card-profile .avatar-xl {
+  width: 118px;
+  height: 118px;
+  padding: 4px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.18);
+}
+
+.admin-profile .card-profile .avatar-img {
+  object-fit: cover;
+}
+
+.admin-profile .card-profile .card-body {
+  padding: 74px 24px 26px !important;
+}
+
+.admin-profile .user-profile .name {
+  color: var(--dd-admin-ink);
+  font-size: 21px;
+  font-weight: 800;
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+
+.admin-profile .user-profile .job {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: #eef6ff;
+  color: var(--dd-admin-sidebar);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0;
+  margin-bottom: 12px;
+}
+
+.admin-profile .user-profile .desc {
+  color: var(--dd-admin-muted);
+  font-size: 14px;
+  line-height: 1.45;
+  word-break: break-word;
+}
+
+.admin-profile .view-profile {
+  margin-top: 22px;
+}
+
+.admin-profile-detail-card,
+.admin-profile-form-card {
+  min-height: 100%;
+}
+
+.admin-profile-detail-card .table {
+  margin-bottom: 0;
+}
+
+.admin-profile-detail-card .table th {
+  width: 190px;
+  color: #475467;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.admin-profile-detail-card .table td {
+  color: var(--dd-admin-ink);
+  font-weight: 600;
+  word-break: break-word;
+}
+
+.profile-pic-preview {
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 4px solid #fff;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
+  margin-bottom: 15px;
+}
+
 .form-control,
 .form-select {
   border-color: #d7dce3 !important;
@@ -494,5 +607,22 @@ body {
 
   .topbar-user .profile-username {
     display: none;
+  }
+
+  .admin-profile-detail-card .table th,
+  .admin-profile-detail-card .table td {
+    display: block;
+    width: 100%;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  .admin-profile-detail-card .table th {
+    padding-bottom: 4px !important;
+    border-bottom: 0;
+  }
+
+  .admin-profile-detail-card .table td {
+    padding-top: 0 !important;
   }
 }

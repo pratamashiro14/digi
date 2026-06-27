@@ -24,8 +24,8 @@ if (!$data_admin) {
 // Ambil data-data admin
 $nama_admin = $data_admin['nama_admin'];
 $email_admin = $data_admin['email'];
-// Asumsi ada kolom 'foto' di t_admin. Jika null, gunakan 'profile.jpg'
-$foto_admin = $data_admin['foto'] ?? 'profile.jpg'; 
+// Asumsi ada kolom 'foto' di t_admin. Jika kosong, gunakan 'profile.jpg'
+$foto_admin = !empty($data_admin['foto']) ? $data_admin['foto'] : 'profile.jpg';
 $message = '';
 $error = '';
 
@@ -122,7 +122,7 @@ if ($mode === 'edit' && $_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['u
         $data_admin = mysqli_fetch_assoc($query_admin);
         $nama_admin = $data_admin['nama_admin'];
         $email_admin = $data_admin['email'];
-        $foto_admin = $data_admin['foto'] ?? 'profile.jpg';
+        $foto_admin = !empty($data_admin['foto']) ? $data_admin['foto'] : 'profile.jpg';
     }
 }
 
@@ -170,16 +170,6 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
     <link rel="stylesheet" href="assets/css/kaiadmin.min.css" />
     <link rel="stylesheet" href="assets/css/denscreative-admin.css" />
     <link rel="stylesheet" href="assets/css/demo.css" />
-    <style>
-        .profile-pic-preview {
-            width: 150px;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 50%;
-            border: 3px solid #ccc;
-            margin-bottom: 15px;
-        }
-    </style>
   </head>
   <body>
     <div class="wrapper">
@@ -212,15 +202,11 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
           <div class="sidebar-content">
             <ul class="nav nav-secondary">
               <li class="nav-item">
-                <a href="beranda.php"
-                  data-bs-toggle="collapse"
-                  href="#dashboard"
-                  class="collapsed"
-                  aria-expanded="false"
-                >
+                <a href="beranda.php">
                   <i class="fas fa-home"></i>
                   <p>Beranda</p>
                 </a>
+              </li>
               <li class="nav-item">
                 <a href="tables/karyadesain.php">
                   <i class="fas fa-palette"></i>
@@ -270,47 +256,18 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
                 <p>Tambah Admin</p>
               </a>
             </li>
+            <li class="nav-item active">
+              <a href="profile.php">
+                <i class="fas fa-id-card"></i>
+                <p>Profil Admin</p>
+              </a>
+            </li>
             <li class="nav-item">
               <a href="logout.php">
                 <i class="fas fa-sign-out-alt"></i>
                 <p>Logout</p>
               </a>
             </li>
-                <div class="collapse" id="submenu">
-                  <ul class="nav nav-collapse">
-                    <li>
-                      <a data-bs-toggle="collapse" href="#subnav1">
-                        <span class="sub-item">Level 1</span>
-                        <span class="caret"></span>
-                      </a>
-                      <div class="collapse" id="subnav1">
-                        <ul class="nav nav-collapse subnav">
-                        </ul>
-                      </div>
-                    </li>
-                    <li>
-                      <a data-bs-toggle="collapse" href="#subnav2">
-                        <span class="sub-item">Level 1</span>
-                        <span class="caret"></span>
-                      </a>
-                      <div class="collapse" id="subnav2">
-                        <ul class="nav nav-collapse subnav">
-                          <li>
-                            <a href="#">
-                              <span class="sub-item">Level 2</span>
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li>
-                      <a href="#">
-                        <span class="sub-item">Level 1</span>
-                      </a>
-                    </li>
-                  </ul>
-                </div>
-              </li>
             </ul>
           </div>
         </div>
@@ -487,11 +444,11 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
                 <div class="alert alert-success"><?= htmlspecialchars($message); ?></div>
             <?php endif; ?>
 
-            <div class="row">
+            <div class="row admin-profile">
                 <?php if ($mode === 'view'): ?>
                     <div class="col-md-4">
                         <div class="card card-profile">
-                            <div class="card-header" style="background-image: url('assets/img/blogpost.jpg')">
+                            <div class="card-header admin-profile-cover">
                                 <div class="profile-picture">
                                     <div class="avatar avatar-xl">
                                         <img src="assets/img/fotoprofil/<?= htmlspecialchars($foto_admin); ?>" alt="..." class="avatar-img rounded-circle">
@@ -512,7 +469,7 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
                     </div>
                     
                     <div class="col-md-8">
-                        <div class="card card-round">
+                        <div class="card card-round admin-profile-detail-card">
                             <div class="card-header">
                                 <div class="card-title">Detail Informasi</div>
                             </div>
@@ -545,7 +502,7 @@ if (isset($_GET['status']) && $_GET['status'] == 'success') {
                 
                 <?php elseif ($mode === 'edit'): ?>
                     <div class="col-md-10 mx-auto">
-                        <div class="card card-round">
+                        <div class="card card-round admin-profile-form-card">
                             <div class="card-header"><div class="card-title">Perbarui Informasi Profil</div></div>
                             <div class="card-body">
                                 

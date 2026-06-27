@@ -64,13 +64,33 @@ if (isset($_POST['simpan_profil'])) {
 $query = mysqli_query($koneksi, "SELECT * FROM t_user WHERE id_user = '$id_user'");
 $data = mysqli_fetch_assoc($query);
 
+$query_premium = mysqli_prepare($koneksi, "
+    SELECT status, tanggal_berakhir
+    FROM t_premium
+    WHERE id_user = ?
+      AND tipe_premium IN ('pengguna', 'buyer')
+      AND status = 'aktif'
+      AND tanggal_berakhir >= CURDATE()
+    ORDER BY tanggal_berakhir DESC
+    LIMIT 1
+");
+mysqli_stmt_bind_param($query_premium, "i", $id_user);
+mysqli_stmt_execute($query_premium);
+$premium_result = mysqli_stmt_get_result($query_premium);
+$premium_data = mysqli_fetch_assoc($premium_result);
+mysqli_stmt_close($query_premium);
+
 // Variabel Data
 $nama = $data['nama'] ?? '';
 $telp = $data['no_telp'] ?? '';
 $alamat = $data['alamat'] ?? '';
 $email = $data['email'] ?? '';
+$nik = $data['nik'] ?? '';
 $foto = $data['foto'] ?? 'default.jpg'; 
 $nama_header = $_SESSION['nama'] ?? 'User';
+$is_premium = !empty($premium_data) || (($data['premium'] ?? 0) == 1) || (($data['status_member'] ?? 'free') === 'premium');
+$status_premium = $is_premium ? 'Premium' : 'Belum Premium';
+$premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', strtotime($premium_data['tanggal_berakhir'])) : '';
 ?>
 
 <!DOCTYPE html>
@@ -89,34 +109,6 @@ $nama_header = $_SESSION['nama'] ?? 'User';
     <link rel="stylesheet" type="text/css" href="css/main.css">
     <link rel="stylesheet" type="text/css" href="css/account-ui.css">
 
-    <style>
-        body { background-color: #fff; font-family: 'Poppins', sans-serif; }
-        
-        /* SIDEBAR STYLE (Sama dengan Desainer) */
-        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
-        .sidebar-menu li { margin-bottom: 12px; }
-        .sidebar-menu a { display: flex; align-items: center; font-size: 16px; color: #555; text-decoration: none; font-weight: 500; padding: 10px 15px; border-radius: 8px; transition: 0.2s; }
-        .sidebar-menu a i { width: 30px; font-size: 18px; margin-right: 5px; color: #888; text-align: center; }
-        .sidebar-menu a:hover, .sidebar-menu a.active { background-color: #f5f5f5; color: #333; font-weight: 700; }
-        .sidebar-menu a:hover i, .sidebar-menu a.active i { color: #333; }
-        
-        /* FOTO PROFIL STYLE */
-        .photo-circle { width: 150px; height: 150px; border-radius: 50%; background-color: #e6e6e6; margin: 0 auto 15px; overflow: hidden; display: flex; align-items: center; justify-content: center; border: 4px solid #fff; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .photo-circle img { width: 100%; height: 100%; object-fit: cover; }
-        .btn-edit-foto { background-color: #888; color: #fff; border: none; padding: 6px 20px; border-radius: 20px; font-size: 13px; cursor: pointer; transition:0.3s; font-weight: 600; }
-        .btn-edit-foto:hover { background-color: #555; }
-        
-        /* FORM INPUT STYLE */
-        .custom-input { width: 100%; padding: 12px 15px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; color: #555; background: #fff; height: 45px; }
-        .custom-input:focus { border-color: #717fe0; outline: none; }
-        .custom-input[readonly] { background-color: #f9f9f9; color: #999; }
-        
-        /* TOMBOL SIMPAN */
-        .btn-save { background: linear-gradient(90deg, #4e8eff, #6b4eff); color: #fff; width: 100%; padding: 12px; border: none; border-radius: 50px; font-size: 16px; font-weight: 600; margin-top: 20px; cursor: pointer; transition: 0.3s; }
-        .btn-save:hover { opacity: 0.9; transform: translateY(-2px); }
-        
-        @media (min-width: 768px) { .border-right-custom { border-right: 1px solid #eee; } }
-    </style>
 </head>
 <body class="animsition account-page">
 
@@ -128,7 +120,7 @@ $nama_header = $_SESSION['nama'] ?? 'User';
     <div class="container account-shell">
         <div class="row account-layout">
             
-            <div class="col-md-3 col-lg-3 p-b-30">
+            <div class="col-md-4 col-lg-3 p-b-30">
                 <aside class="account-sidebar">
                 <h4 class="account-sidebar-title">Menu Pembeli</h4>
                 <ul class="sidebar-menu">
@@ -140,59 +132,75 @@ $nama_header = $_SESSION['nama'] ?? 'User';
                 </aside>
             </div>
 
-            <div class="col-md-9 col-lg-9 account-content">
+            <div class="col-md-8 col-lg-9 account-content">
                 <div class="account-page-header">
                     <div><h1>Profil Saya</h1><p>Kelola informasi akun dan keamanan profil pembeli.</p></div>
                 </div>
-                <form action="" method="POST" enctype="multipart/form-data" class="account-panel profile-form" style="border:none; box-shadow:0 10px 40px rgba(0,0,0,0.08); border-radius:16px; padding: 40px;">
+                <form action="" method="POST" enctype="multipart/form-data" class="account-panel customer-profile-panel profile-form">
                     <div class="row m-b-30">
                         <div class="col-12">
-                            <h4 class="mtext-105 cl2 p-b-10" style="font-weight: 800; color: #1e293b; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; margin-bottom: 25px;">Pengaturan Profil Pembeli</h4>
+                            <h4 class="account-panel-title">Pengaturan Profil Pembeli</h4>
                         </div>
                     </div>
 
                     <div class="row">
-                        <div class="col-md-4 text-center p-b-30" style="border-right: 1px solid #f1f5f9;">
-                            <div class="photo-circle" style="width:160px; height:160px; box-shadow: 0 10px 25px rgba(30, 41, 59, 0.15); border: 5px solid #fff; margin:0 auto 15px; display:flex; align-items:center; justify-content:center; overflow:hidden; border-radius:50%;">
-                                <img id="previewFoto" style="width:100%; height:100%; object-fit:cover;" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.$foto : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
+                        <div class="col-md-4 text-center p-b-30 customer-profile-side">
+                            <div class="photo-circle account-photo-circle">
+                                <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.htmlspecialchars($foto) : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
                             </div>
-                            <button type="button" class="btn-edit-foto m-t-15" style="background:#1e293b; color:#fff; padding:8px 24px; border-radius:30px; font-weight:600; cursor:pointer; border:none;" onclick="document.getElementById('inputFoto').click()"><i class="fa fa-camera m-r-5"></i> Ubah Foto</button>
-                            <input type="file" name="foto" id="inputFoto" accept="image/jpeg,image/png,image/webp" style="display: none;" onchange="tampilkanPreview(this)">
+                            <button type="button" class="btn-edit-foto m-t-15" onclick="document.getElementById('inputFoto').click()"><i class="fa fa-camera m-r-5"></i> Ubah Foto</button>
+                            <input type="file" name="foto" id="inputFoto" class="sr-file-input" accept="image/jpeg,image/png,image/webp" onchange="tampilkanPreview(this)">
                         </div>
 
                         <div class="col-md-8 p-l-40 p-l-15-sm">
-                            <h5 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:20px; margin-top:10px;"><i class="fa fa-address-card-o m-r-10 text-primary" style="color:#4e8eff;"></i>Informasi Dasar</h5>
+                            <h5 class="account-section-title"><i class="fa fa-address-card-o m-r-10"></i>Informasi Dasar</h5>
                             <div class="row">
                                 <div class="col-md-6 p-b-15">
                                     <label class="stext-102 cl3 p-b-5">Nama Lengkap</label>
-                                    <input class="custom-input" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;" type="text" name="nama" value="<?php echo $nama; ?>">
+                                    <input class="custom-input" type="text" name="nama" value="<?php echo htmlspecialchars($nama); ?>">
                                 </div>
                                 <div class="col-md-6 p-b-15">
                                     <label class="stext-102 cl3 p-b-5">No. WhatsApp / Telepon</label>
-                                    <input class="custom-input" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;" type="text" name="no_telp" value="<?php echo $telp; ?>" placeholder="Contoh: 08123456789">
+                                    <input class="custom-input" type="text" name="no_telp" value="<?php echo htmlspecialchars($telp); ?>" placeholder="Contoh: 08123456789">
                                 </div>
                                 <div class="col-md-6 p-b-15">
                                     <label class="stext-102 cl3 p-b-5">Email</label>
-                                    <input class="custom-input" style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:10px; color:#64748b;" type="email" name="email" value="<?php echo $email; ?>" readonly>
+                                    <input class="custom-input is-readonly" type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
+                                </div>
+                                <div class="col-md-6 p-b-15">
+                                    <label class="stext-102 cl3 p-b-5">NIK</label>
+                                    <input class="custom-input is-readonly" type="text" value="<?php echo htmlspecialchars($nik ?: 'Belum diisi'); ?>" disabled>
+                                </div>
+                                <div class="col-md-6 p-b-15">
+                                    <label class="stext-102 cl3 p-b-5">Status Premium</label>
+                                    <div class="status-member-box">
+                                        <span class="status-member-badge <?php echo $is_premium ? 'is-premium' : 'is-free'; ?>">
+                                            <i class="fa <?php echo $is_premium ? 'fa-star' : 'fa-user-o'; ?> m-r-5"></i>
+                                            <?php echo $status_premium; ?>
+                                        </span>
+                                        <?php if ($is_premium && $premium_expired): ?>
+                                            <small>sampai <?php echo $premium_expired; ?></small>
+                                        <?php endif; ?>
+                                    </div>
                                 </div>
                                 <div class="col-md-12 p-b-20">
                                     <label class="stext-102 cl3 p-b-5">Alamat Lengkap</label>
-                                    <input class="custom-input" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;" type="text" name="alamat" value="<?php echo $alamat; ?>" placeholder="Masukkan alamat pengiriman...">
+                                    <input class="custom-input" type="text" name="alamat" value="<?php echo htmlspecialchars($alamat); ?>" placeholder="Masukkan alamat pengiriman...">
                                 </div>
                             </div>
 
-                            <hr style="border-top:1px dashed #cbd5e1; margin-bottom:20px;">
+                            <hr class="account-form-divider">
 
-                            <h5 style="font-size:16px; font-weight:700; color:#1e293b; margin-bottom:20px;"><i class="fa fa-lock m-r-10 text-primary" style="color:#4e8eff;"></i>Keamanan Akun</h5>
+                            <h5 class="account-section-title"><i class="fa fa-lock m-r-10"></i>Keamanan Akun</h5>
                             <div class="row">
                                 <div class="col-md-12 p-b-15">
                                     <label class="stext-102 cl3 p-b-5">Kata Sandi Baru</label>
-                                    <input class="custom-input" style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px;" type="password" name="password" placeholder="Biarkan kosong jika tidak ingin mengubah password">
+                                    <input class="custom-input" type="password" name="password" placeholder="Biarkan kosong jika tidak ingin mengubah password">
                                 </div>
                             </div>
                             
-                            <div class="p-t-15" style="display: flex; justify-content: flex-end;">
-                                <button type="submit" name="simpan_profil" class="btn-save" style="background: linear-gradient(135deg, #1e293b, #0f172a); border-radius:30px; font-size:15px; letter-spacing:0.5px; box-shadow:0 8px 20px rgba(15, 23, 42, 0.2); width:auto; padding: 0 40px;"><i class="fa fa-save m-r-5"></i> Simpan Perubahan</button>
+                            <div class="account-form-actions">
+                                <button type="submit" name="simpan_profil" class="btn-save"><i class="fa fa-save m-r-5"></i> Simpan Perubahan</button>
                             </div>
                         </div>
                     </div>

@@ -94,7 +94,7 @@ body.account-page {
 .account-page .account-sidebar {
   position: sticky;
   top: 132px;
-  padding: 20px 14px;
+  padding: 24px 18px;
   border: 1px solid var(--account-border);
   border-radius: 8px;
   background: var(--account-surface);
@@ -102,33 +102,52 @@ body.account-page {
 }
 
 .account-page .account-sidebar-title {
-  margin: 0 8px 14px;
+  margin: 0 10px 18px;
   padding: 0;
   color: var(--account-muted);
-  font-size: 11px !important;
+  font-size: 12px !important;
   font-weight: 700;
   letter-spacing: .08em;
   text-transform: uppercase;
 }
 
+.account-page .sidebar-menu {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
 .account-page .sidebar-menu li {
-  margin-bottom: 4px;
+  display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .account-page .sidebar-menu a {
-  min-height: 44px;
-  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  min-height: 52px;
+  padding: 13px 16px;
   border-radius: 7px;
   color: #4b5563;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.25;
+  box-sizing: border-box;
 }
 
 .account-page .sidebar-menu a i {
-  width: 24px;
-  margin-right: 8px;
+  flex: 0 0 26px;
+  width: 26px;
+  margin-right: 0;
   color: #9ca3af;
-  font-size: 16px;
+  font-size: 19px;
+  text-align: center;
 }
 
 .account-page .sidebar-menu a:hover,
@@ -231,12 +250,15 @@ body.account-page {
 .account-page .custom-input,
 .account-page .form-input-custom,
 .account-page .input-field {
-  min-height: 44px;
+  width: 100%;
+  min-height: 54px;
+  padding: 13px 16px;
   border: 1px solid #d9dde5;
   border-radius: 7px;
   background: #fff;
   color: var(--account-ink);
-  font-size: 13px;
+  font-size: 14px;
+  line-height: 1.45;
   transition: border-color .2s, box-shadow .2s;
 }
 
@@ -437,6 +459,434 @@ body.account-page {
   width: 44px;
   height: 44px;
   background: var(--account-accent);
+}
+
+.customer-profile-panel,
+.designer-profile-panel,
+.designer-portfolio-panel {
+  padding: 34px 38px;
+  overflow: hidden;
+}
+
+.sr-file-input {
+  display: none;
+}
+
+.account-panel-title,
+.designer-panel-title {
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--account-border);
+  color: var(--account-ink);
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+
+.customer-profile-side,
+.designer-profile-side {
+  border-right: 1px solid #eef1f5;
+  padding-right: 34px !important;
+}
+
+.customer-profile-panel .col-md-8,
+.designer-profile-panel .col-md-8 {
+  padding-left: 48px !important;
+}
+
+.customer-profile-panel .row .row,
+.designer-profile-panel .row .row {
+  margin-right: -14px;
+  margin-left: -14px;
+}
+
+.customer-profile-panel .row .row > [class*="col-"],
+.designer-profile-panel .row .row > [class*="col-"] {
+  padding-right: 14px;
+  padding-left: 14px;
+  padding-bottom: 20px !important;
+}
+
+.account-photo-circle,
+.designer-photo-circle {
+  width: 170px !important;
+  height: 170px !important;
+  margin: 6px auto 20px;
+  background: #edf2f7;
+  border: 4px solid #fff !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .14) !important;
+}
+
+.account-photo-circle img,
+.designer-photo-circle img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.designer-status-card {
+  max-width: 360px;
+  margin-right: auto;
+  margin-left: auto;
+  padding: 18px;
+  border: 1px solid var(--account-border);
+  border-radius: 8px;
+  background: #f8fafc;
+  text-align: left;
+}
+
+.designer-status-card h5 {
+  margin: 0 0 10px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: .04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.designer-status-badge,
+.designer-alert {
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.designer-status-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 10px 12px;
+  text-align: center;
+}
+
+.designer-status-badge.is-danger,
+.designer-alert.is-danger {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.designer-status-badge.is-warning,
+.designer-alert.is-warning {
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.designer-status-badge.is-success,
+.designer-alert.is-success {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.designer-alert {
+  margin-bottom: 26px;
+  padding: 18px 20px;
+  border: 1px solid transparent;
+}
+
+.designer-alert.is-danger {
+  border-color: #fecaca;
+}
+
+.designer-alert.is-warning {
+  border-color: #fde68a;
+}
+
+.designer-alert.is-success {
+  border-color: #bbf7d0;
+}
+
+.designer-ktp-upload {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(185, 28, 28, .22);
+}
+
+.designer-ktp-upload label {
+  color: #991b1b;
+}
+
+.account-section-title,
+.designer-section-title {
+  margin: 10px 0 22px;
+  color: var(--account-ink);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.account-section-title i,
+.designer-section-title i {
+  color: var(--account-accent);
+}
+
+.account-page .custom-input:disabled,
+.account-page .custom-input.is-readonly,
+.account-page .custom-input[readonly] {
+  background: #f1f5f9;
+  color: #64748b;
+  cursor: not-allowed;
+}
+
+.customer-profile-panel label,
+.designer-profile-panel label {
+  margin-bottom: 8px;
+  color: #253044;
+  font-size: 13px;
+}
+
+.account-form-divider,
+.designer-form-divider {
+  margin: 10px 0 24px;
+  border: 0;
+  border-top: 1px dashed #cbd5e1;
+}
+
+.account-form-actions,
+.designer-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+}
+
+.account-form-actions .btn-save,
+.designer-form-actions .btn-save,
+.porto-upload-btn {
+  width: auto;
+  min-width: 176px;
+  margin-top: 0;
+  padding: 0 28px;
+}
+
+.status-member-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 54px;
+  padding: 12px 14px;
+  border: 1px solid #d9dde5;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #334155;
+  font-weight: 700;
+}
+
+.status-member-box small {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.status-member-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.status-member-badge.is-premium {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.status-member-badge.is-free {
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+}
+
+.designer-portfolio-panel {
+  margin-top: 28px;
+}
+
+.designer-portfolio-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--account-border);
+}
+
+.designer-portfolio-header h4 {
+  margin: 0;
+  color: var(--account-ink);
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.designer-portfolio-header p,
+.porto-locked p {
+  margin: 4px 0 0;
+  color: var(--account-muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.porto-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.porto-flag.is-on {
+  background: #fff7ed;
+  color: #c2410c;
+  border: 1px solid #fed7aa;
+}
+
+.porto-flag.is-off {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.porto-locked {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 22px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #475569;
+}
+
+.porto-locked > i {
+  flex: 0 0 auto;
+  color: #f59e0b;
+  font-size: 28px;
+}
+
+.porto-locked a {
+  color: var(--account-accent);
+  font-weight: 800;
+  text-decoration: underline !important;
+}
+
+.porto-upload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  align-items: stretch;
+  margin: 24px 0;
+  padding: 20px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.porto-upload-field,
+.porto-upload-file {
+  flex: 2 1 280px;
+}
+
+.porto-upload input {
+  width: 100%;
+  background: #fff;
+}
+
+.porto-upload input[type="file"] {
+  padding-top: 9px;
+  color: #64748b;
+}
+
+.porto-upload input[type="file"]::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f1f5f9;
+  color: #475569;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.porto-upload-btn {
+  flex: 1 1 170px;
+}
+
+.porto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 18px;
+}
+
+.porto-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--account-border);
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, .06);
+}
+
+.porto-card img {
+  display: block;
+  width: 100%;
+  height: 210px;
+  object-fit: cover;
+}
+
+.porto-judul {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  padding: 34px 14px 13px;
+  background: linear-gradient(transparent, rgba(15, 23, 42, .82));
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.porto-del {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  margin: 0;
+}
+
+.porto-del button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 0;
+  border-radius: 8px;
+  background: rgba(185, 28, 28, .94);
+  color: #fff;
+  cursor: pointer;
+}
+
+.porto-empty {
+  padding: 44px 20px;
+  border: 1px dashed var(--account-border);
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #94a3b8;
+  text-align: center;
+}
+
+.porto-empty i {
+  display: block;
+  margin-bottom: 12px;
+  color: #cbd5e1;
+  font-size: 42px;
 }
 
 .customer-checkout .box-checkout {
@@ -659,6 +1109,7 @@ body.account-page {
     display: flex;
     gap: 6px;
     overflow-x: auto;
+    width: 100%;
     padding-bottom: 2px;
   }
 
@@ -669,7 +1120,16 @@ body.account-page {
 
   .account-page .sidebar-menu a {
     min-height: 40px;
+    padding: 10px 12px;
+    gap: 8px;
+    font-size: 13px;
     white-space: nowrap;
+  }
+
+  .account-page .sidebar-menu a i {
+    flex-basis: 20px;
+    width: 20px;
+    font-size: 16px;
   }
 
   .account-page .account-content {
@@ -720,5 +1180,67 @@ body.account-page {
 
   .membership-page .premium-card {
     padding: 20px;
+  }
+
+  .customer-profile-panel,
+  .designer-profile-panel,
+  .designer-portfolio-panel {
+    padding: 20px;
+  }
+
+  .customer-profile-panel .col-md-8,
+  .designer-profile-panel .col-md-8 {
+    padding-left: 15px !important;
+  }
+
+  .customer-profile-panel .row .row,
+  .designer-profile-panel .row .row {
+    margin-right: -8px;
+    margin-left: -8px;
+  }
+
+  .customer-profile-panel .row .row > [class*="col-"],
+  .designer-profile-panel .row .row > [class*="col-"] {
+    padding-right: 8px;
+    padding-left: 8px;
+  }
+
+  .customer-profile-side,
+  .designer-profile-side {
+    margin-bottom: 22px;
+    padding-right: 15px !important;
+    padding-bottom: 22px !important;
+    border-right: 0;
+    border-bottom: 1px solid #eef1f5;
+  }
+
+  .designer-portfolio-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .porto-locked {
+    display: block;
+  }
+
+  .porto-locked > i {
+    margin-bottom: 12px;
+  }
+
+  .porto-upload {
+    padding: 16px;
+  }
+
+  .account-form-actions,
+  .account-form-actions .btn-save,
+  .designer-form-actions,
+  .designer-form-actions .btn-save,
+  .porto-upload-btn {
+    width: 100%;
+  }
+
+  .status-member-box {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }

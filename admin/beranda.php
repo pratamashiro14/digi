@@ -565,24 +565,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
                 </div>
             </div>
             </div><!-- end row penjualan + new customers -->
-            <div class="row dashboard-chart-row">
-              <div class="col-xl-12">
-                <div class="card card-round dashboard-card dashboard-chart-card">
-                  <div class="card-header">
-                    <div class="card-head-row">
-                      <div class="card-title">Statistik Pengguna</div>
-                      <div class="card-tools">
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-body">
-                    <div class="chart-container" style="min-height: 375px">
-                      <canvas id="statisticsChart"></canvas>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </div>
@@ -594,9 +576,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
 
     <!-- jQuery Scrollbar -->
     <script src="assets/js/plugin/jquery-scrollbar/jquery.scrollbar.min.js"></script>
-
-    <!-- Chart JS -->
-    <script src="assets/js/plugin/chart.js/chart.min.js"></script>
 
     <!-- jQuery Sparkline -->
     <script src="assets/js/plugin/jquery.sparkline/jquery.sparkline.min.js"></script>
@@ -645,91 +624,6 @@ $query_penjualan_terakhir = mysqli_query($koneksi, "
     });
     </script>
     
-    <script>
-    var statisticsChartInstance = null; 
-
-    function loadAndDrawStats() {
-        $.ajax({
-            url: 'fetch_user_stats.php', 
-            type: 'GET',
-            dataType: 'json',
-            success: function(response) {
-                // 1. Hapus instance chart lama
-                if (statisticsChartInstance) {
-                    statisticsChartInstance.destroy();
-                }
-
-                // 2. MENGHAPUS DAN MEMBUAT ULANG CANVAS BARU (SOLUSI UNTUK TOOLTIP BERMASALAH)
-                var chartContainerDiv = document.querySelector('.card-body .chart-container');
-                var oldCanvas = document.getElementById('statisticsChart');
-                
-                if (oldCanvas) {
-                    chartContainerDiv.removeChild(oldCanvas);
-                }
-
-                var newCanvas = document.createElement('canvas');
-                newCanvas.setAttribute('id', 'statisticsChart');
-                newCanvas.style.minHeight = '375px';
-
-                chartContainerDiv.appendChild(newCanvas);
-                // AKHIR PERBAIKAN CANVAS
-
-                var labels = response.labels;
-                var data = response.data;
-
-                var ctx = newCanvas.getContext('2d'); // Gunakan konteks dari canvas baru
-                
-                statisticsChartInstance = new Chart(ctx, { 
-                    type: 'line',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Pengguna Baru',
-                            borderColor: '#177dff',
-                            pointBorderColor: '#FFF',
-                            pointBackgroundColor: '#177dff',
-                            pointBorderWidth: 2,
-                            pointHoverRadius: 4,
-                            pointHoverBorderWidth: 1,
-                            pointRadius: 4,
-                            backgroundColor: 'transparent',
-                            fill: true,
-                            borderWidth: 2,
-                            data: data
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        legend: { display: false },
-                        tooltips: {
-                            mode: 'nearest', intersect: 0, position: 'nearest',
-                            xPadding: 10, yPadding: 10, caretPadding: 10
-                        },
-                        layout: { padding: { left: 15, right: 15, top: 15, bottom: 15 } },
-                        scales: {
-                            yAxes: [{
-                                ticks: { fontColor: 'rgba(0,0,0,0.5)', fontStyle: 'bold', beginAtZero: true }
-                            }],
-                            xAxes: [{
-                                ticks: { fontColor: 'rgba(0,0,0,0.5)', fontStyle: 'bold' }
-                            }]
-                        }
-                    }
-                });
-            },
-            error: function() {
-                console.error("Gagal memuat data statistik pengguna.");
-            }
-        });
-    }
-
-    $(document).ready(function() {
-        loadAndDrawStats(); 
-        setInterval(loadAndDrawStats, 60000); // Update setiap 1 menit
-    });
-    </script>
-
     <script>
       $("#lineChart").sparkline([102, 109, 120, 99, 110, 105, 115], {
         type: "line",

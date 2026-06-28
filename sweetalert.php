@@ -3,7 +3,10 @@
  * SweetAlert response helpers for process/login/CRUD endpoints.
  */
 
+require_once __DIR__ . '/config.php'; // BASE_URL untuk path aset yang benar di lokal & produksi
+
 function sweetalert_response($title, $message, $icon = 'info', $redirect = null, $go_back = false, $auto_close_ms = null) {
+    $base = defined('BASE_URL') ? BASE_URL : '';
     $title_json = json_encode($title, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $message_json = json_encode($message, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     $icon_json = json_encode($icon, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
@@ -112,7 +115,7 @@ function sweetalert_response($title, $message, $icon = 'info', $redirect = null,
     </style>
 </head>
 <body>
-    <script src="/digi/vendor/sweetalert/sweetalert.min.js"></script>
+    <script src="{$base}/vendor/sweetalert/sweetalert.min.js"></script>
     <script>
         swal({
             title: {$title_json},

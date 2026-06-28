@@ -29,6 +29,15 @@ define('DB_PASS', env_or('DB_PASS', 'PASSWORD_DB'));
 define('DB_NAME', env_or('DB_NAME', 'NAMA_DATABASE'));
 
 // ------------------------------------------------------------
+// 1b. BASE URL / PATH APLIKASI
+// ------------------------------------------------------------
+// Prefix path tempat aplikasi diakses dari web root.
+//   - Hosting root domain : ''        (https://domainanda.com)  <- default
+//   - Subfolder           : '/digi'   (https://domainanda.com/digi)
+//   - XAMPP lokal         : '/digi'
+define('BASE_URL', rtrim(env_or('BASE_URL', ''), '/'));
+
+// ------------------------------------------------------------
 // 2. MIDTRANS  (ambil dari Dashboard Midtrans -> Settings -> Access Keys)
 // ------------------------------------------------------------
 define('MIDTRANS_SERVER_KEY', env_or('MIDTRANS_SERVER_KEY', 'ISI_SERVER_KEY_MIDTRANS'));
@@ -49,4 +58,18 @@ if (APP_ENV === 'production') {
     // dari kode lama saat jalan di PHP 8.x (samakan dgn error_reporting bawaan = 22527).
     error_reporting(E_ALL & ~E_DEPRECATED & ~E_STRICT);
     @ini_set('display_errors', '1');
+}
+
+if (!function_exists('app_url')) {
+    /** Bangun URL absolut aplikasi (scheme + host + BASE_URL + path). */
+    function app_url($path = '')
+    {
+        $https  = (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+               || (($_SERVER['SERVER_PORT'] ?? '') == 443)
+               || (strtolower($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+        $scheme = $https ? 'https' : 'http';
+        $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        if ($path !== '' && $path[0] !== '/') $path = '/' . $path;
+        return $scheme . '://' . $host . BASE_URL . $path;
+    }
 }

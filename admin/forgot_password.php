@@ -31,7 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 
             if ($insert_token) {
                 // URL reset password
-                $reset_url = "http://localhost/xampp/digi/admin/reset_password.php?token=$token";
+                $reset_url = app_url("/admin/reset_password.php?token=$token");
                 
                 // Simpan token ke session untuk fallback (jika email gagal)
                 $_SESSION['password_reset_token'] = $token;

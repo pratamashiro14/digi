@@ -107,7 +107,7 @@ try {
     <title>Lanjutkan Pembayaran</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script type="text/javascript"
-            src="https://app.sandbox.midtrans.com/snap/snap.js"
+            src="https://app<?php echo MIDTRANS_IS_PRODUCTION ? '' : '.sandbox'; ?>.midtrans.com/snap/snap.js"
             data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY, ENT_QUOTES); ?>"></script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>

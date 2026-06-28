@@ -1,0 +1,17 @@
+---
+# ============================================================
+#  .cpanel.yml — Deployment cPanel Git Version Control
+# ============================================================
+# Dipakai saat menekan tombol "Deploy HEAD Commit" di cPanel.
+# Menyalin isi repo ke public_html, KECUALI:
+#   - .git / file deploy        : bukan bagian situs
+#   - config.php                : kredensial server (dibuat manual, jangan ditimpa)
+#   - uploads/ & admin/uploads/ : file unggahan user (jangan ditimpa/terhapus)
+#
+# Jika situs dipasang di SUBFOLDER, ganti $HOME/public_html
+# menjadi mis. $HOME/public_html/digi
+deployment:
+  tasks:
+    - export DEPLOYPATH=$HOME/public_html
+    - /bin/mkdir -p "$DEPLOYPATH"
+    - /usr/bin/rsync -a --exclude='.git' --exclude='.gitignore' --exclude='.cpanel.yml' --exclude='config.php' --exclude='admin/config.php' --exclude='uploads/' --exclude='admin/uploads/' ./ "$DEPLOYPATH/"

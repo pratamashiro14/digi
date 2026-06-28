@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
             $insert = mysqli_query($koneksi, "INSERT INTO t_password_reset (email, token, expiry) VALUES ('$email_safe', '$token', DATE_ADD(NOW(), INTERVAL 1 HOUR))");
 
             if ($insert) {
-                $reset_url = "http://localhost/digi/reset_password.php?token=$token";
+                $reset_url = app_url("/reset_password.php?token=$token");
                 $_SESSION['user_reset_url'] = $reset_url;
 
                 $subject = "Reset Password DensCreative";

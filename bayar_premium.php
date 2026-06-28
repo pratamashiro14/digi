@@ -36,8 +36,8 @@ $tipe_label = ucfirst($data['tipe_premium']);
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="icon" type="image/png" href="images/icons/favicon.png"/>
 
-    <!-- Midtrans Snap (Sandbox) -->
-    <script src="https://app.sandbox.midtrans.com/snap/snap.js"
+    <!-- Midtrans Snap (otomatis sandbox/production sesuai config) -->
+    <script src="https://app<?php echo MIDTRANS_IS_PRODUCTION ? '' : '.sandbox'; ?>.midtrans.com/snap/snap.js"
             data-client-key="<?php echo htmlspecialchars(MIDTRANS_CLIENT_KEY, ENT_QUOTES); ?>"></script>
 
     <style>

@@ -5,8 +5,10 @@
 config.php
 admin/config.php
 
-# Dependencies (hasil composer/npm install — biar ringan, install sendiri)
-/vendor/
+# Dependencies (hasil npm install — biar ringan, install sendiri)
+# CATATAN: /vendor/ di proyek ini BUKAN composer, melainkan aset front-end
+# (bootstrap, jquery, sweetalert, dll) yang dibutuhkan situs — jadi IKUT di-track
+# supaya git-deploy ke hosting langsung lengkap. Jangan tambahkan /vendor/ di sini.
 node_modules/
 
 # Laravel environment & runtime

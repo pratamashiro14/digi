@@ -14,6 +14,7 @@
 
 require_once __DIR__ . '/midtrans_config.php';   // memuat config.php + set Server Key
 require_once __DIR__ . '/admin/koneksi.php';      // menyediakan $koneksi
+require_once __DIR__ . '/keuangan_helper.php';    // notifikasi penjualan ke desainer
 
 header('Content-Type: text/plain');
 
@@ -96,13 +97,19 @@ if (strpos($order_id, 'PREM-') === 0) {
 
         if ($status_baru !== null) {
             $idt = (int) $row['id_transaksi'];
-            $up = mysqli_prepare($koneksi,
-                "UPDATE t_transaksi SET status_pembayaran = ? WHERE id_transaksi = ?");
-            mysqli_stmt_bind_param($up, 'si', $status_baru, $idt);
-            mysqli_stmt_execute($up);
 
-            // Jika LUNAS, tandai karyanya 'sold'
             if ($status_baru === 'berhasil') {
+                // Update HANYA bila belum 'berhasil' — affected_rows>0 menandakan
+                // transisi pertama ke LUNAS, agar notifikasi penjualan tidak ganda
+                // (webhook ini + cek_status.php).
+                $up = mysqli_prepare($koneksi,
+                    "UPDATE t_transaksi SET status_pembayaran = 'berhasil'
+                     WHERE id_transaksi = ? AND status_pembayaran <> 'berhasil'");
+                mysqli_stmt_bind_param($up, 'i', $idt);
+                mysqli_stmt_execute($up);
+                $baru_lunas = mysqli_stmt_affected_rows($up) > 0;
+
+                // Tandai karyanya 'sold'
                 $sold = mysqli_prepare($koneksi,
                     "UPDATE t_design d
                      JOIN t_transaksi t ON t.id_design = d.id_design
@@ -110,6 +117,16 @@ if (strpos($order_id, 'PREM-') === 0) {
                      WHERE t.id_transaksi = ?");
                 mysqli_stmt_bind_param($sold, 'i', $idt);
                 mysqli_stmt_execute($sold);
+
+                // Notifikasi "karya terjual + potongan admin" ke desainer (sekali saja)
+                if ($baru_lunas) {
+                    kirim_notif_penjualan($koneksi, $idt);
+                }
+            } else {
+                $up = mysqli_prepare($koneksi,
+                    "UPDATE t_transaksi SET status_pembayaran = ? WHERE id_transaksi = ?");
+                mysqli_stmt_bind_param($up, 'si', $status_baru, $idt);
+                mysqli_stmt_execute($up);
             }
         }
     }

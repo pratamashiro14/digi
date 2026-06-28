@@ -38,8 +38,10 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] != "login") {
 }
 
 // --- KONFIGURASI DEFAULT ---
-$biaya_layanan = 10000;
-$asal_transaksi = "biasa"; 
+// Pembeli membayar harga produk UTUH. Biaya admin platform (Rp 10.000) TIDAK
+// dibebankan ke pembeli, melainkan dipotong dari hasil penjualan desainer.
+$biaya_layanan = 0;
+$asal_transaksi = "biasa";
 $harga_barang = 0;
 $row = []; // Variabel penampung data
 
@@ -360,7 +362,7 @@ $total_bayar = $harga_barang + $biaya_layanan;
                         </div>
                         <div class="summary-row">
                             <span>Biaya Layanan</span>
-                            <span>Rp <?php echo number_format($biaya_layanan, 0, ',', '.'); ?></span>
+                            <span style="color:#1b7d3f; font-weight:600;">GRATIS</span>
                         </div>
                         <div class="summary-row summary-total">
                             <span>Total</span>

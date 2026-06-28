@@ -106,4 +106,21 @@ mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_notifikasi (
     KEY id_user (id_user),
     KEY dibaca (dibaca)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
+
+// Auto-migration: riwayat penarikan dana PERUSAHAAN (platform) ke rekening
+// perusahaan. Sifatnya ledger/pencatatan internal — uang asli di-settle Midtrans
+// otomatis ke rekening terdaftar; tabel ini melacak siapa menarik berapa & kapan
+// (kontrol kejujuran admin).
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_penarikan_perusahaan (
+    id_penarikan INT(11) NOT NULL AUTO_INCREMENT,
+    id_admin INT(11) DEFAULT NULL,
+    jumlah DECIMAL(14,2) NOT NULL,
+    bank VARCHAR(50) NOT NULL,
+    no_rekening VARCHAR(40) NOT NULL,
+    nama_pemilik VARCHAR(100) NOT NULL,
+    catatan VARCHAR(255) DEFAULT NULL,
+    tanggal_penarikan DATETIME DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (id_penarikan),
+    KEY id_admin (id_admin)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci");
 ?>

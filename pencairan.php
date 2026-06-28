@@ -162,7 +162,7 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                 <div class="account-page-header">
                     <div>
                         <h1><?php echo $view === 'history' ? 'Riwayat Pencairan' : 'Pencairan Dana'; ?></h1>
-                        <p>Dana penjualan ditahan platform dan bisa dicairkan kapan saja ke rekening Anda.</p>
+                        <p>Dana penjualan ditahan platform dan bisa dicairkan kapan saja ke rekening Anda. Biaya admin <?php echo rupiah(BIAYA_ADMIN_TRANSAKSI); ?> per penjualan sudah dipotong otomatis dari saldo.</p>
                     </div>
                 </div>
 
@@ -175,6 +175,11 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                     <div class="balance-card">
                         <div class="lbl">Total Penjualan (Berhasil)</div>
                         <div class="val"><?php echo rupiah($saldo['kotor']); ?></div>
+                        <?php if ($saldo['potongan_admin'] > 0) { ?>
+                        <div style="font-size:11px; color:#c62828; margin-top:6px;">
+                            &minus; Biaya admin <?php echo rupiah($saldo['potongan_admin']); ?> (<?php echo (int) $saldo['jml_transaksi']; ?> penjualan)
+                        </div>
+                        <?php } ?>
                     </div>
                     <div class="balance-card">
                         <div class="lbl">Sedang/Sudah Dicairkan</div>
@@ -187,7 +192,7 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
                 <div class="withdraw-cta">
                     <div class="desc">
                         <div style="font-weight:700; color:#333; font-size:16px;">Mau cairkan saldo?</div>
-                        <small>Tanpa potongan biaya admin &middot; dana diterima penuh &middot; minimal <?php echo rupiah(MIN_PENARIKAN); ?>.</small>
+                        <small>Penarikan tanpa potongan tambahan &middot; dana diterima penuh &middot; minimal <?php echo rupiah(MIN_PENARIKAN); ?>.</small>
                     </div>
                     <?php if ($bisa_tarik) { ?>
                         <button type="button" class="btn-cair" onclick="bukaModalCair()"><i class="fa fa-paper-plane"></i> Ajukan Pencairan</button>
@@ -340,7 +345,7 @@ $bisa_tarik = $saldo['tersedia'] >= MIN_PENARIKAN;
 
                     <div class="fee-box">
                         <div class="fee-row total"><span>Dana diterima</span><span id="feeDiterima">Rp 0</span></div>
-                        <div class="fee-row" style="padding-top:6px;"><span style="font-size:11px; color:#64748b;">Tanpa potongan biaya admin — diterima penuh.</span></div>
+                        <div class="fee-row" style="padding-top:6px;"><span style="font-size:11px; color:#64748b;">Penarikan tanpa potongan tambahan (biaya admin <?php echo rupiah(BIAYA_ADMIN_TRANSAKSI); ?> sudah dipotong tiap penjualan).</span></div>
                     </div>
 
                     <button type="submit" class="btn-submit-cair mt-3"><i class="fa fa-paper-plane"></i> Kirim Pengajuan</button>

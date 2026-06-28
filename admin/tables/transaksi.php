@@ -1,4 +1,5 @@
 <?php include "../koneksi.php";
+require_once "../../keuangan_helper.php";
 
 session_start();
 
@@ -10,13 +11,56 @@ if(empty($_SESSION['admin'])){
 
 // === WAJIB ADA: AMBIL DATA ADMIN UNTUK PROFIL DINAMIS ===
 $id_admin = $_SESSION['admin'];
-$query_admin = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE id_admin = '$id_admin'"); 
+$query_admin = mysqli_query($koneksi, "SELECT * FROM t_admin WHERE id_admin = '$id_admin'");
 $data_admin = mysqli_fetch_assoc($query_admin);
 
 if (!$data_admin) {
     header('location:../logout.php');
     exit;
 }
+
+// === PROSES PENARIKAN DANA PERUSAHAAN ===
+// Pencatatan (ledger) penarikan saldo platform ke rekening perusahaan (terkunci).
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['aksi'] ?? '') === 'tarik_perusahaan') {
+    $info_cek = pendapatan_perusahaan($koneksi);
+    $jumlah   = (int) preg_replace('/[^0-9]/', '', $_POST['jumlah'] ?? '0');
+    $catatan  = trim($_POST['catatan'] ?? '');
+
+    if ($jumlah < MIN_PENARIKAN_PERUSAHAAN) {
+        $_SESSION['tarik_msg'] = ['danger', 'Nominal minimal ' . rupiah(MIN_PENARIKAN_PERUSAHAAN) . '.'];
+    } elseif ($jumlah > $info_cek['tersedia']) {
+        $_SESSION['tarik_msg'] = ['danger', 'Nominal melebihi saldo tersedia (' . rupiah($info_cek['tersedia']) . ').'];
+    } else {
+        $bank  = PERUSAHAAN_BANK;
+        $rek   = PERUSAHAAN_REKENING;
+        $nama  = PERUSAHAAN_NAMA;
+        $stmt = mysqli_prepare($koneksi,
+            "INSERT INTO t_penarikan_perusahaan (id_admin, jumlah, bank, no_rekening, nama_pemilik, catatan)
+             VALUES (?, ?, ?, ?, ?, ?)");
+        mysqli_stmt_bind_param($stmt, 'idssss', $id_admin, $jumlah, $bank, $rek, $nama, $catatan);
+        if (mysqli_stmt_execute($stmt)) {
+            $_SESSION['tarik_msg'] = ['success', 'Penarikan ' . rupiah($jumlah) . ' berhasil dicatat ke rekening perusahaan.'];
+        } else {
+            $_SESSION['tarik_msg'] = ['danger', 'Gagal mencatat penarikan. Coba lagi.'];
+        }
+    }
+    header('Location: transaksi.php');
+    exit;
+}
+
+// === DATA SALDO & PENDAPATAN PERUSAHAAN ===
+$pendapatan = pendapatan_perusahaan($koneksi);
+
+// Riwayat penarikan perusahaan (siapa, berapa, kapan)
+$riwayat_tarik = mysqli_query($koneksi,
+    "SELECT pp.*, a.nama_admin
+       FROM t_penarikan_perusahaan pp
+       LEFT JOIN t_admin a ON pp.id_admin = a.id_admin
+      ORDER BY pp.id_penarikan DESC");
+
+// Flash message hasil penarikan
+$tarik_msg = $_SESSION['tarik_msg'] ?? null;
+unset($_SESSION['tarik_msg']);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -372,11 +416,82 @@ if (!$data_admin) {
     <div class="page-header">
         <h1 class="fw-bold mb-3">Transaksi</h1>
         </div>
-        
 
-<?php
-// include "../koneksi.php"; // Sudah di-include di awal file
-?>
+<?php if ($tarik_msg) { ?>
+  <div class="alert alert-<?= $tarik_msg[0] ?> alert-dismissible fade show" role="alert">
+    <?= htmlspecialchars($tarik_msg[1]) ?>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+<?php } ?>
+
+<!-- ===== KARTU SALDO PERUSAHAAN ===== -->
+<div class="row">
+  <div class="col-sm-6 col-md-4">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-primary bubble-shadow-small">
+              <i class="fas fa-coins"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Total Pendapatan Platform</p>
+              <h4 class="card-title">Rp <?= number_format($pendapatan['kotor'], 0, ',', '.') ?></h4>
+              <small class="text-muted">
+                Fee transaksi Rp <?= number_format($pendapatan['fee_transaksi'], 0, ',', '.') ?>
+                &middot; Premium Rp <?= number_format($pendapatan['premium'], 0, ',', '.') ?>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-md-4">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-danger bubble-shadow-small">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Sudah Ditarik</p>
+              <h4 class="card-title">Rp <?= number_format($pendapatan['ditarik'], 0, ',', '.') ?></h4>
+              <small class="text-muted">ke rekening perusahaan</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-12 col-md-4">
+    <div class="card card-stats card-round">
+      <div class="card-body">
+        <div class="row align-items-center">
+          <div class="col-icon">
+            <div class="icon-big text-center icon-success bubble-shadow-small">
+              <i class="fas fa-wallet"></i>
+            </div>
+          </div>
+          <div class="col col-stats ms-3 ms-sm-0">
+            <div class="numbers">
+              <p class="card-category">Saldo Tersedia</p>
+              <h4 class="card-title">Rp <?= number_format($pendapatan['tersedia'], 0, ',', '.') ?></h4>
+              <button type="button" class="btn btn-success btn-sm mt-2" data-bs-toggle="modal" data-bs-target="#modalTarik">
+                <i class="fas fa-paper-plane"></i> Tarik Dana
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="col-md-12">
   <div class="card">
@@ -444,6 +559,136 @@ if (!$data_admin) {
 </div>
     </div>
 </div>
+<!-- ===== MODAL TARIK DANA PERUSAHAAN ===== -->
+<div class="modal fade" id="modalTarik" tabindex="-1" aria-labelledby="modalTarikLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalTarikLabel"><i class="fas fa-wallet me-2"></i>Tarik Dana Perusahaan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Rincian pendapatan per periode -->
+        <h6 class="fw-bold mb-2">Rincian Pendapatan</h6>
+        <div class="table-responsive mb-3">
+          <table class="table table-sm table-bordered align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Periode</th>
+                <th class="text-center">Transaksi</th>
+                <th class="text-end">Fee Transaksi</th>
+                <th class="text-end">Premium</th>
+                <th class="text-end">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php
+              $periode_label = ['harian' => 'Hari Ini', 'mingguan' => '7 Hari Terakhir', 'bulanan' => 'Bulan Ini'];
+              foreach ($periode_label as $key => $label) {
+                  $r = $pendapatan['rincian'][$key];
+              ?>
+              <tr>
+                <td><?= $label ?></td>
+                <td class="text-center"><?= (int) $r['jml_transaksi'] ?></td>
+                <td class="text-end">Rp <?= number_format($r['fee'], 0, ',', '.') ?></td>
+                <td class="text-end">Rp <?= number_format($r['premium'], 0, ',', '.') ?></td>
+                <td class="text-end fw-bold">Rp <?= number_format($r['total'], 0, ',', '.') ?></td>
+              </tr>
+              <?php } ?>
+              <tr class="table-light">
+                <td class="fw-bold">Total Keseluruhan</td>
+                <td class="text-center fw-bold"><?= (int) $pendapatan['jml_transaksi'] ?></td>
+                <td class="text-end fw-bold">Rp <?= number_format($pendapatan['fee_transaksi'], 0, ',', '.') ?></td>
+                <td class="text-end fw-bold">Rp <?= number_format($pendapatan['premium'], 0, ',', '.') ?></td>
+                <td class="text-end fw-bold text-primary">Rp <?= number_format($pendapatan['kotor'], 0, ',', '.') ?></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Rekening tujuan (terkunci) -->
+        <h6 class="fw-bold mb-2">Rekening Tujuan (Default)</h6>
+        <div class="border rounded p-3 mb-3 bg-light">
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Bank</span>
+            <strong><?= htmlspecialchars(PERUSAHAAN_BANK) ?></strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">No. Rekening</span>
+            <strong><?= htmlspecialchars(PERUSAHAAN_REKENING) ?></strong>
+          </div>
+          <div class="d-flex justify-content-between">
+            <span class="text-muted">Atas Nama</span>
+            <strong><?= htmlspecialchars(PERUSAHAAN_NAMA) ?></strong>
+          </div>
+          <small class="text-muted d-block mt-2"><i class="fas fa-lock me-1"></i>Rekening terkunci — penarikan hanya ke rekening resmi perusahaan.</small>
+        </div>
+
+        <!-- Form penarikan -->
+        <form method="POST" id="formTarik">
+          <input type="hidden" name="aksi" value="tarik_perusahaan">
+          <div class="mb-3">
+            <label class="form-label fw-bold">Saldo Tersedia</label>
+            <div class="h4 text-success mb-0">Rp <?= number_format($pendapatan['tersedia'], 0, ',', '.') ?></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Nominal Penarikan (Rp)</label>
+            <input type="number" name="jumlah" id="inputTarik" class="form-control"
+                   min="<?= (int) MIN_PENARIKAN_PERUSAHAAN ?>" max="<?= (int) $pendapatan['tersedia'] ?>"
+                   placeholder="Min. <?= number_format(MIN_PENARIKAN_PERUSAHAAN, 0, ',', '.') ?>"
+                   <?= $pendapatan['tersedia'] < MIN_PENARIKAN_PERUSAHAAN ? 'disabled' : 'required' ?>>
+            <small class="text-muted">Minimal <?= rupiah(MIN_PENARIKAN_PERUSAHAAN) ?> &middot; maksimal <?= rupiah($pendapatan['tersedia']) ?></small>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Catatan (opsional)</label>
+            <input type="text" name="catatan" class="form-control" maxlength="200" placeholder="mis. setor kas operasional Juni">
+          </div>
+          <?php if ($pendapatan['tersedia'] < MIN_PENARIKAN_PERUSAHAAN) { ?>
+            <button type="button" class="btn btn-secondary w-100" disabled>Saldo belum mencukupi (min. <?= rupiah(MIN_PENARIKAN_PERUSAHAAN) ?>)</button>
+          <?php } else { ?>
+            <button type="submit" class="btn btn-success w-100"
+                    onclick="return confirm('Catat penarikan dana ke rekening perusahaan?')">
+              <i class="fas fa-paper-plane me-1"></i> Tarik & Catat
+            </button>
+          <?php } ?>
+        </form>
+
+        <!-- Riwayat penarikan -->
+        <hr class="my-4">
+        <h6 class="fw-bold mb-2">Riwayat Penarikan</h6>
+        <div class="table-responsive">
+          <table class="table table-sm table-hover align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Tanggal</th>
+                <th class="text-end">Nominal</th>
+                <th>Rekening</th>
+                <th>Oleh Admin</th>
+                <th>Catatan</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php if (!$riwayat_tarik || mysqli_num_rows($riwayat_tarik) == 0) { ?>
+                <tr><td colspan="5" class="text-center text-muted">Belum ada penarikan</td></tr>
+              <?php } else { while ($t = mysqli_fetch_assoc($riwayat_tarik)) { ?>
+                <tr>
+                  <td><small><?= date('d M Y H:i', strtotime($t['tanggal_penarikan'])) ?></small></td>
+                  <td class="text-end fw-bold text-danger">Rp <?= number_format($t['jumlah'], 0, ',', '.') ?></td>
+                  <td><small><?= htmlspecialchars($t['bank']) ?><br><?= htmlspecialchars($t['no_rekening']) ?></small></td>
+                  <td><small><?= htmlspecialchars($t['nama_admin'] ?? '-') ?></small></td>
+                  <td><small><?= $t['catatan'] ? htmlspecialchars($t['catatan']) : '<span class="text-muted">-</span>' ?></small></td>
+                </tr>
+              <?php } } ?>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
     <script src="../assets/js/core/jquery-3.7.1.min.js"></script>
     <script src="../assets/js/core/popper.min.js"></script>
     <script src="../assets/js/core/bootstrap.min.js"></script>

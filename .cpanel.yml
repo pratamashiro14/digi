@@ -1,4 +1,4 @@
 ---
 deployment:
   tasks:
-    - /bin/mkdir -p $HOME/public_html && /usr/bin/rsync -av --exclude='.git' --exclude='.gitignore' --exclude='.cpanel.yml' --exclude='config.php' --exclude='admin/config.php' --exclude='uploads/' --exclude='admin/uploads/' ./ $HOME/public_html/
+    - /bin/cp -rp . $HOME/public_html/ && /bin/rm -rf $HOME/public_html/.git && /bin/rm -f $HOME/public_html/.gitignore $HOME/public_html/.cpanel.yml

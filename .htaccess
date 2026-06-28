@@ -3,6 +3,12 @@ DirectoryIndex index.php index.html
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Paksa semua trafik ke HTTPS (kecuali sudah https).
+    # Pakai HTTP_X_FORWARDED_PROTO juga agar terdeteksi di balik proxy/CDN hosting.
+    RewriteCond %{HTTPS} off
+    RewriteCond %{HTTP:X-Forwarded-Proto} !https
+    RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 </IfModule>
 
 <FilesMatch "\.(sql|log|md|yml|env|example)$">

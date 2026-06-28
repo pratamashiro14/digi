@@ -23,6 +23,13 @@ if ($check_chat && mysqli_num_rows($check_chat) == 0) {
     mysqli_query($koneksi, "ALTER TABLE t_chat ADD COLUMN is_read TINYINT(1) NOT NULL DEFAULT 0 AFTER isi_pesan");
 }
 
+// Auto-migration: kolom 'batas_pembayaran' di t_transaksi (tenggat status pending).
+// Dipakai untuk limit waktu "Menunggu Bayar" & mencegah transaksi pending ganda.
+$check_batas = mysqli_query($koneksi, "SHOW COLUMNS FROM t_transaksi LIKE 'batas_pembayaran'");
+if ($check_batas && mysqli_num_rows($check_batas) == 0) {
+    mysqli_query($koneksi, "ALTER TABLE t_transaksi ADD COLUMN batas_pembayaran DATETIME DEFAULT NULL AFTER tanggal_transaksi");
+}
+
 // Auto-migration: tabel favorit desainer (pembeli premium mem-follow desainer)
 mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS t_favorit_desainer (
     id_favorit INT(11) NOT NULL AUTO_INCREMENT,

@@ -5,8 +5,14 @@ include 'admin/koneksi.php';
 // Hubungkan Library + konfigurasi Midtrans (key dari config.php)
 require_once __DIR__ . '/midtrans_config.php';
 
+// Aturan tenggat & anti-duplikat pembayaran pending
+require_once __DIR__ . '/pembayaran_helper.php';
+
 // Cek Login — khusus pembeli/user
 require_user();
+
+// Gagalkan dulu pending yang sudah lewat tenggat sebelum dilanjutkan bayar.
+expire_pending_kedaluwarsa($koneksi);
 
 // Cek ID Transaksi dari URL
 if (!isset($_GET['id'])) {
@@ -18,8 +24,11 @@ $id_transaksi = (int) $_GET['id'];
 $id_user = (int) $_SESSION['id_user'];
 
 // 1. AMBIL DATA TRANSAKSI LAMA
-// Kita cari transaksi yang statusnya pending milik user ini
-$stmt = mysqli_prepare($koneksi, "SELECT t.*, d.judul
+// Kita cari transaksi yang statusnya pending milik user ini.
+// sisa_detik dihitung di MySQL (kebal selisih zona waktu PHP/MySQL).
+$batas_sql = batas_pembayaran_sql('t');
+$stmt = mysqli_prepare($koneksi, "SELECT t.*, d.judul,
+          TIMESTAMPDIFF(SECOND, NOW(), $batas_sql) AS sisa_detik
           FROM t_transaksi t
           JOIN t_design d ON t.id_design = d.id_design
           WHERE t.id_transaksi = ?
@@ -34,16 +43,25 @@ if (!$data) {
     sweetalert_redirect('Transaksi tidak ditemukan atau sudah lunas.', 'riwayat.php', 'error', 'Transaksi Tidak Tersedia');
 }
 
+// Blokir bila tenggat pembayaran sudah lewat (lazy-expire di atas sudah
+// menggagalkannya, ini pengaman bila ada selisih waktu).
+$sisa_detik = (int) ($data['sisa_detik'] ?? 0);
+$sisa_menit = (int) ceil($sisa_detik / 60);
+if ($sisa_menit <= 0) {
+    sweetalert_redirect('Batas waktu pembayaran transaksi ini sudah habis.', 'riwayat.php', 'error', 'Pembayaran Kedaluwarsa');
+}
+
 // ============================================================
 // PERBAIKAN: BUAT ORDER ID BARU (REGENERATE)
 // ============================================================
-// Kita buat ID baru supaya tidak ditolak Midtrans
+// Kita buat ID baru supaya tidak ditolak Midtrans.
+// CATATAN: tanggal_transaksi & batas_pembayaran TIDAK diubah agar tenggat
+// asli tetap berlaku (pembeli tidak bisa "mengulur" tenggat dengan bayar ulang).
 $order_id_baru = "ORD-" . time() . "-" . rand(100, 999);
 
 // UPDATE DATABASE: Ganti ID lama dengan ID baru
 $update_stmt = mysqli_prepare($koneksi, "UPDATE t_transaksi
-                 SET id_midtrans_order = ?,
-                     tanggal_transaksi = NOW()
+                 SET id_midtrans_order = ?
                  WHERE id_transaksi = ?");
 mysqli_stmt_bind_param($update_stmt, 'si', $order_id_baru, $id_transaksi);
 
@@ -66,6 +84,11 @@ $params = array(
             'quantity' => 1,
             'name' => substr($data['judul'], 0, 50)
         )
+    ),
+    // Expiry = sisa waktu hingga tenggat asli, supaya tidak memperpanjang tenggat.
+    'expiry' => array(
+        'unit'     => 'minute',
+        'duration' => $sisa_menit,
     ),
 );
 

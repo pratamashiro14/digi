@@ -290,6 +290,7 @@ CREATE TABLE `t_transaksi` (
   `metode_pembayaran` enum('transfer','qris','midtrans') NOT NULL,
   `status_pembayaran` enum('pending','berhasil','gagal') DEFAULT 'pending',
   `tanggal_transaksi` datetime DEFAULT current_timestamp(),
+  `batas_pembayaran` datetime DEFAULT NULL,
   `id_midtrans_order` varchar(100) DEFAULT NULL,
   `bukti_pembayaran` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

@@ -3,18 +3,28 @@ require_once __DIR__ . '/auth.php';
 // 1. HUBUNGKAN KE DATABASE
 // Pastikan path ini benar (sesuai struktur folder kamu)
 include 'admin/koneksi.php';
+// Aturan tenggat pembayaran pending
+require_once __DIR__ . '/pembayaran_helper.php';
 
 // 2. CEK LOGIN KHUSUS PEMBELI
 require_user();
 
+// Gagalkan pending yang sudah lewat tenggat agar status tampil akurat.
+expire_pending_kedaluwarsa($koneksi);
+
 $id_buyer = current_id();
 
 // 3. QUERY DATABASE
-// Mengambil data transaksi digabung (JOIN) dengan data desain
-$query = "SELECT t.*, d.judul, d.gambar, d.file_master 
-          FROM t_transaksi t 
-          JOIN t_design d ON t.id_design = d.id_design 
-          WHERE t.id_buyer = '$id_buyer' 
+// Mengambil data transaksi digabung (JOIN) dengan data desain.
+// sisa_detik & batas_fmt dihitung di MySQL (jam server yang sama dengan
+// pembuat tenggat) agar countdown kebal selisih zona waktu PHP/browser.
+$batas_sql = batas_pembayaran_sql('t');
+$query = "SELECT t.*, d.judul, d.gambar, d.file_master,
+                 TIMESTAMPDIFF(SECOND, NOW(), $batas_sql) AS sisa_detik,
+                 DATE_FORMAT($batas_sql, '%d %b %Y, %H:%i') AS batas_fmt
+          FROM t_transaksi t
+          JOIN t_design d ON t.id_design = d.id_design
+          WHERE t.id_buyer = '$id_buyer'
           ORDER BY t.tanggal_transaksi DESC";
 
 $result = mysqli_query($koneksi, $query);
@@ -64,6 +74,9 @@ if (!$result) {
 
         .img-thumb { width: 90px; height: 90px; object-fit: cover; border-radius: 10px; }
         .order-id { font-size: 12px; color: #999; margin-bottom: 5px; display: block; }
+        .tenggat-bayar { margin-top: 8px; font-size: 12px; color: #b8860b; line-height: 1.4; }
+        .tenggat-bayar .sisa-waktu { font-weight: 700; }
+        .tenggat-bayar.is-urgent { color: #c0392b; }
         .product-title { font-size: 16px; font-weight: 700; color: #333; display: block; margin-bottom: 5px; }
         .product-price { font-size: 15px; color: #007bff; font-weight: 600; }
     </style>
@@ -101,6 +114,7 @@ if (!$result) {
                         $badge_class = "bg-gagal";
                         $status_text = "Gagal / Expired";
                         $tombol_aksi = "";
+                        $info_tenggat = ""; // teks tenggat untuk status pending
 
                         // 1. JIKA SUKSES (Support: 'berhasil', 'settlement', 'capture')
                         if ($status_db == 'berhasil' || $status_db == 'settlement' || $status_db == 'capture') {
@@ -117,11 +131,26 @@ if (!$result) {
                         } elseif ($status_db == 'pending') {
                             $badge_class = "bg-pending";
                             $status_text = "Menunggu Bayar";
-                            
-                            // Tombol Bayar (Arahkan ke bayar_ulang.php untuk memunculkan Snap popup)
-                            $tombol_aksi = '<a href="bayar_ulang.php?id=' . $row['id_transaksi'] . '" class="btn-aksi btn-bayar">
-                                                <i class="fa fa-credit-card"></i> Bayar Sekarang
-                                            </a>'; 
+
+                            // Sisa waktu dihitung di MySQL (kebal zona waktu). Detik utuh.
+                            $sisa_detik = (int) ($row['sisa_detik'] ?? 0);
+
+                            if ($sisa_detik > 0) {
+                                // Tombol Bayar (Arahkan ke bayar_ulang.php untuk memunculkan Snap popup)
+                                $tombol_aksi = '<a href="bayar_ulang.php?id=' . $row['id_transaksi'] . '" class="btn-aksi btn-bayar">
+                                                    <i class="fa fa-credit-card"></i> Bayar Sekarang
+                                                </a>';
+                                $sisa_menit_awal = (int) ceil($sisa_detik / 60);
+                                $info_tenggat = '<div class="tenggat-bayar" data-remaining="' . $sisa_detik . '">'
+                                    . '<i class="fa fa-clock-o"></i> Bayar sebelum '
+                                    . htmlspecialchars($row['batas_fmt'] ?? '', ENT_QUOTES)
+                                    . ' &middot; <span class="sisa-waktu">sisa ' . $sisa_menit_awal . ' menit</span></div>';
+                            } else {
+                                // Sudah lewat tenggat (jaga-jaga bila lazy-expire belum sempat jalan)
+                                $badge_class = "bg-gagal";
+                                $status_text = "Gagal / Expired";
+                                $tombol_aksi = '<span style="color:#aaa; font-size:13px;">Batas waktu pembayaran habis</span>';
+                            }
 
                         // 3. JIKA GAGAL (Support: 'gagal', 'expire', 'cancel', 'deny')
                         } else {
@@ -145,6 +174,7 @@ if (!$result) {
                         <span class="badge-status <?php echo $badge_class; ?>">
                             <?php echo $status_text; ?>
                         </span>
+                        <?php echo $info_tenggat; ?>
                     </td>
                     <td>
                         <?php echo $tombol_aksi; ?>
@@ -168,6 +198,51 @@ if (!$result) {
     <script src="vendor/jquery/jquery-3.2.1.min.js"></script>
     <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
     <script src="js/main.js"></script>
+
+    <script>
+    // Countdown tenggat pembayaran.
+    // data-remaining = sisa detik dihitung SERVER (MySQL) saat halaman dimuat.
+    // Kita kurangi dengan selisih waktu sejak load (delta, bukan jam absolut)
+    // sehingga kebal terhadap perbedaan zona waktu/jam antara server & browser.
+    (function () {
+        var nodes = document.querySelectorAll('.tenggat-bayar');
+        if (!nodes.length) return;
+
+        var startMs = Date.now();
+        var initial = [];
+        nodes.forEach(function (el) {
+            initial.push(parseInt(el.getAttribute('data-remaining'), 10) || 0);
+        });
+
+        function render() {
+            var elapsed = Math.floor((Date.now() - startMs) / 1000); // detik sejak load
+            var adaExpired = false;
+            nodes.forEach(function (el, i) {
+                var sisa = initial[i] - elapsed; // detik tersisa
+                var span = el.querySelector('.sisa-waktu');
+                if (sisa <= 0) {
+                    if (span) span.textContent = 'waktu habis';
+                    el.classList.add('is-urgent');
+                    adaExpired = true;
+                    return;
+                }
+                var menit = Math.floor(sisa / 60);
+                var detik = sisa % 60;
+                if (span) {
+                    span.textContent = menit > 0
+                        ? 'sisa ' + menit + ' menit ' + detik + ' detik'
+                        : 'sisa ' + detik + ' detik';
+                }
+                el.classList.toggle('is-urgent', menit < 10);
+            });
+            // Bila ada yang baru saja habis, muat ulang agar status server diperbarui.
+            if (adaExpired) setTimeout(function () { window.location.reload(); }, 1500);
+        }
+
+        render();
+        setInterval(render, 1000);
+    })();
+    </script>
 
 </body>
 </html>

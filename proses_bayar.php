@@ -6,6 +6,9 @@ include 'admin/koneksi.php';
 // Hubungkan ke Midtrans + konfigurasi (key dari config.php)
 require_once __DIR__ . '/midtrans_config.php';
 
+// Aturan tenggat & anti-duplikat pembayaran pending
+require_once __DIR__ . '/pembayaran_helper.php';
+
 // Cek apakah user sudah login
 require_user();
 
@@ -46,19 +49,36 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         sweetalert_redirect('Karya ini sudah terjual dan tidak bisa dibayar lagi.', 'product.php', 'info', 'Karya Terjual');
     }
 
+    // --- A2. BERSIHKAN PENDING KEDALUWARSA & CEGAH TRANSAKSI GANDA ---
+    // Pending yang sudah lewat tenggat otomatis digagalkan agar karya bebas lagi.
+    expire_pending_kedaluwarsa($koneksi);
+    // Bila pembeli ini masih punya pending aktif untuk karya yang sama, jangan
+    // buat baris baru: arahkan menyelesaikan pembayaran yang sudah ada.
+    if (pending_aktif_untuk_design($koneksi, $id_buyer, $id_design)) {
+        sweetalert_redirect(
+            'Selesaikan dulu pembayaran yang telah kamu lakukan untuk karya ini. Cek di Riwayat Pembelian.',
+            'riwayat.php',
+            'info',
+            'Pembayaran Belum Selesai'
+        );
+    }
+
     // --- B. BUAT ORDER ID UNIK ---
     $order_id = "ORD-" . time() . "-" . rand(100, 999);
 
     // --- C. SIMPAN KE DATABASE (Status: pending) ---
     // Perbaikan: Menggunakan variabel $koneksi (bukan $conn)
+    // batas_pembayaran = tenggat pembeli menyelesaikan pembayaran (limit menit).
+    $batas_menit = (int) PEMBAYARAN_LIMIT_MENIT;
     $stmt_simpan = mysqli_prepare($koneksi, "INSERT INTO t_transaksi (
                         id_midtrans_order,
                         id_design,
                         id_buyer,
                         harga_final,
                         status_pembayaran,
-                        tanggal_transaksi
-                    ) VALUES (?, ?, ?, ?, 'pending', NOW())");
+                        tanggal_transaksi,
+                        batas_pembayaran
+                    ) VALUES (?, ?, ?, ?, 'pending', NOW(), NOW() + INTERVAL {$batas_menit} MINUTE)");
     mysqli_stmt_bind_param($stmt_simpan, 'siii', $order_id, $id_design, $id_buyer, $total_bayar);
 
     // Eksekusi Simpan ke Database
@@ -91,6 +111,11 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         'custom_field1' => $custom_field1,
         'custom_field2' => $custom_field2,
         'custom_field3' => $custom_field3,
+        // Link pembayaran ikut kedaluwarsa sesuai tenggat (limit menit).
+        'expiry' => array(
+            'unit'     => 'minute',
+            'duration' => (int) PEMBAYARAN_LIMIT_MENIT,
+        ),
     );
 
     try {

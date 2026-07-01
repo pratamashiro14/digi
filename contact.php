@@ -174,12 +174,9 @@ if(isset($_SESSION['keranjang'])) {
 				<!-- Team Photos -->
 				<div style="display: flex; justify-content: center; gap: 30px; align-items: center; flex-wrap: wrap; margin: 30px 0;">
 					<div style="text-align: center;">
-						<img src="images/hubunginkami-02.png" alt="Team Member 1" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #e74c3c; display: block;">
-						<p style="margin-top: 15px; font-weight: 600; color: #333;">Tim Kami</p>
-					</div>
-					<div style="text-align: center;">
-						<img src="images/hubunginkami-01.png" alt="Team Member 2" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #e74c3c; display: block;">
-						<p style="margin-top: 15px; font-weight: 600; color: #333;">Tim Kami</p>
+						<img src="images/hubunginkami-01.png" alt="Team Member" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 5px solid #e74c3c; display: block;">
+						<p style="margin-top: 15px; margin-bottom: 2px; font-weight: 700; color: #222; font-size: 1.05rem;">Denden</p>
+						<p style="margin: 0; font-weight: 500; color: #777; font-size: 0.9rem;">Admin 1</p>
 					</div>
 				</div>
 			</div>
@@ -193,30 +190,31 @@ if(isset($_SESSION['keranjang'])) {
 			<div class="flex-w flex-tr" style="display:flex; flex-wrap:wrap; gap:30px; align-items:stretch; justify-content:center;">
 				<div class="bor10 p-lr-70 p-t-55 p-b-70 p-lr-15-lg" style="background: #f9f9f9; border-radius: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); flex:1 1 360px; max-width:560px; width:auto;">
 					<form method="post" action="contact.php">
-						<h4 class="mtext-105 cl2 txt-center p-b-10" style="font-weight: 700; color: #333;">
+						<h4 class="txt-center" style="font-weight: 700; color: #333; font-size: 1.5rem; margin-bottom: 10px;">
 							Sampaikan Keluhan
 						</h4>
-						<p class="stext-113 cl6 txt-center p-b-30" style="color:#777; line-height:1.6;">
+						<p class="txt-center" style="color:#777; line-height:1.6; margin-bottom: 30px;">
 							Ada masalah pembayaran, karya, akun, atau lainnya? Tulis keluhan Anda di bawah ini.
 							Pesan akan langsung diteruskan ke admin dan dapat Anda lanjutkan di halaman Pesan.
 						</p>
 
 						<?php if (!$sudah_login) { ?>
-							<div class="m-b-25" style="background:#fff7e6; border:1px solid #ffe0a3; color:#8a6d3b; border-radius:8px; padding:14px 16px; line-height:1.5;">
+							<div style="background:#fff7e6; border:1px solid #ffe0a3; color:#8a6d3b; border-radius:8px; padding:14px 16px; line-height:1.5; margin-bottom: 25px;">
 								<i class="fa fa-info-circle m-r-6"></i>
 								Anda perlu <a href="login.php" style="color:#c97b00; font-weight:700;">login</a> terlebih dahulu untuk mengirim keluhan ke admin.
 							</div>
 						<?php } ?>
 
 						<?php if ($sudah_login) { ?>
-						<div class="bor8 m-b-20 how-pos4-parent">
-							<input class="stext-111 cl2 plh3 size-116 p-l-62 p-r-30" type="text" value="<?php echo htmlspecialchars($nama_saya); ?>" readonly style="border: 1px solid #e2e2e2; border-radius: 8px; padding: 12px 15px; background:#f1f1f1;">
-							<img class="how-pos4 pointer-none" src="images/icons/icon-email.png" alt="ICON">
+						<div style="margin-bottom: 20px;">
+							<label style="display:block; font-weight:600; color:#333; margin-bottom:8px; font-size:0.95rem;">Nama</label>
+							<input type="text" value="<?php echo htmlspecialchars($nama_saya); ?>" readonly style="width:100%; border: 1px solid #e2e2e2; border-radius: 8px; padding: 12px 15px; background:#f1f1f1; color:#555; font-size:0.95rem;">
 						</div>
 						<?php } ?>
 
-						<div class="bor8 m-b-20">
-							<select name="kategori" class="stext-111 cl2 plh3 size-116 p-l-20 p-r-30" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; width:100%; background:#fff; height:auto;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
+						<div style="margin-bottom: 20px;">
+							<label style="display:block; font-weight:600; color:#333; margin-bottom:8px; font-size:0.95rem;">Kategori</label>
+							<select name="kategori" style="width:100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; background:#fff; color:#333; font-size:0.95rem;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
 								<option value="Umum">Keluhan Umum</option>
 								<option value="Pembayaran">Masalah Pembayaran</option>
 								<option value="Karya / Pesanan">Masalah Karya / Pesanan</option>
@@ -226,15 +224,17 @@ if(isset($_SESSION['keranjang'])) {
 							</select>
 						</div>
 
-						<div class="bor8 m-b-20">
-							<input class="stext-111 cl2 plh3 size-116 p-l-20 p-r-30" type="text" name="subjek" placeholder="Subjek (opsional)" style="border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
+						<div style="margin-bottom: 20px;">
+							<label style="display:block; font-weight:600; color:#333; margin-bottom:8px; font-size:0.95rem;">Subjek <span style="color:#999; font-weight:400;">(opsional)</span></label>
+							<input type="text" name="subjek" placeholder="Ringkasan singkat keluhan Anda" style="width:100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; font-size:0.95rem;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
 						</div>
 
-						<div class="bor8 m-b-30">
-							<textarea class="stext-111 cl2 plh3 size-120 p-lr-28 p-tb-25" name="pesan" placeholder="Tuliskan keluhan Anda secara jelas..." style="border: 1px solid #ddd; border-radius: 8px; padding: 15px; min-height: 120px;" <?php echo $sudah_login ? 'required' : 'disabled'; ?>></textarea>
+						<div style="margin-bottom: 30px;">
+							<label style="display:block; font-weight:600; color:#333; margin-bottom:8px; font-size:0.95rem;">Pesan</label>
+							<textarea name="pesan" placeholder="Tuliskan keluhan Anda secara jelas..." style="width:100%; border: 1px solid #ddd; border-radius: 8px; padding: 12px 15px; min-height: 130px; font-size:0.95rem; resize:vertical;" <?php echo $sudah_login ? 'required' : 'disabled'; ?>></textarea>
 						</div>
 
-						<button type="submit" name="kirim_keluhan" class="flex-c-m stext-101 cl0 size-121 bg3 bor1 hov-btn3 p-lr-15 trans-04 pointer" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; border-radius: 8px; padding: 12px 30px; cursor: pointer; font-weight: 600;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
+						<button type="submit" name="kirim_keluhan" style="width:100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff; border: none; border-radius: 8px; padding: 14px 30px; cursor: pointer; font-weight: 600; font-size:1rem; letter-spacing:0.5px;" <?php echo $sudah_login ? '' : 'disabled'; ?>>
 							KIRIM KELUHAN
 						</button>
 					</form>

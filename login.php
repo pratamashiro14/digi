@@ -88,6 +88,21 @@
         }
         .form-control:focus { box-shadow: none; border-color: var(--brand); }
 
+        /* Show/hide password */
+        .password-wrap { position: relative; }
+        .password-wrap .form-control { padding-right: 44px; }
+        .password-toggle {
+            position: absolute; top: 0; right: 0; height: 100%;
+            width: 44px; border: none; background: transparent;
+            color: #9aa0c0; cursor: pointer; font-size: 15px;
+            display: flex; align-items: center; justify-content: center;
+            border-radius: 0 10px 10px 0; transition: color .2s;
+        }
+        .password-toggle:hover, .password-toggle:focus { color: var(--brand); outline: none; }
+        /* Keep Bootstrap's invalid-feedback working inside the wrapper */
+        .password-wrap .invalid-feedback { display: none; }
+        .was-validated .password-wrap .form-control:invalid ~ .invalid-feedback { display: block; }
+
         .btn-brand {
             background: var(--brand); color: #fff; font-weight: 600; font-size: 16px;
             border-radius: 50px; padding: 11px; width: 100%; border: none; transition: .25s; margin-top: 6px;
@@ -144,8 +159,13 @@
                     Kata Sandi
                     <a href="forgot_password.php" style="font-size:12px;font-weight:500;color:var(--brand);text-decoration:none;">Lupa password?</a>
                 </label>
-                <input type="password" class="form-control" name="password" placeholder="Kata Sandi" required>
-                <div class="invalid-feedback">Kata sandi wajib diisi.</div>
+                <div class="password-wrap">
+                    <input type="password" id="password" class="form-control" name="password" placeholder="Kata Sandi" required>
+                    <button type="button" class="password-toggle" aria-label="Tampilkan kata sandi" aria-pressed="false" title="Tampilkan kata sandi">
+                        <i class="fa-solid fa-eye"></i>
+                    </button>
+                    <div class="invalid-feedback">Kata sandi wajib diisi.</div>
+                </div>
             </div>
             <button type="submit" class="btn-brand">Masuk</button>
             <a href="register.php" class="btn-outline-brand">Registrasi</a>
@@ -169,6 +189,22 @@
                     form.classList.add('was-validated')
                 }, false)
             })
+
+            // Toggle show/hide password
+            const toggle = document.querySelector('.password-toggle')
+            const pwd = document.getElementById('password')
+            if (toggle && pwd) {
+                toggle.addEventListener('click', () => {
+                    const show = pwd.type === 'password'
+                    pwd.type = show ? 'text' : 'password'
+                    toggle.setAttribute('aria-pressed', show ? 'true' : 'false')
+                    const label = show ? 'Sembunyikan kata sandi' : 'Tampilkan kata sandi'
+                    toggle.setAttribute('aria-label', label)
+                    toggle.setAttribute('title', label)
+                    toggle.querySelector('i').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'
+                    pwd.focus()
+                })
+            }
         })()
     </script>
 </body>

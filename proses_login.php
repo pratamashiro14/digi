@@ -37,7 +37,7 @@ if ($cek_email > 0) {
         }
     } else {
         // Password salah
-        sweetalert_back('Password salah! Pastikan Caps Lock tidak aktif.', 'error', 'Login Gagal!');
+        sweetalert_back('Password yang kamu masukkan salah. Klik ikon mata untuk mengecek ketikan, dan pastikan Caps Lock tidak aktif.', 'error', 'Password Salah!');
     }
 } else {
     // Email tidak ditemukan

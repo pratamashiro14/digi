@@ -423,13 +423,13 @@ if (!$data_admin) {
               <?php
               // kasih warna badge berdasarkan status
               $status = strtolower($data['status']);
-              $badgeColor = match ($status) {
-                'approved' => 'success',
-                'pending'  => 'warning',
-                'rejected' => 'danger',
-                'sold'     => 'secondary',
-                default    => 'dark',
-              };
+              switch ($status) {
+                case 'approved': $badgeColor = 'success'; break;
+                case 'pending':  $badgeColor = 'warning'; break;
+                case 'rejected': $badgeColor = 'danger'; break;
+                case 'sold':     $badgeColor = 'secondary'; break;
+                default:         $badgeColor = 'dark'; break;
+              }
               ?>
               <span class="badge bg-<?= $badgeColor; ?>">
                 <?= ucfirst($data['status']); ?>

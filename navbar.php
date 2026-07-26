@@ -263,8 +263,18 @@ if ($unread_count === 0) {
 }
 
 .limiter-menu-desktop {
-    padding-left: 28px !important;
-    padding-right: 28px !important;
+    max-width: 1380px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    width: 100% !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+}
+
+@media (max-width: 1600px) {
+    .limiter-menu-desktop {
+        max-width: 1200px !important;
+    }
 }
 
 /* Styling untuk icon header di navbar utama agar rapi & tidak acak-acakan */

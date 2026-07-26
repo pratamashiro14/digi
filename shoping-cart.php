@@ -5,6 +5,12 @@
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 require_once __DIR__ . '/bidding_helper.php'; // bid_leader_id(): pemenang dgn prioritas premium
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat, lihat catatan di dalamnya
+
+// Halaman ini menentukan SIAPA BOLEH MEMBAYAR — jangan pernah pakai mode
+// throttled ($paksa=false): status wanprestasi/promosi runner-up di sini
+// wajib selalu akurat, bukan kadaluwarsa sampai 60 detik.
+jalankan_pemeliharaan_lelang($koneksi, true);
 
 if (is_designer_login()) {
     redirect_with_alert('Halaman pembelian khusus pembeli. Anda sedang login sebagai Desainer.', 'index.php');

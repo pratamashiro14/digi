@@ -8,9 +8,14 @@ require_once __DIR__ . '/midtrans_config.php';
 
 // Aturan tenggat & anti-duplikat pembayaran pending
 require_once __DIR__ . '/pembayaran_helper.php';
+require_once __DIR__ . '/bidding_helper.php'; // is_bid_leader()
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
 
 // Cek apakah user sudah login
 require_user();
+
+// Menyangkut uang — selalu paksa akurat, jangan throttled.
+jalankan_pemeliharaan_lelang($koneksi, true);
 
 $id_user = current_id();
 
@@ -47,6 +52,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     if (($data_karya['status'] ?? '') === 'sold' || !empty($data_karya['sudah_terjual'])) {
         sweetalert_redirect('Karya ini sudah terjual dan tidak bisa dibayar lagi.', 'product.php', 'info', 'Karya Terjual');
+    }
+
+    // --- A1b. VERIFIKASI PEMENANG (celah yang sebelumnya tidak dicek sama
+    // sekali di sini) --- Tanpa ini, siapa pun yang bisa mem-POST ke endpoint
+    // ini bisa membuat transaksi untuk karya lelang apa pun — dan sejak
+    // promosi runner-up ada, pemenang yang sudah digugurkan bisa "menyalip
+    // bayar" lewat jalur ini walau shoping-cart.php sudah menolaknya.
+    if ($tipe_transaksi === 'lelang' && !is_bid_leader($koneksi, $id_design, $id_buyer)) {
+        sweetalert_redirect('Anda bukan (lagi) pemenang lelang untuk karya ini.', 'riwayat_bidding.php', 'error', 'Pembayaran Ditolak');
     }
 
     // --- A2. BERSIHKAN PENDING KEDALUWARSA & CEGAH TRANSAKSI GANDA ---

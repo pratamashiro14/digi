@@ -143,10 +143,13 @@ CREATE TABLE `t_design` (
   `deskripsi` text DEFAULT NULL,
   `kategori` enum('ilustrasi','tipografi','mockup','uiux','animasi') DEFAULT NULL,
   `harga_awal` decimal(12,2) DEFAULT NULL,
+  `harga_beli_langsung` decimal(12,2) DEFAULT 0,
   `gambar` varchar(255) DEFAULT NULL,
   `tanggal_upload` datetime DEFAULT NULL,
   `status` enum('pending','approved','rejected','sold') DEFAULT NULL,
   `waktu_berakhir` datetime DEFAULT NULL,
+  `batas_bayar_pemenang` datetime DEFAULT NULL,
+  `notif_menang_terkirim` tinyint(1) NOT NULL DEFAULT 0,
   `file_master` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -211,6 +214,72 @@ CREATE TABLE `t_blokir_nik` (
   `alasan` varchar(255) DEFAULT NULL,
   `id_admin` int(11) DEFAULT NULL,
   `tanggal_blokir` datetime DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_blokir_identitas`
+-- (Generalisasi t_blokir_nik: sejak pelanggan tidak lagi wajib KTP, jangkar
+--  identitas mereka adalah nomor HP/email, sedangkan desainer tetap NIK.)
+--
+
+CREATE TABLE `t_blokir_identitas` (
+  `id_blokir` int(11) NOT NULL AUTO_INCREMENT,
+  `tipe` enum('nik','telp','email') NOT NULL,
+  `nilai` varchar(100) NOT NULL,
+  `alasan` varchar(255) DEFAULT NULL,
+  `id_admin` int(11) DEFAULT NULL,
+  `tanggal_blokir` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_blokir`),
+  UNIQUE KEY `uniq_identitas` (`tipe`,`nilai`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_otp_email`
+-- (Kode OTP verifikasi email registrasi — pengganti wajib-KTP pelanggan.
+--  Kode disimpan ter-hash, tidak pernah plaintext.)
+--
+
+CREATE TABLE `t_otp_email` (
+  `id_otp` int(11) NOT NULL AUTO_INCREMENT,
+  `email` varchar(100) NOT NULL,
+  `kode_hash` varchar(255) NOT NULL,
+  `tujuan` varchar(30) NOT NULL DEFAULT 'registrasi',
+  `percobaan` tinyint(1) NOT NULL DEFAULT 0,
+  `dipakai` tinyint(1) NOT NULL DEFAULT 0,
+  `expired_at` datetime NOT NULL,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_otp`),
+  KEY `idx_email_tujuan` (`email`,`tujuan`,`dipakai`),
+  KEY `idx_expired` (`expired_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_wanprestasi`
+-- (Jejak pemenang lelang yang tidak menyelesaikan pembayaran sampai
+--  tenggat — dasar sistem strike/suspend bertingkat. UNIQUE(id_user,
+--  id_design) menegakkan "strike dihitung per karya berbeda" sekaligus
+--  membuat sweep tanpa-cron aman diulang berkali-kali (INSERT IGNORE).)
+--
+
+CREATE TABLE `t_wanprestasi` (
+  `id_wanprestasi` int(11) NOT NULL AUTO_INCREMENT,
+  `id_user` int(11) NOT NULL,
+  `id_design` int(11) NOT NULL,
+  `id_bid` int(11) DEFAULT NULL,
+  `harga_tawaran` decimal(12,2) DEFAULT NULL,
+  `batas_bayar` datetime NOT NULL,
+  `alasan` varchar(255) DEFAULT NULL,
+  `dimaafkan` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` datetime DEFAULT current_timestamp(),
+  PRIMARY KEY (`id_wanprestasi`),
+  UNIQUE KEY `uniq_strike` (`id_user`,`id_design`),
+  KEY `idx_user` (`id_user`,`dimaafkan`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -315,15 +384,19 @@ CREATE TABLE `t_user` (
   `id_user` int(11) NOT NULL,
   `nama` varchar(100) DEFAULT NULL,
   `email` varchar(100) DEFAULT NULL,
+  `email_terverifikasi` tinyint(1) NOT NULL DEFAULT 0,
   `password` varchar(255) DEFAULT NULL,
   `no_telp` varchar(20) DEFAULT NULL,
+  `no_telp_norm` varchar(20) DEFAULT NULL,
   `alamat` text DEFAULT NULL,
   `role` enum('admin','designer','pelanggan') DEFAULT NULL,
   `status` enum('aktif','nonaktif') DEFAULT NULL,
+  `suspend_sampai` datetime DEFAULT NULL,
   `premium` tinyint(1) DEFAULT NULL,
   `foto` mediumtext NOT NULL,
   `foto_profil` varchar(255) DEFAULT NULL,
   `foto_ktp` varchar(255) DEFAULT NULL,
+  `nik` varchar(20) DEFAULT NULL,
   `status_verifikasi` enum('unverified','pending','verified') DEFAULT 'unverified',
   `status_member` enum('free','premium') DEFAULT 'free'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

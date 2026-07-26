@@ -2,9 +2,14 @@
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/designer_layout.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
 
 // 1. CEK LOGIN KHUSUS DESAINER
 require_verified_designer();
+
+// Halaman biasa — cukup throttled per sesi. Desainer perlu tahu bila
+// pemenang lelangnya wanprestasi / karyanya sudah dipromosikan ke penawar lain.
+jalankan_pemeliharaan_lelang($koneksi);
 
 $id_desainer = (int) current_id();
 $nama_desainer = current_name();
@@ -112,8 +117,15 @@ if (isset($_POST['hentikan_lelang'])) {
         if (!$winner_id) {
             $stop_response(false, 'Belum ada penawaran masuk, jadi lelang belum bisa dihentikan.', 'warning', 'Belum Ada Penawaran');
         } else {
-            // Akhiri lelang sekarang juga (set waktu berakhir = sekarang).
-            $stmt_end = mysqli_prepare($koneksi, "UPDATE t_design SET waktu_berakhir = NOW()
+            // Akhiri lelang sekarang juga (set waktu berakhir = sekarang) DAN
+            // langsung set tenggat bayar + tandai notif sudah terkirim, supaya
+            // sweep otomatis (jalankan_pemeliharaan_lelang) tidak mengirim
+            // notifikasi dobel maupun menghitung tenggat dari waktu yang salah.
+            $jam = (int) BATAS_BAYAR_PEMENANG_JAM;
+            $stmt_end = mysqli_prepare($koneksi, "UPDATE t_design
+                                                  SET waktu_berakhir = NOW(),
+                                                      batas_bayar_pemenang = NOW() + INTERVAL {$jam} HOUR,
+                                                      notif_menang_terkirim = 1
                                                   WHERE id_design=? AND id_designer=?");
             mysqli_stmt_bind_param($stmt_end, 'ii', $id_lelang, $id_desainer);
             mysqli_stmt_execute($stmt_end);
@@ -123,7 +135,7 @@ if (isset($_POST['hentikan_lelang'])) {
             kirim_notifikasi(
                 $koneksi,
                 $winner_id,
-                'Selamat! Kamu memenangkan lelang "' . $dl['judul'] . '". Segera selesaikan pembayaran ya.',
+                'Selamat! Kamu memenangkan lelang "' . $dl['judul'] . '". Segera selesaikan pembayaran dalam ' . BATAS_BAYAR_PEMENANG_JAM . ' jam.',
                 'riwayat_bidding.php',
                 'menang_lelang'
             );

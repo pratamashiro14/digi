@@ -2,11 +2,15 @@
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 require_once __DIR__ . '/bidding_helper.php'; // bid_leader_id(): pemenang dgn prioritas premium
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
 
 // Cek Login User
 require_user();
 
-$id_user = current_id();
+// Halaman status pemenang/gugur — wajib selalu akurat, jangan throttled.
+jalankan_pemeliharaan_lelang($koneksi, true);
+
+$id_user = (int) current_id();
 ?>
 
 <!DOCTYPE html>
@@ -44,39 +48,55 @@ $id_user = current_id();
         <?php
         // 1. Ambil semua produk yang pernah SAYA tawar
         // Kita GROUP BY id_design biar gak dobel-dobel kalau nawar berkali-kali di produk sama
-        $query = mysqli_query($koneksi, "
-            SELECT b.*, d.judul, d.gambar, d.waktu_berakhir, d.status as status_produk, MAX(b.harga_tawaran) as tawaran_tertinggi_saya
+        // masih_berjalan & sisa_detik_bayar dihitung di MySQL (bukan PHP date()) supaya kebal
+        // selisih zona waktu antara PHP dan MySQL — lihat catatan di pembayaran_helper.php.
+        $batas_bayar_sql = batas_bayar_pemenang_sql('d');
+        $stmt = mysqli_prepare($koneksi, "
+            SELECT b.*, d.judul, d.gambar, d.waktu_berakhir, d.status as status_produk,
+                   MAX(b.harga_tawaran) as tawaran_tertinggi_saya,
+                   (d.waktu_berakhir IS NOT NULL AND d.waktu_berakhir > NOW()) AS masih_berjalan,
+                   TIMESTAMPDIFF(SECOND, NOW(), {$batas_bayar_sql}) AS sisa_detik_bayar,
+                   DATE_FORMAT({$batas_bayar_sql}, '%d %b %Y, %H:%i') AS batas_bayar_fmt,
+                   EXISTS (SELECT 1 FROM t_wanprestasi w WHERE w.id_user = b.id_buyer AND w.id_design = b.id_design AND w.dimaafkan = 0) AS gugur
             FROM t_bidding b
             JOIN t_design d ON b.id_design = d.id_design
-            WHERE b.id_buyer = '$id_user'
+            WHERE b.id_buyer = ?
             GROUP BY b.id_design
             ORDER BY b.id_bid DESC
         ");
+        mysqli_stmt_bind_param($stmt, 'i', $id_user);
+        mysqli_stmt_execute($stmt);
+        $query = mysqli_stmt_get_result($stmt);
 
         if(mysqli_num_rows($query) > 0) {
             while($row = mysqli_fetch_assoc($query)) {
-                
+
                 $id_design = $row['id_design'];
                 $judul = $row['judul'];
                 $gambar = $row['gambar'];
                 $deadline = $row['waktu_berakhir'];
                 $tawaran_saya = $row['tawaran_tertinggi_saya'];
-                
+
                 // --- LOGIKA PENENTUAN STATUS (THE BRAIN) ---
-                $sekarang = date('Y-m-d H:i:s');
                 $status_lelang = "";
                 $class_css = "";
                 $pesan_status = "";
-                
-                // Cek 1: Apakah waktu sudah habis?
-                if($sekarang < $deadline) {
+                $info_tenggat_bayar = "";
+
+                if (!empty($row['gugur'])) {
+                    // GUGUR: sempat memimpin tapi tidak membayar sampai tenggat
+                    // (lihat wanprestasi_helper.php) — beda dari sekadar "kalah".
+                    $status_lelang = "gugur";
+                    $class_css = "status-lost";
+                    $pesan_status = "<span class='badge badge-danger'><i class='fa fa-exclamation-triangle'></i> Gugur (Tidak Bayar Tepat Waktu)</span>";
+                } elseif (!empty($row['masih_berjalan'])) {
                     // MASIH JALAN
                     $status_lelang = "running";
                     $class_css = "status-running";
                     $pesan_status = "<span class='badge badge-warning'>Sedang Berjalan</span>";
                 } else {
                     // SUDAH BERAKHIR -> Cek Pemenang
-                    
+
                     // Pemenang = pemimpin lelang (sudah memperhitungkan prioritas premium saat seri)
                     $winner_id = bid_leader_id($koneksi, $id_design);
 
@@ -85,6 +105,13 @@ $id_user = current_id();
                         $status_lelang = "win";
                         $class_css = "status-win";
                         $pesan_status = "<span class='badge badge-success'><i class='fa fa-trophy'></i> SELAMAT! KAMU MENANG</span>";
+
+                        $sisa_detik = (int) ($row['sisa_detik_bayar'] ?? 0);
+                        if ($sisa_detik > 0) {
+                            $info_tenggat_bayar = '<div class="tenggat-bayar" data-remaining="' . $sisa_detik . '" style="color:#b8860b; font-size:12px; margin-top:6px;">'
+                                . '<i class="fa fa-clock-o"></i> Bayar sebelum ' . htmlspecialchars($row['batas_bayar_fmt'] ?? '')
+                                . ' &middot; <span class="sisa-waktu">menghitung...</span></div>';
+                        }
                     } else {
                         // KALAH
                         $status_lelang = "lost";
@@ -110,6 +137,7 @@ $id_user = current_id();
                     <span class="stext-102 cl6 m-l-10">
                         <i class="fa fa-clock-o"></i> Selesai: <?php echo date('d M Y, H:i', strtotime($deadline)); ?>
                     </span>
+                    <?php echo $info_tenggat_bayar; ?>
                 </div>
             </div>
 
@@ -122,6 +150,8 @@ $id_user = current_id();
                     <a href="product-detail.php?id=<?php echo $id_design; ?>" class="stext-104 cl4 hov-cl1 trans-04 js-name-b2 p-b-6">
                         Lihat Lelang
                     </a>
+                <?php } else if($status_lelang == 'gugur') { ?>
+                    <span class="stext-102 cl3">Kesempatanmu hangus karena tidak membayar tepat waktu.</span>
                 <?php } else { ?>
                     <span class="stext-102 cl3">Yah, belum beruntung.</span>
                 <?php } ?>
@@ -136,6 +166,39 @@ $id_user = current_id();
         ?>
 
     </div>
+
+    <script>
+    // Countdown tenggat bayar pemenang — sisa detik dihitung SERVER (MySQL)
+    // saat halaman dimuat, dikurangi delta waktu browser sejak load, supaya
+    // kebal selisih zona waktu/jam antara server & browser (pola sama dgn riwayat.php).
+    (function () {
+        var nodes = document.querySelectorAll('.tenggat-bayar');
+        if (!nodes.length) return;
+        var startMs = Date.now();
+        var initial = [];
+        nodes.forEach(function (el) { initial.push(parseInt(el.getAttribute('data-remaining'), 10) || 0); });
+
+        function render() {
+            var elapsed = Math.floor((Date.now() - startMs) / 1000);
+            var adaExpired = false;
+            nodes.forEach(function (el, i) {
+                var sisa = initial[i] - elapsed;
+                var span = el.querySelector('.sisa-waktu');
+                if (sisa <= 0) {
+                    if (span) span.textContent = 'waktu habis';
+                    adaExpired = true;
+                    return;
+                }
+                var jam = Math.floor(sisa / 3600);
+                var menit = Math.floor((sisa % 3600) / 60);
+                if (span) span.textContent = jam > 0 ? ('sisa ' + jam + ' jam ' + menit + ' menit') : ('sisa ' + menit + ' menit');
+            });
+            if (adaExpired) setTimeout(function () { window.location.reload(); }, 1500);
+        }
+        render();
+        setInterval(render, 1000);
+    })();
+    </script>
 
 </body>
 </html>

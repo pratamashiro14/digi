@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'admin/koneksi.php';
+require_once __DIR__ . '/mailer.php';
 
 $message = '';
 $message_type = '';
@@ -21,31 +22,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['email'])) {
 
             if ($insert) {
                 $reset_url = app_url("/reset_password.php?token=$token");
-                $_SESSION['user_reset_url'] = $reset_url;
 
-                $subject = "Reset Password DensCreative";
-                $body = "<html><body style='font-family:Arial,sans-serif;'>
-                    <div style='max-width:600px;margin:0 auto;background:#f5f5f5;padding:20px;border-radius:10px;'>
-                        <h2 style='color:#4e60ff;'>Reset Password DensCreative</h2>
-                        <p>Anda meminta reset password untuk akun Anda.</p>
-                        <p>Klik link berikut untuk membuat password baru (berlaku 1 jam):</p>
-                        <p><a href='$reset_url' style='background:#4e60ff;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;display:inline-block;'>Reset Password</a></p>
-                        <p style='color:#666;font-size:12px;'>Atau salin link ini:<br>$reset_url</p>
-                        <p style='color:#999;font-size:11px;margin-top:30px;'>Abaikan email ini jika Anda tidak meminta reset password.</p>
-                    </div></body></html>";
+                // Link di layar HANYA muncul di MODE DEMO (localhost tanpa SMTP
+                // dikonfigurasi) — di produksi celah ini tertutup total: satu-satunya
+                // cara mendapatkan link adalah lewat email yang benar-benar terdaftar.
+                if (OTP_DEV_SHOW) {
+                    $_SESSION['user_reset_url'] = $reset_url;
+                }
 
-                $headers  = "MIME-Version: 1.0\r\n";
-                $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-                $headers .= "From: noreply@denscreative.com\r\n";
+                $subject = 'Reset Password DensCreative';
+                $isi = "<p>Anda meminta reset password untuk akun Anda.</p>
+                    <p>Klik tombol berikut untuk membuat password baru (berlaku 1 jam):</p>
+                    <p><a href='{$reset_url}' style='background:#4e60ff;color:white;padding:10px 20px;text-decoration:none;border-radius:5px;display:inline-block;'>Reset Password</a></p>
+                    <p style='color:#666;font-size:12px;'>Atau salin link ini:<br>{$reset_url}</p>
+                    <p style='color:#999;font-size:11px;'>Abaikan email ini jika Anda tidak meminta reset password.</p>";
 
-                $sent = @mail($email_safe, $subject, $body, $headers);
+                $hasil = kirim_email($email_safe, $subject, email_template($subject, $isi));
 
-                if ($sent) {
+                if ($hasil['ok']) {
                     $message = 'Email reset password telah dikirim! Cek inbox Anda.';
                     $message_type = 'success';
-                } else {
+                } elseif (OTP_DEV_SHOW) {
                     $message = 'Link reset password berhasil dibuat.';
                     $message_type = 'warning';
+                } else {
+                    $message = 'Gagal mengirim email reset password. Coba lagi nanti.';
+                    $message_type = 'error';
                 }
             } else {
                 $message = 'Gagal membuat token. Coba lagi nanti.';

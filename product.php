@@ -7,6 +7,11 @@ if (is_designer_login()) {
 
 include 'admin/koneksi.php';
 require_once __DIR__ . '/bidding_helper.php';
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
+
+// Halaman biasa (bukan checkout/pembayaran) — cukup throttled per sesi,
+// tidak perlu akurat sampai ke detik terakhir.
+jalankan_pemeliharaan_lelang($koneksi);
 
 // Kelayakan ikut lelang untuk user yang sedang login (verifikasi/suspend/ban).
 // Dipakai untuk menampilkan/menyembunyikan tombol "Pasang Penawaran" di quick view.
@@ -1015,8 +1020,10 @@ $result = $conn->query($sql);
 								</div>
 								<?php if ($bid_status['code'] === 'guest') { ?>
 									<a href="login.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:#171717; color:#fff; border-radius:8px; font-size:1rem; font-weight:600; text-decoration:none; margin-bottom:10px;"><i class="fa fa-sign-in"></i> Masuk untuk Menawar</a>
-								<?php } elseif ($bid_status['code'] === 'unverified') { ?>
-									<a href="verifikasi.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#4e8eff,#1591DC); color:#000; border-radius:8px; font-size:1rem; font-weight:700; text-decoration:none; margin-bottom:10px;"><i class="fa fa-id-card"></i> Verifikasi KTP untuk Menawar</a>
+								<?php } elseif ($bid_status['code'] === 'email') { ?>
+									<a href="verifikasi_email.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#4e8eff,#1591DC); color:#000; border-radius:8px; font-size:1rem; font-weight:700; text-decoration:none; margin-bottom:10px;"><i class="fa fa-envelope"></i> Verifikasi Email untuk Menawar</a>
+								<?php } elseif ($bid_status['code'] === 'no_telp') { ?>
+									<a href="profil.php" class="btn-auction-action" style="display:block; width:100%; text-align:center; padding:12px; background:linear-gradient(135deg,#4e8eff,#1591DC); color:#000; border-radius:8px; font-size:1rem; font-weight:700; text-decoration:none; margin-bottom:10px;"><i class="fa fa-phone"></i> Lengkapi Nomor HP untuk Menawar</a>
 								<?php } ?>
 								<?php } ?>
 

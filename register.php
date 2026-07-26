@@ -86,7 +86,13 @@
             <div class="tab-pane fade show active" id="tab-pembeli">
                 <form action="proses_daftar.php" method="POST" class="needs-validation" novalidate>
                     <div class="text-center mb-3"><span class="badge-role">Akun Pembeli</span></div>
-                    
+
+                    <div class="form-info-box">
+                        <i class="fa-solid fa-circle-info text-primary"></i> Tidak perlu KTP. Setelah daftar, kami
+                        akan mengirim <strong>kode verifikasi ke email</strong> Anda — masukkan kodenya untuk
+                        mengaktifkan akun.
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Nama Lengkap</label>
                         <input type="text" class="form-control" name="nama" placeholder="Contoh: Budi Santoso" required>

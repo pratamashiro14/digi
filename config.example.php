@@ -60,6 +60,26 @@ if (APP_ENV === 'production') {
     @ini_set('display_errors', '1');
 }
 
+// ------------------------------------------------------------
+// 4. EMAIL / SMTP (verifikasi OTP registrasi & reset password)
+// ------------------------------------------------------------
+// Gmail: pakai App Password, BUKAN password akun biasa
+// -> https://myaccount.google.com/apppasswords
+define('MAIL_ENABLED',   filter_var(env_or('MAIL_ENABLED', 'true'), FILTER_VALIDATE_BOOLEAN));
+define('MAIL_HOST',      env_or('MAIL_HOST', 'smtp.gmail.com'));
+define('MAIL_PORT',      (int) env_or('MAIL_PORT', '587'));
+define('MAIL_SECURE',    env_or('MAIL_SECURE', 'tls'));
+define('MAIL_USERNAME',  env_or('MAIL_USERNAME', 'ISI_EMAIL_PENGIRIM'));
+define('MAIL_PASSWORD',  env_or('MAIL_PASSWORD', 'ISI_APP_PASSWORD'));
+define('MAIL_FROM',      env_or('MAIL_FROM', 'noreply@domainanda.com'));
+define('MAIL_FROM_NAME', env_or('MAIL_FROM_NAME', 'DensCreative'));
+define('MAIL_TIMEOUT',   (int) env_or('MAIL_TIMEOUT', '10'));
+
+// MODE DEMO: tampilkan OTP/link reset di layar bila SMTP gagal. Double-guard
+// (& APP_ENV !== 'production') memastikan ini tidak pernah aktif di server live.
+define('OTP_DEV_SHOW',
+    filter_var(env_or('OTP_DEV_SHOW', 'true'), FILTER_VALIDATE_BOOLEAN) && APP_ENV !== 'production');
+
 if (!function_exists('app_url')) {
     /** Bangun URL absolut aplikasi (scheme + host + BASE_URL + path). */
     function app_url($path = '')

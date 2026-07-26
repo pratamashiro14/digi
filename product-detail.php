@@ -2,6 +2,10 @@
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 require_once __DIR__ . '/bidding_helper.php'; // ranking bid & prioritas premium
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
+
+// Halaman biasa — cukup throttled per sesi.
+jalankan_pemeliharaan_lelang($koneksi);
 
 // --- 1. LOGIKA HEADER (DARI INDEX.PHP) ---
 
@@ -67,17 +71,9 @@ $q_sold = mysqli_query($koneksi, "SELECT 1
 $is_sold = ($d['status'] === 'sold') || ($q_sold && mysqli_num_rows($q_sold) > 0);
 $is_auction_ended = !empty($d['lelang_berakhir_db']);
 
-// Cek Status Verifikasi User
-$status_verifikasi = 'unverified'; // Default
-if(isset($_SESSION['id_user'])){
-    $id_user_login = (int) $_SESSION['id_user'];
-    $cek_user = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user='$id_user_login'");
-    $u = mysqli_fetch_assoc($cek_user);
-    $status_verifikasi = $u['status_verifikasi'];
-}
-
-// Kelayakan bid (verifikasi + suspend/ban berbasis NIK)
-require_once __DIR__ . '/bidding_helper.php';
+// Kelayakan bid — gerbang tunggal (email terverifikasi, no. HP unik,
+// suspend/ban). Pelanggan tidak lagi wajib verifikasi KTP, lihat catatan
+// trade-off di bidding_helper.php.
 $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
 ?>
 
@@ -263,7 +259,7 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                                     <i class="fa fa-ban"></i> <?php echo htmlspecialchars($bid_state['reason']); ?>
                                 </div>
 
-                            <?php } elseif($status_verifikasi == 'verified') { ?>
+                            <?php } elseif($bid_state['ok']) { ?>
 
                                 <form action="proses_bidding.php" method="POST" id="bidForm">
                                     <input type="hidden" name="id_design" value="<?php echo $id_produk; ?>">
@@ -285,18 +281,25 @@ $bid_state = status_bid_user($koneksi, $_SESSION['id_user'] ?? 0);
                                     </a>
                                 <?php } ?>
 
-                            <?php } else if($status_verifikasi == 'pending') { ?>
+                            <?php } else if($bid_state['code'] === 'email') { ?>
 
-                                <div class="alert alert-info text-center">
-                                    <i class="fa fa-spinner fa-spin"></i> Verifikasi KTP sedang dicek Admin.<br>Mohon tunggu sebentar ya!
+                                <div class="alert alert-warning text-center" style="font-size:13px;">
+                                    Kamu harus <b>verifikasi email</b> untuk ikut lelang.
                                 </div>
+                                <a href="verifikasi_email.php" class="btn-verif"><i class="fa fa-envelope"></i> VERIFIKASI EMAIL SEKARANG</a>
+
+                            <?php } else if($bid_state['code'] === 'no_telp') { ?>
+
+                                <div class="alert alert-warning text-center" style="font-size:13px;">
+                                    Kamu harus <b>melengkapi nomor HP</b> untuk ikut lelang.
+                                </div>
+                                <a href="profil.php" class="btn-verif"><i class="fa fa-phone"></i> LENGKAPI NOMOR HP</a>
 
                             <?php } else { ?>
 
                                 <div class="alert alert-warning text-center" style="font-size:13px;">
-                                    Kamu harus <b>Verifikasi KTP</b> untuk ikut lelang.
+                                    <?php echo htmlspecialchars($bid_state['reason'] ?? 'Anda belum bisa mengikuti lelang ini.'); ?>
                                 </div>
-                                <a href="verifikasi.php" class="btn-verif"><i class="fa fa-id-card"></i> VERIFIKASI AKUN SEKARANG</a>
 
                             <?php } ?>
 

@@ -5,12 +5,14 @@ require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
 // Aturan tenggat pembayaran pending
 require_once __DIR__ . '/pembayaran_helper.php';
+require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
 
 // 2. CEK LOGIN KHUSUS PEMBELI
 require_user();
 
-// Gagalkan pending yang sudah lewat tenggat agar status tampil akurat.
-expire_pending_kedaluwarsa($koneksi);
+// Halaman status transaksi — wajib selalu akurat, jangan throttled. Sudah
+// termasuk expire_pending_kedaluwarsa() di dalamnya.
+jalankan_pemeliharaan_lelang($koneksi, true);
 
 $id_buyer = current_id();
 

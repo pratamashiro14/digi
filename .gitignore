@@ -28,6 +28,10 @@ node_modules/
 /uploads/*
 !/uploads/.gitkeep
 
+# Backup lokal (dump database & file KTP asli sebelum migrasi) — JANGAN
+# pernah commit, berisi data pribadi (NIK, foto KTP) & isi database mentah.
+/database/backup/
+
 # Build / compiled assets
 /laravel-app/public/build
 

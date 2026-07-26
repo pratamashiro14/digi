@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/identitas_helper.php';
 
 // 1. CEK LOGIN USER BIASA — halaman khusus pembeli/user
 require_user();
@@ -16,10 +17,32 @@ if (isset($_POST['simpan_profil'])) {
     $alamat_baru = trim($_POST['alamat'] ?? '');
     $pass_baru = $_POST['password'] ?? '';
 
+    // Nomor HP: jangkar identitas pengganti KTP untuk pelanggan (1 nomor =
+    // 1 akun). Kalau diisi, wajib valid, tidak dipakai akun lain, dan tidak
+    // sedang diblokir admin — baru boleh boleh disimpan. Boleh dikosongkan
+    // (pengguna belum wajib mengisi saat itu juga; gerbang sesungguhnya ada
+    // di status_bid_user() sebelum bid pertama, lihat bidding_helper.php).
+    $telp_norm = '';
+    if ($telp_baru !== '') {
+        $telp_norm = normalisasi_telp($telp_baru);
+        if (!telp_valid($telp_norm)) {
+            sweetalert_back('Format nomor HP tidak valid. Gunakan nomor HP Indonesia yang aktif (contoh: 08123456789).', 'error', 'Nomor HP Tidak Valid!');
+            exit;
+        }
+        if (telp_dipakai_user_lain($koneksi, $telp_norm, $id_user)) {
+            sweetalert_back('Nomor HP ini sudah terdaftar di akun lain. Satu nomor HP hanya boleh dipakai satu akun.', 'error', 'Nomor HP Sudah Dipakai!');
+            exit;
+        }
+        if (identitas_diblokir($koneksi, 'telp', $telp_norm)) {
+            sweetalert_back('Nomor HP ini diblokir permanen oleh admin dan tidak dapat digunakan.', 'error', 'Nomor HP Diblokir!');
+            exit;
+        }
+    }
+
     // Kolom dasar (prepared statement — cegah SQL injection)
-    $sets  = ['nama = ?', 'no_telp = ?', 'alamat = ?'];
-    $types = 'sss';
-    $vals  = [$nama_baru, $telp_baru, $alamat_baru];
+    $sets  = ['nama = ?', 'no_telp = ?', 'no_telp_norm = ?', 'alamat = ?'];
+    $types = 'ssss';
+    $vals  = [$nama_baru, $telp_baru, ($telp_norm !== '' ? $telp_norm : null), $alamat_baru];
 
     // A. Cek Upload Foto (opsional)
     if (!empty($_FILES['foto']['name'])) {
@@ -85,12 +108,23 @@ $nama = $data['nama'] ?? '';
 $telp = $data['no_telp'] ?? '';
 $alamat = $data['alamat'] ?? '';
 $email = $data['email'] ?? '';
-$nik = $data['nik'] ?? '';
-$foto = $data['foto'] ?? 'default.jpg'; 
+$foto = $data['foto'] ?? 'default.jpg';
 $nama_header = $_SESSION['nama'] ?? 'User';
 $is_premium = !empty($premium_data) || (($data['premium'] ?? 0) == 1) || (($data['status_member'] ?? 'free') === 'premium');
 $status_premium = $is_premium ? 'Premium' : 'Belum Premium';
 $premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', strtotime($premium_data['tanggal_berakhir'])) : '';
+
+// Status akun: email terverifikasi, suspend, & strike wanprestasi (lihat
+// wanprestasi_helper.php) — ditampilkan supaya pengguna tahu persis kenapa
+// dia mungkin belum bisa ikut lelang, bukan sekadar pesan generik.
+$email_terverifikasi = (int) ($data['email_terverifikasi'] ?? 0) === 1;
+$sedang_suspend = ($data['status'] ?? '') === 'nonaktif';
+$suspend_sampai = $data['suspend_sampai'] ?? null;
+$stmt_strike = mysqli_prepare($koneksi, "SELECT COUNT(*) AS n FROM t_wanprestasi WHERE id_user = ? AND dimaafkan = 0");
+mysqli_stmt_bind_param($stmt_strike, 'i', $id_user);
+mysqli_stmt_execute($stmt_strike);
+$jumlah_strike = (int) (mysqli_fetch_assoc(mysqli_stmt_get_result($stmt_strike))['n'] ?? 0);
+mysqli_stmt_close($stmt_strike);
 ?>
 
 <!DOCTYPE html>
@@ -162,6 +196,28 @@ $premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', str
 
                     <hr class="account-form-divider">
 
+                    <h5 class="account-section-title"><i class="fa fa-shield m-r-10"></i>Status Akun</h5>
+                    <div class="row field-grid">
+                        <div class="col-12 p-b-15">
+                            <?php if ($sedang_suspend): ?>
+                                <div class="alert alert-danger" style="border-radius:10px;">
+                                    <i class="fa fa-ban m-r-5"></i> Akun Anda sedang <strong>dibekukan</strong><?php
+                                        echo $suspend_sampai ? ' sampai ' . htmlspecialchars(date('d M Y H:i', strtotime($suspend_sampai))) : ' (permanen oleh admin)';
+                                    ?> karena tidak menyelesaikan pembayaran lelang yang dimenangkan.
+                                </div>
+                            <?php elseif ($jumlah_strike > 0): ?>
+                                <div class="alert alert-warning" style="border-radius:10px;">
+                                    <i class="fa fa-exclamation-triangle m-r-5"></i> Anda memiliki <strong><?php echo $jumlah_strike; ?> pelanggaran</strong> karena tidak menyelesaikan pembayaran lelang. Pelanggaran berikutnya dapat membekukan akun Anda.
+                                </div>
+                            <?php endif; ?>
+                            <?php if (!$email_terverifikasi): ?>
+                                <div class="alert alert-info" style="border-radius:10px;">
+                                    <i class="fa fa-envelope m-r-5"></i> Email Anda belum terverifikasi. <a href="verifikasi_email.php">Verifikasi sekarang</a>.
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+
                     <h5 class="account-section-title"><i class="fa fa-address-card-o m-r-10"></i>Informasi Dasar</h5>
                     <div class="row field-grid">
                         <div class="col-md-6 p-b-15">
@@ -171,10 +227,7 @@ $premium_expired = !empty($premium_data['tanggal_berakhir']) ? date('d M Y', str
                         <div class="col-md-6 p-b-15">
                             <label class="stext-102 cl3 p-b-5">No. WhatsApp / Telepon</label>
                             <input class="custom-input" type="text" name="no_telp" value="<?php echo htmlspecialchars($telp); ?>" placeholder="Contoh: 08123456789">
-                        </div>
-                        <div class="col-md-6 p-b-15">
-                            <label class="stext-102 cl3 p-b-5">NIK</label>
-                            <input class="custom-input is-readonly" type="text" value="<?php echo htmlspecialchars($nik ?: 'Belum diisi'); ?>" disabled>
+                            <small class="text-muted">*Wajib diisi & unik (1 nomor = 1 akun) sebelum bisa mengikuti lelang.</small>
                         </div>
                         <div class="col-md-6 p-b-15">
                             <label class="stext-102 cl3 p-b-5">Email</label>

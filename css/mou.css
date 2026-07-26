@@ -7,152 +7,186 @@
    ============================================================ */
 
 .mou-paper {
-  max-width: 820px;
+  max-width: 840px;
   margin: 0 auto;
-  padding: 48px 56px;
+  padding: 56px 64px;
   background: #fff;
   border: 1px solid var(--account-border, #e5e7eb);
-  border-radius: 8px;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, .05);
+  border-top: 6px solid var(--account-accent, #2563eb);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, .06);
   color: #1f2937;
   font-family: 'Poppins', sans-serif;
-  line-height: 1.7;
+  line-height: 1.8;
+  position: relative;
 }
 
 .mou-kop {
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding-bottom: 18px;
-  margin-bottom: 22px;
-  border-bottom: 2px solid #1f2937;
-  text-align: center;
+  gap: 24px;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 3px double #111827;
+  text-align: left;
 }
 
 .mou-kop img {
-  height: 56px;
+  height: 64px;
   width: auto;
   flex-shrink: 0;
 }
 
 .mou-kop .mou-kop-text {
   flex: 1;
-  text-align: center;
+  text-align: left;
 }
 
 .mou-kop-text h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: .03em;
   color: #111827;
 }
 
 .mou-kop-text p {
-  margin: 2px 0 0;
+  margin: 4px 0 0;
   font-size: 12px;
   color: #4b5563;
+  line-height: 1.4;
 }
 
 .mou-meta {
   display: flex;
   justify-content: space-between;
-  font-size: 13px;
+  font-size: 13.5px;
   color: #374151;
-  margin-bottom: 22px;
+  margin-bottom: 24px;
   flex-wrap: wrap;
   gap: 6px;
+  font-weight: 500;
 }
 
 .mou-title {
   text-align: center;
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 800;
-  letter-spacing: .02em;
-  margin: 6px 0 26px;
+  letter-spacing: .03em;
+  margin: 16px 0 28px;
   color: #111827;
+  text-transform: uppercase;
+  line-height: 1.4;
 }
 
 .mou-paper p {
   font-size: 13.5px;
   color: #1f2937;
   text-align: justify;
-  margin: 0 0 14px;
+  margin: 0 0 16px;
 }
 
 .mou-pihak {
   display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 4px 12px;
+  grid-template-columns: 150px 1fr;
+  gap: 6px 16px;
   font-size: 13.5px;
-  margin: 14px 0 16px;
+  margin: 16px 0 20px;
+  padding: 16px 20px;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
 }
 
 .mou-pihak dt {
-  color: #6b7280;
-  font-weight: 600;
+  color: #64748b;
+  font-weight: 500;
 }
 
 .mou-pihak dd {
   margin: 0;
-  color: #111827;
+  color: #0f172a;
   font-weight: 600;
 }
 
 .mou-pihak-form {
   display: grid;
-  grid-template-columns: 130px 1fr;
-  gap: 12px;
+  grid-template-columns: 150px 1fr;
+  gap: 16px;
   align-items: start;
-  margin: 14px 0 16px;
+  margin: 20px 0;
+  padding: 20px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
 }
 
 .mou-pihak-form label {
   align-self: center;
-  color: #6b7280;
+  color: #475569;
   font-weight: 600;
   font-size: 13.5px;
+  margin-bottom: 0;
 }
 
 .mou-pihak-form .custom-input {
-  min-height: 40px;
-  padding: 8px 12px;
+  min-height: 42px;
+  padding: 10px 14px;
   font-size: 13.5px;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+  background-color: #ffffff;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.mou-pihak-form .custom-input:focus {
+  border-color: var(--account-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+  outline: none;
 }
 
 .mou-pihak-form textarea.custom-input {
-  min-height: 64px;
+  min-height: 80px;
   resize: vertical;
 }
 
 .mou-pihak-form small {
   display: block;
-  margin-top: 4px;
-  color: #9ca3af;
+  margin-top: 6px;
+  color: #64748b;
   font-size: 11px;
 }
 
 .mou-pasal {
-  margin-top: 28px;
-  page-break-inside: avoid;
+  margin-top: 32px;
+  padding: 16px 20px;
+  background: #ffffff;
+  border-left: 3px solid #e2e8f0;
+  margin-bottom: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.mou-pasal:hover {
+  border-left-color: var(--account-accent, #2563eb);
 }
 
 .mou-pasal h3 {
-  text-align: center;
-  font-size: 14px;
-  font-weight: 800;
-  margin: 0 0 2px;
-  color: #111827;
+  text-align: left;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--account-accent, #2563eb);
 }
 
 .mou-pasal h4 {
-  text-align: center;
-  font-size: 13.5px;
-  font-weight: 700;
-  margin: 0 0 14px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  margin: 0 0 12px;
   text-transform: uppercase;
-  letter-spacing: .03em;
-  color: #111827;
+  letter-spacing: .02em;
+  color: #475569;
 }
 
 .mou-pasal ol,
@@ -172,45 +206,86 @@
 }
 
 .mou-signoff {
-  margin-top: 40px;
+  margin-top: 48px;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 24px;
+  gap: 32px;
   page-break-inside: avoid;
 }
 
 .mou-signblock {
   text-align: center;
+  padding: 20px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
 }
 
 .mou-signblock .label {
   font-size: 13px;
-  color: #4b5563;
-  margin-bottom: 70px;
+  color: #64748b;
+  font-weight: 600;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.mou-signblock .signature-space {
+  min-height: 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 8px;
+}
+
+.mou-signblock .signature-space.is-blank {
+  justify-content: flex-end;
+}
+
+.mou-signblock .signature-line {
+  width: 70%;
+  border-bottom: 1px dashed #cbd5e1;
+  margin-bottom: 6px;
+}
+
+.mou-signblock .signature-certified {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-8deg);
+  font-family: 'Poppins', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  color: rgba(16, 185, 129, 0.2);
+  border: 2px dashed rgba(16, 185, 129, 0.3);
+  padding: 4px 10px;
+  border-radius: 4px;
+  letter-spacing: 2px;
+  pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.85);
 }
 
 .mou-signblock .signed-name {
   margin: 0;
-  font-weight: 800;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: #0f172a;
   text-decoration: underline;
-  color: #111827;
+  text-underline-offset: 4px;
 }
 
 .mou-signblock .signed-meta {
-  margin-top: 4px;
+  margin: 4px auto 0;
   font-size: 11px;
-  color: #6b7280;
-}
-
-.mou-signblock.is-empty .label {
-  margin-bottom: 8px;
-}
-
-.mou-signblock .sign-placeholder {
-  height: 62px;
-  border-bottom: 1px dashed #cbd5e1;
-  margin-bottom: 8px;
+  color: #10b981;
+  font-weight: 600;
+  background: #ecfdf5;
+  padding: 4px 10px;
+  border-radius: 50px;
+  display: inline-block;
+  border: 1px solid #a7f3d0;
 }
 
 /* Banner status "sudah disetujui" (memakai palet .designer-alert) */
@@ -246,7 +321,7 @@
   align-items: flex-start;
   gap: 10px;
   margin: 18px 0;
-  font-size: 13px;
+  font-size: 13.5px;
   color: #374151;
 }
 
@@ -255,11 +330,42 @@
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  cursor: pointer;
 }
 
 .mou-ttd-input {
   font-family: 'Poppins', sans-serif;
   font-style: italic;
+  font-weight: 500;
+}
+
+.btn-save {
+  background-color: var(--account-accent, #2563eb) !important;
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  border-radius: 8px !important;
+  padding: 12px 24px !important;
+  transition: all 0.2s ease !important;
+  border: none !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+}
+
+.btn-save:hover {
+  background-color: #1d4ed8 !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+.btn-save:disabled {
+  background-color: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 /* ===== CETAK / SAVE AS PDF ===== */

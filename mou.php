@@ -225,17 +225,27 @@ if ($sudah_setuju) {
 
                     <!-- BLOK TANDA TANGAN -->
                     <div class="mou-signoff">
-                        <div class="mou-signblock is-empty">
+                        <div class="mou-signblock">
                             <div class="label">Pihak Pertama</div>
-                            <p class="signed-name"><?php echo htmlspecialchars(MOU_PIHAK1_PJ); ?></p>
+                            <div class="signature-space">
+                                <span class="signature-certified">VERIFIED</span>
+                                <p class="signed-name"><?php echo htmlspecialchars(MOU_PIHAK1_PJ); ?></p>
+                            </div>
+                            <p class="signed-meta">Ditandatangani digital &middot; <?php echo htmlspecialchars($tanggal_tampil); ?></p>
                         </div>
-                        <div class="mou-signblock <?php echo $sudah_setuju ? '' : 'is-empty'; ?>">
+                        <div class="mou-signblock">
                             <div class="label">Pihak Kedua</div>
                             <?php if ($sudah_setuju) { ?>
-                                <p class="signed-name"><?php echo htmlspecialchars($mou['nama_ttd']); ?></p>
+                                <div class="signature-space">
+                                    <span class="signature-certified">VERIFIED</span>
+                                    <p class="signed-name"><?php echo htmlspecialchars($mou['nama_ttd']); ?></p>
+                                </div>
                                 <p class="signed-meta">Ditandatangani digital &middot; <?php echo htmlspecialchars($tanggal_tampil); ?></p>
                             <?php } else { ?>
-                                <p style="font-size:12px; color:#9ca3af;">(DESAINER / MITRA)</p>
+                                <div class="signature-space is-blank">
+                                    <div class="signature-line"></div>
+                                    <p style="font-size:12px; color:#9ca3af; margin: 0;">(DESAINER / MITRA)</p>
+                                </div>
                             <?php } ?>
                         </div>
                     </div>

@@ -281,7 +281,11 @@ body.account-page {
   background: var(--account-accent);
   box-shadow: none;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 700 !important;
+  color: #ffffff !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .account-page .btn-save:hover,
@@ -289,6 +293,16 @@ body.account-page {
   background: #1d4ed8;
   box-shadow: 0 8px 20px rgba(37, 99, 235, .22);
   transform: translateY(-1px);
+  color: #ffffff !important;
+}
+
+.account-page .btn-save:disabled,
+.account-page .btn-simpan-upload:disabled {
+  background: #cbd5e1 !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
 }
 
 .account-page .portfolio-box,

@@ -262,6 +262,11 @@ if ($unread_count === 0) {
     background: #f3f4ff !important;
 }
 
+.limiter-menu-desktop {
+    padding-left: 28px !important;
+    padding-right: 28px !important;
+}
+
 /* Styling untuk icon header di navbar utama agar rapi & tidak acak-acakan */
 .wrap-menu-desktop .wrap-icon-header {
     display: flex !important;

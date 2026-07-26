@@ -12,79 +12,171 @@ $query_verif = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHER
 $data_verif = mysqli_fetch_assoc($query_verif);
 $status_verifikasi_awal = $data_verif['status_verifikasi'] ?? 'unverified';
 
+/** True bila pengguna benar-benar memilih berkas (bukan field yang dibiarkan kosong). */
+function upload_dipilih($file) {
+    if (!is_array($file)) return false;
+    $err = isset($file['error']) ? (int) $file['error'] : UPLOAD_ERR_NO_FILE;
+    $nama = isset($file['name']) ? (string) $file['name'] : '';
+    return $err !== UPLOAD_ERR_NO_FILE && $nama !== '';
+}
+
+/**
+ * Validasi satu gambar unggahan lalu simpan, kembalikan NAMA FILE barunya.
+ *
+ * Nama file dibuat sendiri dan ekstensinya diambil dari MIME hasil
+ * getimagesize() — BUKAN dari nama kiriman pengguna. Satu keputusan ini
+ * menutup tiga lubang sekaligus: nama file tidak bisa lagi jadi fragmen SQL,
+ * tidak bisa berakhiran .php (shell), dan '../' tidak bisa keluar folder.
+ * Pola menyalin proses_portofolio.php. Menghentikan request bila tidak valid.
+ */
+function simpan_gambar_profil($file, $prefix, $label) {
+    // Ekstensi diturunkan dari MIME, jadi map ini sekaligus jadi whitelist.
+    $izin = array('image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp');
+    $folder = 'admin/uploads/';
+
+    if ((int) $file['error'] !== UPLOAD_ERR_OK) {
+        sweetalert_back('Gagal mengunggah ' . $label . '. Pastikan ukurannya di bawah 4 MB.', 'error', 'Upload Gagal');
+    }
+    if (!is_uploaded_file($file['tmp_name'])) {
+        sweetalert_back('Berkas ' . $label . ' tidak valid.', 'error', 'Upload Gagal');
+    }
+    if ($file['size'] > 4 * 1024 * 1024) {
+        sweetalert_back('Ukuran ' . $label . ' maksimal 4 MB.', 'error', 'Terlalu Besar');
+    }
+
+    // Periksa ISI berkas, bukan namanya dan bukan $_FILES['type'] (keduanya
+    // dikirim pengguna sehingga bisa dipalsukan).
+    $info = @getimagesize($file['tmp_name']);
+    $mime = isset($info['mime']) ? $info['mime'] : '';
+    if (!isset($izin[$mime])) {
+        sweetalert_back('Format ' . $label . ' harus JPG, PNG, atau WEBP.', 'error', 'Format Salah');
+    }
+
+    if (!is_dir($folder)) {
+        @mkdir($folder, 0755, true);
+    }
+
+    // Jangan pakai '_MASTER_' pada prefix: admin/uploads/.htaccess memblokir
+    // pola itu, gambarnya nanti tidak muncul (lihat catatan di unggahan.php).
+    $nama = $prefix . '_' . time() . '_' . bin2hex(random_bytes(4)) . '.' . $izin[$mime];
+    if (!move_uploaded_file($file['tmp_name'], $folder . $nama)) {
+        sweetalert_back('Gagal menyimpan ' . $label . '. Silakan coba lagi.', 'error', 'Upload Gagal');
+    }
+    @chmod($folder . $nama, 0644);
+
+    return $nama;
+}
+
 // ==========================================================
 // 2. LOGIKA UPDATE DATA (DIGABUNG DI SINI)
 // ==========================================================
 if (isset($_POST['simpan_profil'])) {
-    $nama_baru = mysqli_real_escape_string($koneksi, $_POST['nama'] ?? '');
-    $telp_baru = mysqli_real_escape_string($koneksi, $_POST['no_telp'] ?? '');
-    $alamat_baru = mysqli_real_escape_string($koneksi, $_POST['alamat'] ?? '');
-    $email_baru = mysqli_real_escape_string($koneksi, $_POST['email'] ?? '');
-    $pass_baru = $_POST['password'];
+    // Input dibaca MENTAH — quoting sepenuhnya ditangani prepared statement
+    // di bawah. Dulu di sini ada mysqli_real_escape_string, dan escaping
+    // ganda itulah yang membuat nama ber-apostrof tersimpan sebagai
+    // "O\'Brien" di session.
+    $nama_baru   = trim((string) ($_POST['nama']    ?? ''));
+    $telp_baru   = trim((string) ($_POST['no_telp'] ?? ''));
+    $alamat_baru = trim((string) ($_POST['alamat']  ?? ''));
+    $pass_baru   = (string) ($_POST['password']     ?? '');
+    // $_POST['email'] sengaja TIDAK dibaca: email adalah kunci login &
+    // verifikasi OTP, jadi read-only seperti di halaman pembeli (profil.php).
+    // Penegakannya ada di sini, bukan pada atribut readonly di form.
 
-    // B. Cek NIK (hanya diupdate jika belum terverifikasi)
-    $query_nik = "";
+    if ($nama_baru === '' || mb_strlen($nama_baru) > 100) {
+        sweetalert_back('Nama wajib diisi, maksimal 100 karakter.', 'error', 'Data Tidak Valid');
+    }
+    if (mb_strlen($alamat_baru) > 500) {
+        sweetalert_back('Alamat maksimal 500 karakter.', 'error', 'Data Tidak Valid');
+    }
+
+    // A. NIK — hanya boleh diubah selama admin belum memverifikasi KTP.
+    // Divalidasi SEBELUM berkas dipindahkan, supaya penolakan di sini tidak
+    // meninggalkan file yatim di admin/uploads/.
+    $nik_baru = null;
     if ($status_verifikasi_awal !== 'verified' && isset($_POST['nik'])) {
-        $nik_baru = mysqli_real_escape_string($koneksi, $_POST['nik'] ?? '');
-        $query_nik = ", nik = '$nik_baru'";
-    }
-
-    // A. Cek Upload Foto
-    $query_foto = "";
-    if (!empty($_FILES['foto']['name'])) {
-        $nama_foto = $_FILES['foto']['name'];
-        $file_tmp = $_FILES['foto']['tmp_name'];
-        $folder_simpan = "admin/uploads/"; 
-        
-        if (move_uploaded_file($file_tmp, $folder_simpan . $nama_foto)) {
-            $query_foto = ", foto = '$nama_foto'";
+        $nik_baru = preg_replace('/\D/', '', (string) $_POST['nik']);
+        if (!preg_match('/^\d{16}$/', $nik_baru)) {
+            sweetalert_back('NIK harus tepat 16 digit angka.', 'error', 'NIK Tidak Valid');
         }
     }
 
-    // B. Cek Ganti Password
-    $query_pass = "";
-    if (!empty($pass_baru)) {
-        $pass_hash = password_hash($pass_baru, PASSWORD_DEFAULT);
-        $query_pass = ", password = '$pass_hash'";
+    // B. Upload foto profil (opsional)
+    $foto_baru = null;
+    if (upload_dipilih($_FILES['foto'] ?? null)) {
+        $foto_baru = simpan_gambar_profil($_FILES['foto'], 'USR' . $id_user . '_FOTO', 'foto profil');
     }
 
-    // D. Cek Upload KTP
-    $query_ktp = "";
-    if (!empty($_FILES['foto_ktp']['name'])) {
-        $nama_ktp = $id_user . "_KTP_" . time() . "_" . $_FILES['foto_ktp']['name'];
-        $file_tmp_ktp = $_FILES['foto_ktp']['tmp_name'];
-        $folder_simpan_ktp = "admin/uploads/"; 
-        
-        if (move_uploaded_file($file_tmp_ktp, $folder_simpan_ktp . $nama_ktp)) {
-            $query_ktp = ", foto_ktp = '$nama_ktp', status_verifikasi = 'pending'";
-        }
+    // C. Upload KTP (opsional) — memicu verifikasi ulang oleh admin
+    $ktp_baru = null;
+    if (upload_dipilih($_FILES['foto_ktp'] ?? null)) {
+        $ktp_baru = simpan_gambar_profil($_FILES['foto_ktp'], 'USR' . $id_user . '_KTP', 'foto KTP');
     }
 
-    // C. Update Database
-    $sql_update = "UPDATE t_user SET 
-                   nama = '$nama_baru', 
-                   no_telp = '$telp_baru', 
-                   alamat = '$alamat_baru', 
-                   email = '$email_baru'
-                   $query_nik
-                   $query_foto
-                   $query_pass
-                   $query_ktp
-                   WHERE id_user = '$id_user'";
+    // D. Update database — prepared statement dengan kolom opsional.
+    // Nama kolom SELALU literal di kode; hanya nilai yang lewat placeholder.
+    // Pola menyalin profil.php yang sudah jalan di produksi.
+    $sets  = array('nama = ?', 'no_telp = ?', 'alamat = ?');
+    $types = 'sss';
+    $vals  = array($nama_baru, $telp_baru, $alamat_baru);
 
-    $run_update = mysqli_query($koneksi, $sql_update);
+    if ($nik_baru !== null) {
+        $sets[] = 'nik = ?';
+        $types .= 's';
+        $vals[] = $nik_baru;
+    }
+    if ($foto_baru !== null) {
+        $sets[] = 'foto = ?';
+        $types .= 's';
+        $vals[] = $foto_baru;
+    }
+    if ($pass_baru !== '') {
+        $sets[] = 'password = ?';
+        $types .= 's';
+        $vals[] = password_hash($pass_baru, PASSWORD_DEFAULT);
+    }
+    if ($ktp_baru !== null) {
+        $sets[] = 'foto_ktp = ?';
+        $types .= 's';
+        $vals[] = $ktp_baru;
+        // Nilai di-bind, bukan ditempel sebagai fragmen SQL seperti dulu.
+        $sets[] = 'status_verifikasi = ?';
+        $types .= 's';
+        $vals[] = 'pending';
+    }
+
+    $types .= 'i';
+    $vals[] = $id_user;
+
+    $sql_update = 'UPDATE t_user SET ' . implode(', ', $sets) . ' WHERE id_user = ?';
+    $stmt_update = mysqli_prepare($koneksi, $sql_update);
+    $run_update = false;
+    if ($stmt_update) {
+        mysqli_stmt_bind_param($stmt_update, $types, ...$vals);
+        $run_update = mysqli_stmt_execute($stmt_update);
+        mysqli_stmt_close($stmt_update);
+    }
 
     if ($run_update) {
-        // Update Session Nama supaya Header langsung berubah tanpa logout
+        // Session diisi nilai mentah supaya header langsung berubah tanpa
+        // logout, dan tanpa backslash sisa escaping.
         $_SESSION['nama_desainer'] = $nama_baru;
         $_SESSION['nama_designer'] = $nama_baru; // Jaga-jaga kalau pake ejaan ini
         $_SESSION['nama'] = $nama_baru;
-        $_SESSION['email'] = $email_baru;
-        $_SESSION['email_designer'] = $email_baru;
+        // Session email tidak disentuh — email tidak pernah berubah di sini.
 
         sweetalert_redirect('Profil desainer berhasil diperbarui.', 'profil_desainer.php', 'success', 'Berhasil!');
     } else {
-        sweetalert_back('Gagal memperbarui profil: ' . mysqli_error($koneksi), 'error', 'Gagal!');
+        // Berkas yang sudah masuk tapi gagal tercatat di DB jangan ditinggal
+        // jadi sampah.
+        if ($foto_baru !== null && is_file('admin/uploads/' . $foto_baru)) {
+            @unlink('admin/uploads/' . $foto_baru);
+        }
+        if ($ktp_baru !== null && is_file('admin/uploads/' . $ktp_baru)) {
+            @unlink('admin/uploads/' . $ktp_baru);
+        }
+        // Pesan generik: jangan bocorkan mysqli_error() ke pengguna.
+        sweetalert_back('Gagal memperbarui profil. Silakan coba lagi.', 'error', 'Gagal!');
     }
 }
 // ==========================================================
@@ -152,7 +244,7 @@ if ($q_porto) { while ($p = mysqli_fetch_assoc($q_porto)) $portofolio[] = $p; }
                     <!-- FOTO PROFIL (KIRI) -->
                     <div class="col-md-4 text-center p-b-30 designer-profile-side">
                         <div class="photo-circle designer-photo-circle">
-                            <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.$foto : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
+                            <img id="previewFoto" src="<?php echo ($foto != 'default.jpg' && !empty($foto)) ? 'admin/uploads/'.htmlspecialchars($foto) : 'images/icons/icon-header-01.png'; ?>" alt="Profil">
                         </div>
                         <button type="button" class="btn-edit-foto m-t-15" onclick="document.getElementById('inputFoto').click()"><i class="fa fa-camera m-r-5"></i> Ubah Foto</button>
                         <input type="file" name="foto" id="inputFoto" class="sr-file-input" accept="image/jpeg,image/png,image/webp" onchange="tampilkanPreview(this)">
@@ -205,7 +297,8 @@ if ($q_porto) { while ($p = mysqli_fetch_assoc($q_porto)) $portofolio[] = $p; }
                             </div>
                             <div class="col-md-6 p-b-15">
                                 <label class="stext-102 cl3 p-b-5">Email</label>
-                                <input class="custom-input" type="email" name="email" value="<?php echo htmlspecialchars($email); ?>">
+                                <input class="custom-input is-readonly" type="email" name="email" value="<?php echo htmlspecialchars($email); ?>" readonly>
+                                <small class="stext-107 cl6">Email adalah kunci login &amp; verifikasi. Hubungi admin untuk mengubahnya.</small>
                             </div>
                             <div class="col-md-12 p-b-20">
                                 <label class="stext-102 cl3 p-b-5">Alamat Lengkap</label>

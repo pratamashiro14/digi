@@ -269,6 +269,7 @@ if ($unread_count === 0) {
     width: 100% !important;
     padding-left: 24px !important;
     padding-right: 24px !important;
+    gap: 16px !important;
 }
 
 @media (max-width: 1600px) {
@@ -365,6 +366,117 @@ if ($unread_count === 0) {
     justify-content: center !important;
     border: 1px solid #1591DC !important;
 }
+
+/* ===== KESEIMBANGAN NAVBAR (jarak kiri = jarak kanan) =====
+   HARUS ditaruh SETELAH blok .wrap-menu-desktop di atas: spesifisitasnya
+   sama persis (0,2,0) dan sama-sama !important, jadi yang menang adalah
+   yang ditulis belakangan. Sempat ditaruh di atas dan akibatnya gap serta
+   penyembunyian role-chip di bawah ini tidak berlaku sama sekali.
+
+   Masalah yang diperbaiki: container sudah di-center (margin auto), tapi
+   isinya lebih lebar daripada container — .menu-desktop tidak bisa menyusut
+   (min-width:auto bawaan flex item) dan blok akun dikunci flex-shrink:0,
+   sehingga kelebihannya meluber ke KANAN saja: logo rapi di kiri, nama akun
+   mentok tepi layar. Aturan di bawah membuat isinya muat lebih dulu, baru
+   space-between menghasilkan jarak kiri & kanan yang sama. */
+.wrap-menu-desktop .logo {
+    /* gap 16px pada .limiter-menu-desktop sudah jadi pemisah; margin-right
+       bawaan 34px cuma bikin berat sebelah. */
+    margin-right: 0 !important;
+    flex: 0 0 auto !important;
+}
+
+.wrap-menu-desktop .menu-desktop {
+    flex: 1 1 auto !important;
+    min-width: 0 !important;             /* kunci: izinkan menyusut, cegah meluber */
+    justify-content: center !important;  /* menu duduk di tengah antara logo & akun */
+}
+
+.wrap-menu-desktop .main-menu {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 2px !important;
+}
+
+.wrap-menu-desktop .main-menu > li > a {
+    padding: 0 11px !important;          /* dirapatkan agar 8 menu muat tanpa meluber */
+}
+
+/* Nama akun panjang (mis. "DEN DEN MAULUDI APRIANSYAH") dulu mendorong
+   navbar keluar layar karena blok kanan tidak boleh menyusut. Dibatasi
+   lebarnya + ellipsis; nama penuh tetap terbaca lewat atribut title. */
+.wrap-menu-desktop .account-toggle {
+    max-width: 220px !important;
+    overflow: hidden !important;
+}
+
+.wrap-menu-desktop .account-toggle > i {
+    flex-shrink: 0 !important;
+}
+
+.wrap-menu-desktop .account-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+}
+
+/* Ambang 1600px HARUS sama dengan media query .limiter-menu-desktop di atas:
+   di bawah 1600px container menyusut 1380 -> 1200px, jadi di situlah isinya
+   wajib ikut dirapatkan. Sempat dipasang di 1400px, akibatnya rentang
+   1400-1600px punya container 1200px tapi menu masih ukuran lebar -> menu
+   meluber ke dua arah dan menimpa logo serta blok akun. */
+@media (max-width: 1600px) {
+    .wrap-menu-desktop .main-menu > li > a {
+        padding: 0 8px !important;
+        font-size: 12.5px !important;
+    }
+    .wrap-menu-desktop .account-toggle {
+        max-width: 130px !important;
+    }
+    .wrap-menu-desktop .wrap-icon-header {
+        gap: 10px !important;
+    }
+}
+
+/* Laptop kecil. Ruangnya tidak cukup untuk nama akun, jadi tinggal ikon +
+   caret; nama lengkap tetap terbaca sebagai tooltip lewat atribut title
+   pada .account-toggle. */
+@media (max-width: 1200px) {
+    .limiter-menu-desktop {
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        gap: 8px !important;
+    }
+    .wrap-menu-desktop .main-menu > li > a {
+        padding: 0 7px !important;
+        font-size: 12px !important;
+    }
+    .wrap-menu-desktop .wrap-icon-header {
+        gap: 8px !important;
+        padding-left: 0 !important;
+    }
+    .wrap-menu-desktop .account-toggle {
+        max-width: none !important;
+    }
+    .wrap-menu-desktop .account-name {
+        display: none !important;
+    }
+    /* Logo dens.png rasionya sangat lebar (1448x282) — ikut dikecilkan,
+       kalau tidak sendirian memakan ~190px dari ruang navbar. */
+    .wrap-menu-desktop .logo img {
+        max-height: 38px !important;
+    }
+}
+
+/* Paling sempit sebelum menu mobile mengambil alih (<=991px). Chip role
+   dilepas demi ruang; rolenya tetap terbaca di menu mobile & halaman profil. */
+@media (max-width: 1100px) {
+    .wrap-menu-desktop .role-chip {
+        display: none !important;
+    }
+}
+
 .bg3 {
     background-color: #f6f7fb !important;
     border-top: 1px solid #e5e7eb !important;
@@ -509,9 +621,9 @@ if ($unread_count === 0) {
                         <?php } ?>
                         <span class="role-chip"><?php echo htmlspecialchars($role_label); ?></span>
                         <div class="account-dd">
-                            <a href="#" class="account-toggle" onclick="return false;">
+                            <a href="#" class="account-toggle" onclick="return false;" title="<?php echo htmlspecialchars($display_name); ?>">
                                 <i class="zmdi zmdi-account"></i>
-                                <?php echo htmlspecialchars($display_name); ?>
+                                <span class="account-name"><?php echo htmlspecialchars($display_name); ?></span>
                                 <i class="zmdi zmdi-caret-down caret"></i>
                             </a>
                             <div class="account-menu">

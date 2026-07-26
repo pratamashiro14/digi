@@ -3,9 +3,13 @@ require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/designer_layout.php';
 include 'admin/koneksi.php';
 require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
+require_once __DIR__ . '/mou_helper.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
 require_verified_designer();
+
+// 1b. MOU Kemitraan wajib disetujui sebelum bisa mengunggah/mengelola karya
+require_mou_disetujui();
 
 // Halaman biasa — cukup throttled per sesi. Desainer perlu tahu bila
 // pemenang lelangnya wanprestasi / karyanya sudah dipromosikan ke penawar lain.

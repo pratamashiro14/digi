@@ -1,0 +1,299 @@
+/* ============================================================
+   MOU.CSS — Halaman Perjanjian Kerja Sama Mitra Desainer
+   Gaya dokumen ("kertas") + tampilan cetak (@media print).
+   Elemen form (input/tombol/alert) sengaja memakai class yang
+   sudah ada di account-ui.css (.custom-input, .btn-save, dst)
+   supaya konsisten dengan halaman akun desainer lainnya.
+   ============================================================ */
+
+.mou-paper {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 48px 56px;
+  background: #fff;
+  border: 1px solid var(--account-border, #e5e7eb);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, .05);
+  color: #1f2937;
+  font-family: 'Poppins', sans-serif;
+  line-height: 1.7;
+}
+
+.mou-kop {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+  border-bottom: 2px solid #1f2937;
+  text-align: center;
+}
+
+.mou-kop img {
+  height: 56px;
+  width: auto;
+  flex-shrink: 0;
+}
+
+.mou-kop .mou-kop-text {
+  flex: 1;
+  text-align: center;
+}
+
+.mou-kop-text h2 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: .03em;
+  color: #111827;
+}
+
+.mou-kop-text p {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #4b5563;
+}
+
+.mou-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 22px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.mou-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: .02em;
+  margin: 6px 0 26px;
+  color: #111827;
+}
+
+.mou-paper p {
+  font-size: 13.5px;
+  color: #1f2937;
+  text-align: justify;
+  margin: 0 0 14px;
+}
+
+.mou-pihak {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 4px 12px;
+  font-size: 13.5px;
+  margin: 14px 0 16px;
+}
+
+.mou-pihak dt {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.mou-pihak dd {
+  margin: 0;
+  color: #111827;
+  font-weight: 600;
+}
+
+.mou-pihak-form {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 12px;
+  align-items: start;
+  margin: 14px 0 16px;
+}
+
+.mou-pihak-form label {
+  align-self: center;
+  color: #6b7280;
+  font-weight: 600;
+  font-size: 13.5px;
+}
+
+.mou-pihak-form .custom-input {
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 13.5px;
+}
+
+.mou-pihak-form textarea.custom-input {
+  min-height: 64px;
+  resize: vertical;
+}
+
+.mou-pihak-form small {
+  display: block;
+  margin-top: 4px;
+  color: #9ca3af;
+  font-size: 11px;
+}
+
+.mou-pasal {
+  margin-top: 28px;
+  page-break-inside: avoid;
+}
+
+.mou-pasal h3 {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 800;
+  margin: 0 0 2px;
+  color: #111827;
+}
+
+.mou-pasal h4 {
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 700;
+  margin: 0 0 14px;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+  color: #111827;
+}
+
+.mou-pasal ol,
+.mou-pasal ul {
+  padding-left: 22px;
+  margin: 0 0 14px;
+}
+
+.mou-pasal li {
+  font-size: 13.5px;
+  text-align: justify;
+  margin-bottom: 8px;
+}
+
+.mou-pasal li > strong:first-child {
+  color: #111827;
+}
+
+.mou-signoff {
+  margin-top: 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  page-break-inside: avoid;
+}
+
+.mou-signblock {
+  text-align: center;
+}
+
+.mou-signblock .label {
+  font-size: 13px;
+  color: #4b5563;
+  margin-bottom: 70px;
+}
+
+.mou-signblock .signed-name {
+  margin: 0;
+  font-weight: 800;
+  font-size: 14px;
+  text-decoration: underline;
+  color: #111827;
+}
+
+.mou-signblock .signed-meta {
+  margin-top: 4px;
+  font-size: 11px;
+  color: #6b7280;
+}
+
+.mou-signblock.is-empty .label {
+  margin-bottom: 8px;
+}
+
+.mou-signblock .sign-placeholder {
+  height: 62px;
+  border-bottom: 1px dashed #cbd5e1;
+  margin-bottom: 8px;
+}
+
+/* Banner status "sudah disetujui" (memakai palet .designer-alert) */
+.mou-status-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.mou-status-banner strong {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.mou-status-banner small {
+  color: inherit;
+  opacity: .85;
+}
+
+.mou-actions {
+  display: flex;
+  gap: 12px;
+  margin: 22px auto 0;
+  max-width: 820px;
+  justify-content: flex-end;
+}
+
+.mou-checkbox-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 18px 0;
+  font-size: 13px;
+  color: #374151;
+}
+
+.mou-checkbox-row input[type="checkbox"] {
+  margin-top: 3px;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.mou-ttd-input {
+  font-family: 'Poppins', sans-serif;
+  font-style: italic;
+}
+
+/* ===== CETAK / SAVE AS PDF ===== */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  .mou-print-area,
+  .mou-print-area * {
+    visibility: visible;
+  }
+
+  .mou-print-area {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+  }
+
+  .mou-paper {
+    max-width: none;
+    border: 0;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+  }
+
+  .mou-no-print {
+    display: none !important;
+  }
+
+  @page {
+    size: A4;
+    margin: 18mm 16mm;
+  }
+}

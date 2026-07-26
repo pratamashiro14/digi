@@ -83,6 +83,7 @@ if ($is_admin_logged_in) {
         ['href' => 'pencairan.php', 'label' => 'Pencairan', 'active' => 'designer-finance'],
         ['href' => 'pesan.php', 'label' => 'Pesan', 'active' => 'messages', 'badge' => $unread_count],
         ['href' => 'premium.php', 'label' => 'Fitur Unggulan', 'active' => 'premium'],
+        ['href' => 'mou.php', 'label' => 'MOU', 'active' => 'designer-mou'],
         ['href' => 'profil_desainer.php', 'label' => 'Profil', 'active' => 'designer-profile'],
     ];
 } else {
@@ -117,6 +118,7 @@ if ($is_admin_logged_in) {
         ['href' => 'penjualan.php', 'icon' => 'zmdi-store', 'label' => 'Penjualan'],
         ['href' => 'pencairan.php', 'icon' => 'zmdi-balance-wallet', 'label' => 'Pencairan Dana'],
         ['href' => 'pesan.php', 'icon' => 'zmdi-comments', 'label' => 'Pesan', 'badge' => $unread_count],
+        ['href' => 'mou.php', 'icon' => 'zmdi-assignment', 'label' => 'MOU'],
         ['divider' => true],
         ['href' => 'logout.php', 'icon' => 'zmdi-power', 'label' => 'Logout'],
     ];

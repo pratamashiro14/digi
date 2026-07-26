@@ -516,6 +516,43 @@ ALTER TABLE `t_admin`
 ALTER TABLE `t_bidding`
   MODIFY `id_bid` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
+-- --------------------------------------------------------
+-- NOTE: dump di atas sudah lebih dulu drift dari skema runtime (banyak
+-- tabel dibuat/diubah lewat auto-migration di admin/koneksi.php, bukan
+-- lewat file ini). `t_mou` di bawah adalah tabel BARU untuk fitur MOU
+-- (Perjanjian Kerja Sama Mitra Desainer) — didefinisikan sebagai satu
+-- CREATE TABLE mandiri (bukan mengikuti pola split index/AUTO_INCREMENT
+-- di atas) agar tetap 1:1 dengan auto-migration di mou_helper.php.
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `t_mou`
+-- (Persetujuan digital Perjanjian Kerja Sama Mitra Desainer. Satu baris
+--  per desainer — snapshot data mitra disimpan di sini, terpisah dari
+--  t_user, supaya isi perjanjian tidak berubah bila profil diedit
+--  belakangan. Dibuat otomatis oleh mou_ensure_table() di mou_helper.php.)
+--
+
+CREATE TABLE `t_mou` (
+  `id_mou` int(11) NOT NULL AUTO_INCREMENT,
+  `id_user` int(11) NOT NULL,
+  `nomor` varchar(60) NOT NULL,
+  `versi` int(11) NOT NULL DEFAULT 1,
+  `nama_mitra` varchar(150) NOT NULL,
+  `pj_mitra` varchar(150) NOT NULL,
+  `instansi_mitra` varchar(150) DEFAULT NULL,
+  `alamat_mitra` text DEFAULT NULL,
+  `telp_mitra` varchar(100) DEFAULT NULL,
+  `email_mitra` varchar(100) DEFAULT NULL,
+  `nama_ttd` varchar(150) NOT NULL,
+  `status` enum('disetujui') NOT NULL DEFAULT 'disetujui',
+  `tanggal_setuju` datetime NOT NULL,
+  `ip_setuju` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`id_mou`),
+  UNIQUE KEY `uniq_mou_user` (`id_user`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 --
 -- AUTO_INCREMENT for table `t_chat`
 --

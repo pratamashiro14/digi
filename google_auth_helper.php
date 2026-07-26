@@ -28,6 +28,30 @@ function google_login_tersedia() {
     return GOOGLE_CLIENT_ID !== '' && GOOGLE_CLIENT_SECRET !== '';
 }
 
+/**
+ * Redirect URI final yang dikirim ke Google.
+ *
+ * Google MENOLAK redirect_uri non-HTTPS untuk domain publik dengan error
+ * "invalid_request: ... doesn't comply with Google's OAuth 2.0 policy"
+ * (hanya localhost/127.0.0.1 yang boleh HTTP). GOOGLE_REDIRECT_URI default-nya
+ * dibangun app_url(), yang menebak skema dari $_SERVER — di balik proxy /
+ * LiteSpeed hosting tebakan itu bisa jatuh ke http walau pengunjung memakai
+ * https. Jadi skema dipaksa di sini, bukan diserahkan ke deteksi.
+ *
+ * Dipakai BERSAMA oleh pembuatan auth URL & penukaran token — keduanya wajib
+ * mengirim nilai yang identik, kalau beda Google menolak penukaran token.
+ */
+function google_redirect_uri() {
+    $uri = GOOGLE_REDIRECT_URI;
+    $host = parse_url($uri, PHP_URL_HOST);
+    $lokal = in_array($host, ['localhost', '127.0.0.1', '::1'], true);
+
+    if (!$lokal && strpos($uri, 'http://') === 0) {
+        $uri = 'https://' . substr($uri, strlen('http://'));
+    }
+    return $uri;
+}
+
 /** Buat & simpan token state anti-CSRF baru (dipanggil sebelum redirect ke Google). */
 function google_state_baru() {
     $state = bin2hex(random_bytes(32));
@@ -50,7 +74,7 @@ function google_state_valid($state) {
 function google_build_auth_url($state) {
     $params = [
         'client_id'     => GOOGLE_CLIENT_ID,
-        'redirect_uri'  => GOOGLE_REDIRECT_URI,
+        'redirect_uri'  => google_redirect_uri(),
         'response_type' => 'code',
         'scope'         => 'openid email profile',
         'state'         => $state,
@@ -122,7 +146,7 @@ function google_tukar_code_dan_verifikasi($code) {
         'code'          => $code,
         'client_id'     => GOOGLE_CLIENT_ID,
         'client_secret' => GOOGLE_CLIENT_SECRET,
-        'redirect_uri'  => GOOGLE_REDIRECT_URI,
+        'redirect_uri'  => google_redirect_uri(),
         'grant_type'    => 'authorization_code',
     ]);
     if (!$tukar['ok']) return $tukar;

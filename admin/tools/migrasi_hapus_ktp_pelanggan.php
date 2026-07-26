@@ -3,6 +3,13 @@
  * ============================================================
  *  MIGRASI SATU KALI — Hapus KTP pelanggan + rapikan data lama
  * ============================================================
+ * SUDAH DIJALANKAN & SUDAH TIDAK RELEVAN: kolom t_user.nik & t_user.foto_ktp
+ * kini di-drop TOTAL (lihat auto-migration di admin/koneksi.php — KTP/NIK
+ * desainer digantikan Google Login + MOU). Bagian #1 skrip ini (baris
+ * nik/foto_ktp) akan GAGAL bila dijalankan ulang karena kolomnya sudah
+ * tidak ada. Bagian #2-#4 (normalisasi status_bid & no_telp_norm) tetap
+ * aman & idempotent bila suatu saat perlu diulang.
+ *
  * Jalankan SEKALI setelah revisi keamanan (verifikasi email + nomor HP
  * menggantikan wajib-KTP pelanggan) di-deploy, sebelum sistem dipakai
  * live. Aman diulang (idempotent) — baris yang sudah bersih dilewati.

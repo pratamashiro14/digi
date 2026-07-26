@@ -1,16 +1,12 @@
 <?php
 require_once __DIR__ . '/auth.php';
 include 'admin/koneksi.php';
+require_once __DIR__ . '/mou_helper.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
 require_designer();
 
 $id_user = (int) current_id();
-
-// Ambil status verifikasi saat ini dari DB sebelum memproses POST
-$query_verif = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user = '$id_user'");
-$data_verif = mysqli_fetch_assoc($query_verif);
-$status_verifikasi_awal = $data_verif['status_verifikasi'] ?? 'unverified';
 
 /** True bila pengguna benar-benar memilih berkas (bukan field yang dibiarkan kosong). */
 function upload_dipilih($file) {
@@ -90,41 +86,19 @@ if (isset($_POST['simpan_profil'])) {
         sweetalert_back('Alamat maksimal 500 karakter.', 'error', 'Data Tidak Valid');
     }
 
-    // A. NIK — hanya boleh diubah selama admin belum memverifikasi KTP.
-    // Divalidasi SEBELUM berkas dipindahkan, supaya penolakan di sini tidak
-    // meninggalkan file yatim di admin/uploads/.
-    $nik_baru = null;
-    if ($status_verifikasi_awal !== 'verified' && isset($_POST['nik'])) {
-        $nik_baru = preg_replace('/\D/', '', (string) $_POST['nik']);
-        if (!preg_match('/^\d{16}$/', $nik_baru)) {
-            sweetalert_back('NIK harus tepat 16 digit angka.', 'error', 'NIK Tidak Valid');
-        }
-    }
-
-    // B. Upload foto profil (opsional)
+    // A. Upload foto profil (opsional)
     $foto_baru = null;
     if (upload_dipilih($_FILES['foto'] ?? null)) {
         $foto_baru = simpan_gambar_profil($_FILES['foto'], 'USR' . $id_user . '_FOTO', 'foto profil');
     }
 
-    // C. Upload KTP (opsional) — memicu verifikasi ulang oleh admin
-    $ktp_baru = null;
-    if (upload_dipilih($_FILES['foto_ktp'] ?? null)) {
-        $ktp_baru = simpan_gambar_profil($_FILES['foto_ktp'], 'USR' . $id_user . '_KTP', 'foto KTP');
-    }
-
-    // D. Update database — prepared statement dengan kolom opsional.
+    // B. Update database — prepared statement dengan kolom opsional.
     // Nama kolom SELALU literal di kode; hanya nilai yang lewat placeholder.
     // Pola menyalin profil.php yang sudah jalan di produksi.
     $sets  = array('nama = ?', 'no_telp = ?', 'alamat = ?');
     $types = 'sss';
     $vals  = array($nama_baru, $telp_baru, $alamat_baru);
 
-    if ($nik_baru !== null) {
-        $sets[] = 'nik = ?';
-        $types .= 's';
-        $vals[] = $nik_baru;
-    }
     if ($foto_baru !== null) {
         $sets[] = 'foto = ?';
         $types .= 's';
@@ -134,15 +108,6 @@ if (isset($_POST['simpan_profil'])) {
         $sets[] = 'password = ?';
         $types .= 's';
         $vals[] = password_hash($pass_baru, PASSWORD_DEFAULT);
-    }
-    if ($ktp_baru !== null) {
-        $sets[] = 'foto_ktp = ?';
-        $types .= 's';
-        $vals[] = $ktp_baru;
-        // Nilai di-bind, bukan ditempel sebagai fragmen SQL seperti dulu.
-        $sets[] = 'status_verifikasi = ?';
-        $types .= 's';
-        $vals[] = 'pending';
     }
 
     $types .= 'i';
@@ -172,9 +137,6 @@ if (isset($_POST['simpan_profil'])) {
         if ($foto_baru !== null && is_file('admin/uploads/' . $foto_baru)) {
             @unlink('admin/uploads/' . $foto_baru);
         }
-        if ($ktp_baru !== null && is_file('admin/uploads/' . $ktp_baru)) {
-            @unlink('admin/uploads/' . $ktp_baru);
-        }
         // Pesan generik: jangan bocorkan mysqli_error() ke pengguna.
         sweetalert_back('Gagal memperbarui profil. Silakan coba lagi.', 'error', 'Gagal!');
     }
@@ -193,8 +155,8 @@ $nama = $data['nama'] ?? '';
 $telp = $data['no_telp'] ?? '';
 $alamat = $data['alamat'] ?? '';
 $email = $data['email'] ?? '';
-$foto = $data['foto'] ?? 'default.jpg'; 
-$status_verifikasi = $data['status_verifikasi'] ?? 'unverified';
+$foto = $data['foto'] ?? 'default.jpg';
+$mou_disetujui = mou_sudah_disetujui($koneksi, $id_user);
 $nama_desainer_header = $_SESSION['nama_desainer'] ?? 'Desainer';
 
 // Portofolio Showcase (fitur premium) — ambil item & status premium desainer
@@ -250,34 +212,25 @@ if ($q_porto) { while ($p = mysqli_fetch_assoc($q_porto)) $portofolio[] = $p; }
                         <input type="file" name="foto" id="inputFoto" class="sr-file-input" accept="image/jpeg,image/png,image/webp" onchange="tampilkanPreview(this)">
                         
                         <div class="designer-status-card m-t-30">
-                            <h5>Status Verifikasi</h5>
-                            <?php if ($status_verifikasi == 'unverified') : ?>
-                                <div class="designer-status-badge is-danger"><i class="fa fa-times-circle m-r-5"></i> Belum Verifikasi</div>
-                            <?php elseif ($status_verifikasi == 'pending') : ?>
-                                <div class="designer-status-badge is-warning"><i class="fa fa-clock-o m-r-5"></i> Menunggu Validasi</div>
-                            <?php elseif ($status_verifikasi == 'verified') : ?>
+                            <h5>Status Kemitraan</h5>
+                            <?php if ($mou_disetujui) : ?>
                                 <div class="designer-status-badge is-success"><i class="fa fa-check-circle m-r-5"></i> Terverifikasi</div>
+                            <?php else : ?>
+                                <div class="designer-status-badge is-warning"><i class="fa fa-clock-o m-r-5"></i> Belum Setuju MOU</div>
                             <?php endif; ?>
                         </div>
                     </div>
 
                     <!-- FORM DATA (KANAN) -->
                     <div class="col-md-8 p-l-40 p-l-15-sm">
-                        <?php if ($status_verifikasi == 'unverified') : ?>
+                        <?php if (!$mou_disetujui) : ?>
                             <div class="designer-alert is-danger">
-                                <strong>Perhatian!</strong> Anda harus mengunggah foto KTP agar dapat berjualan.
-                                <div class="designer-ktp-upload">
-                                    <label class="stext-102 p-b-5"><i class="fa fa-upload m-r-5"></i> Unggah KTP Sekarang</label>
-                                    <input class="custom-input" type="file" name="foto_ktp" accept="image/jpeg,image/png,image/webp">
-                                </div>
+                                <strong>Perhatian!</strong> Anda harus membaca &amp; menyetujui Perjanjian Kerja Sama Mitra Desainer (MOU)
+                                sebelum dapat mengunggah karya. <a href="mou.php"><strong>Baca &amp; setujui MOU sekarang &rarr;</strong></a>
                             </div>
-                        <?php elseif ($status_verifikasi == 'pending') : ?>
-                            <div class="designer-alert is-warning">
-                                <strong>Status:</strong> Verifikasi KTP sedang diproses oleh Admin. Harap bersabar.
-                            </div>
-                        <?php elseif ($status_verifikasi == 'verified') : ?>
+                        <?php else : ?>
                             <div class="designer-alert is-success">
-                                <strong>Status:</strong> KTP Terverifikasi. Anda memiliki akses penuh sebagai Desainer.
+                                <strong>Status:</strong> MOU sudah disetujui. Anda memiliki akses penuh sebagai Desainer.
                             </div>
                         <?php endif; ?>
 
@@ -286,10 +239,6 @@ if ($q_porto) { while ($p = mysqli_fetch_assoc($q_porto)) $portofolio[] = $p; }
                             <div class="col-md-6 p-b-15">
                                 <label class="stext-102 cl3 p-b-5">Nama Lengkap</label>
                                 <input class="custom-input" type="text" name="nama" value="<?php echo htmlspecialchars($nama); ?>">
-                            </div>
-                            <div class="col-md-6 p-b-15">
-                                <label class="stext-102 cl3 p-b-5">Nomor KTP (NIK)</label>
-                                <input class="custom-input <?php echo ($status_verifikasi == 'verified') ? 'is-readonly' : ''; ?>" type="text" name="nik" value="<?php echo htmlspecialchars($data['nik'] ?? ''); ?>" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka" <?php echo ($status_verifikasi == 'verified') ? 'readonly' : ''; ?> required>
                             </div>
                             <div class="col-md-6 p-b-15">
                                 <label class="stext-102 cl3 p-b-5">No. WhatsApp</label>

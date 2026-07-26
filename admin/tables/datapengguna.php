@@ -15,20 +15,6 @@ require_once "../../identitas_helper.php"; // blokir_identitas() generik (nik/te
 // Halaman admin biasa — cukup throttled per sesi.
 jalankan_pemeliharaan_lelang($koneksi);
 
-// === LOGIKA VERIFIKASI KTP (DESAINER & PELANGGAN) ===
-if (isset($_GET['approve_ktp'])) {
-    $id_verif = mysqli_real_escape_string($koneksi, $_GET['approve_ktp']);
-    mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'verified' WHERE id_user = '$id_verif'");
-    header("Location: datapengguna.php");
-    exit;
-}
-if (isset($_GET['reject_ktp'])) {
-    $id_verif = mysqli_real_escape_string($koneksi, $_GET['reject_ktp']);
-    mysqli_query($koneksi, "UPDATE t_user SET status_verifikasi = 'unverified', foto_ktp = NULL WHERE id_user = '$id_verif'");
-    header("Location: datapengguna.php");
-    exit;
-}
-
 // === SUSPEND / AKTIFKAN AKUN (sementara, level akun) ===
 if (isset($_GET['suspend'])) {
     $id = (int) $_GET['suspend'];
@@ -48,19 +34,19 @@ if (isset($_GET['aktifkan'])) {
 }
 
 // === BAN / UNBAN IDENTITAS (permanen, lintas akun) ===
-// Generalisasi dari ban_nik lama: sejak pelanggan tidak lagi menyimpan KTP,
-// jangkar identitas mereka adalah nomor HP (no_telp_norm) & email, sedangkan
-// desainer tetap punya NIK. $tipe menentukan kolom mana yang diblokir.
-// t_blokir_nik LAMA tidak dipakai lagi di sini (datanya sudah dipindah ke
-// t_blokir_identitas oleh auto-migration di admin/koneksi.php).
+// Sejak KTP/NIK dihapus total (pembeli maupun desainer), jangkar identitas
+// SEMUA role adalah email + nomor HP (no_telp_norm). $tipe menentukan kolom
+// mana yang diblokir. Ban 'nik' tetap didukung identitas_helper.php untuk
+// data lama (t_blokir_identitas), tapi tidak ada lagi jalur baru yang
+// menuliskannya karena kolom t_user.nik sudah tidak ada.
 if (isset($_GET['ban_identitas'])) {
     $id = (int) $_GET['ban_identitas'];
     $tipe = $_GET['tipe'] ?? '';
     $alasan = trim($_GET['alasan'] ?? '');
     if ($alasan === '') $alasan = 'Pelanggaran (spam/penyalahgunaan lelang).';
 
-    if (in_array($tipe, ['nik', 'telp', 'email'], true)) {
-        $kolom = ['nik' => 'nik', 'telp' => 'no_telp_norm', 'email' => 'email'][$tipe];
+    if (in_array($tipe, ['telp', 'email'], true)) {
+        $kolom = ['telp' => 'no_telp_norm', 'email' => 'email'][$tipe];
         $q = mysqli_prepare($koneksi, "SELECT `$kolom` AS nilai FROM t_user WHERE id_user=?");
         mysqli_stmt_bind_param($q, 'i', $id);
         mysqli_stmt_execute($q);
@@ -77,8 +63,8 @@ if (isset($_GET['unban_identitas'])) {
     $id = (int) $_GET['unban_identitas'];
     $tipe = $_GET['tipe'] ?? '';
 
-    if (in_array($tipe, ['nik', 'telp', 'email'], true)) {
-        $kolom = ['nik' => 'nik', 'telp' => 'no_telp_norm', 'email' => 'email'][$tipe];
+    if (in_array($tipe, ['telp', 'email'], true)) {
+        $kolom = ['telp' => 'no_telp_norm', 'email' => 'email'][$tipe];
         $q = mysqli_prepare($koneksi, "SELECT `$kolom` AS nilai FROM t_user WHERE id_user=?");
         mysqli_stmt_bind_param($q, 'i', $id);
         mysqli_stmt_execute($q);
@@ -490,7 +476,7 @@ include '../koneksi.php';
             <th scope="col">Peran</th>
             <th scope="col">Premium</th>
             <th scope="col">Status</th>
-            <th scope="col">Verif KTP</th>
+            <th scope="col">Status MOU</th>
             <th scope="col">Moderasi</th>
             <th scope="col" style="width: 10%">Aksi</th>
           </tr>
@@ -507,13 +493,12 @@ include '../koneksi.php';
                   $is_designer = $row['role'] === 'designer';
                   $is_pelanggan = $row['role'] === 'pelanggan';
 
-                  // Identitas yang relevan beda per role sejak pelanggan tidak lagi
-                  // menyimpan KTP: desainer diban lewat NIK, pelanggan lewat telp/email.
-                  $banned_nik   = $is_designer && !empty($row['nik']) && identitas_diblokir($koneksi, 'nik', $row['nik']);
+                  // Jangkar identitas SEMUA role sekarang email + nomor HP
+                  // (KTP/NIK sudah dihapus total, termasuk untuk desainer).
                   $banned_telp  = !empty($row['no_telp_norm']) && identitas_diblokir($koneksi, 'telp', $row['no_telp_norm']);
                   $banned_email = identitas_diblokir($koneksi, 'email', $row['email']);
                   $tipe_diblokir = array_keys(array_filter([
-                      'NIK' => $banned_nik, 'HP' => $banned_telp, 'Email' => $banned_email,
+                      'HP' => $banned_telp, 'Email' => $banned_email,
                   ]));
                   $is_banned = !empty($tipe_diblokir);
 
@@ -551,29 +536,13 @@ include '../koneksi.php';
             </td>
             <td>
               <?php if ($is_designer) : ?>
-                  <?php if ($row['status_verifikasi'] == 'pending') : ?>
-                      <span class="badge bg-warning text-dark">Pending</span>
-                      <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
-                      <?php if (!empty($row['foto_ktp'])): ?>
-                          <br><small><button type="button" class="btn btn-link p-0 ktp-preview-btn" data-bs-toggle="modal" data-bs-target="#ktpPreviewModal" data-ktp-src="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" data-ktp-name="<?= htmlspecialchars($row['nama']) ?>">Lihat KTP</button></small>
-                      <?php endif; ?>
-                      <br>
-                      <a href="?approve_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-success mt-1 py-0 px-1" style="font-size:11px;">Terima</a>
-                      <a href="?reject_ktp=<?= $row['id_user'] ?>" class="btn btn-sm btn-danger mt-1 py-0 px-1" style="font-size:11px;">Tolak</a>
-                  <?php elseif ($row['status_verifikasi'] == 'verified') : ?>
-                      <span class="badge bg-success">Verified</span>
-                      <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik'] ?? '-') ?></small>
-                      <?php if (!empty($row['foto_ktp'])): ?>
-                          <br><small><button type="button" class="btn btn-link p-0 ktp-preview-btn" data-bs-toggle="modal" data-bs-target="#ktpPreviewModal" data-ktp-src="../uploads/<?= htmlspecialchars($row['foto_ktp']) ?>" data-ktp-name="<?= htmlspecialchars($row['nama']) ?>">Lihat KTP</button></small>
-                      <?php endif; ?>
+                  <?php if ($row['status_verifikasi'] == 'verified') : ?>
+                      <span class="badge bg-success">Sudah MOU</span>
                   <?php else: ?>
-                      <span class="badge bg-secondary">Unverified</span>
-                      <?php if (!empty($row['nik'])): ?>
-                          <br><small><strong>NIK:</strong> <?= htmlspecialchars($row['nik']) ?></small>
-                      <?php endif; ?>
+                      <span class="badge bg-secondary">Belum MOU</span>
                   <?php endif; ?>
               <?php elseif ($is_pelanggan): ?>
-                  <span class="text-muted" title="Pelanggan tidak lagi wajib verifikasi KTP — lihat email &amp; No. HP.">
+                  <span class="text-muted" title="Pelanggan tidak wajib verifikasi identitas — lihat email &amp; No. HP.">
                       <i class="fas fa-circle-info"></i> Tidak berlaku
                   </span>
                   <br><small>Email: <?= ((int) ($row['email_terverifikasi'] ?? 0) === 1) ? '<span class="text-success">terverifikasi</span>' : '<span class="text-danger">belum</span>' ?></small>
@@ -594,31 +563,23 @@ include '../koneksi.php';
                   <?php endif; ?>
                   <br>
 
-                  <?php if ($is_designer): ?>
-                      <?php if (empty($row['nik'])): ?>
-                          <small class="text-muted" style="font-size:10px;">Ban NIK: belum verifikasi</small>
-                      <?php elseif ($banned_nik): ?>
-                          <a href="?unban_identitas=<?= $row['id_user'] ?>&tipe=nik" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban NIK</a>
-                      <?php else: ?>
-                          <a href="#" onclick="return banIdentitas(<?= $row['id_user'] ?>, 'nik')" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban NIK</a>
-                      <?php endif; ?>
+                  <?php // Ban berbasis email/HP untuk SEMUA role (jangkar identitas
+                        // seragam sejak KTP/NIK dihapus total). ?>
+                  <?php if ($banned_email): ?>
+                      <a href="?unban_identitas=<?= $row['id_user'] ?>&tipe=email" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban Email</a>
                   <?php else: ?>
-                      <?php if ($banned_email): ?>
-                          <a href="?unban_identitas=<?= $row['id_user'] ?>&tipe=email" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban Email</a>
+                      <a href="#" onclick="return banIdentitas(<?= $row['id_user'] ?>, 'email')" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban Email</a>
+                  <?php endif; ?>
+                  <?php if (!empty($row['no_telp_norm'])): ?>
+                      <?php if ($banned_telp): ?>
+                          <a href="?unban_identitas=<?= $row['id_user'] ?>&tipe=telp" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban HP</a>
                       <?php else: ?>
-                          <a href="#" onclick="return banIdentitas(<?= $row['id_user'] ?>, 'email')" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban Email</a>
+                          <a href="#" onclick="return banIdentitas(<?= $row['id_user'] ?>, 'telp')" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban HP</a>
                       <?php endif; ?>
-                      <?php if (!empty($row['no_telp_norm'])): ?>
-                          <?php if ($banned_telp): ?>
-                              <a href="?unban_identitas=<?= $row['id_user'] ?>&tipe=telp" class="btn btn-sm btn-secondary py-0 px-1 mt-1" style="font-size:11px;">Unban HP</a>
-                          <?php else: ?>
-                              <a href="#" onclick="return banIdentitas(<?= $row['id_user'] ?>, 'telp')" class="btn btn-sm btn-danger py-0 px-1 mt-1" style="font-size:11px;">Ban HP</a>
-                          <?php endif; ?>
-                      <?php endif; ?>
-                      <?php if ($jumlah_strike > 0): ?>
-                          <br><a href="?maafkan_strike=<?= $row['id_user'] ?>" class="btn btn-sm btn-outline-dark py-0 px-1 mt-1" style="font-size:11px;"
-                                 onclick="return confirm('Maafkan semua pelanggaran wanprestasi akun ini & pulihkan dari suspend?')">Maafkan Strike</a>
-                      <?php endif; ?>
+                  <?php endif; ?>
+                  <?php if ($jumlah_strike > 0): ?>
+                      <br><a href="?maafkan_strike=<?= $row['id_user'] ?>" class="btn btn-sm btn-outline-dark py-0 px-1 mt-1" style="font-size:11px;"
+                             onclick="return confirm('Maafkan semua pelanggaran wanprestasi akun ini & pulihkan dari suspend?')">Maafkan Strike</a>
                   <?php endif; ?>
               <?php endif; ?>
             </td>
@@ -639,23 +600,6 @@ include '../koneksi.php';
           ?>
         </tbody>
       </table>
-      </div>
-    </div>
-  </div>
-</div>
-<div class="modal fade" id="ktpPreviewModal" tabindex="-1" aria-labelledby="ktpPreviewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-xl">
-    <div class="modal-content ktp-preview-modal">
-      <div class="modal-header">
-        <h5 class="modal-title" id="ktpPreviewModalLabel">Preview KTP</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Tutup"></button>
-      </div>
-      <div class="modal-body">
-        <img src="" alt="Preview KTP" id="ktpPreviewImage" class="ktp-preview-image">
-      </div>
-      <div class="modal-footer">
-        <a href="#" target="_blank" rel="noopener" id="ktpPreviewOpen" class="btn btn-outline-primary">Buka Gambar</a>
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Kembali</button>
       </div>
     </div>
   </div>
@@ -703,29 +647,6 @@ include '../koneksi.php';
     </script>
 
     <script>
-      var ktpPreviewModal = document.getElementById('ktpPreviewModal');
-      if (ktpPreviewModal) {
-        ktpPreviewModal.addEventListener('show.bs.modal', function (event) {
-          var button = event.relatedTarget;
-          var imageSrc = button ? button.getAttribute('data-ktp-src') : '';
-          var userName = button ? button.getAttribute('data-ktp-name') : '';
-          var image = document.getElementById('ktpPreviewImage');
-          var openLink = document.getElementById('ktpPreviewOpen');
-          var title = document.getElementById('ktpPreviewModalLabel');
-
-          image.src = imageSrc;
-          openLink.href = imageSrc;
-          title.textContent = userName ? 'Preview KTP - ' + userName : 'Preview KTP';
-        });
-
-        ktpPreviewModal.addEventListener('hidden.bs.modal', function () {
-          document.getElementById('ktpPreviewImage').src = '';
-          document.getElementById('ktpPreviewOpen').href = '#';
-        });
-      }
-    </script>
-
-    <script>
     function updateNotificationDropdown() {
         $.ajax({
             // Path file PHP harus disesuaikan, karena karyadesain.php ada di subfolder,
@@ -761,10 +682,10 @@ include '../koneksi.php';
     <script src="../assets/js/plugin/sweetalert/sweetalert.min.js"></script>
     <script src="../../js/sweetalert-confirm.js"></script>
     <script>
-      // Ban berbasis identitas (NIK utk desainer, Email/HP utk pelanggan):
-      // minta alasan lalu arahkan ke handler.
+      // Ban berbasis identitas (email/HP, semua role): minta alasan lalu
+      // arahkan ke handler.
       function banIdentitas(id, tipe) {
-        var label = {nik: 'NIK', telp: 'nomor HP', email: 'email'}[tipe] || tipe;
+        var label = {telp: 'nomor HP', email: 'email'}[tipe] || tipe;
         var alasan = prompt('BAN ' + label.toUpperCase() + ' permanen — pelaku tidak bisa ikut lelang walau buat akun baru.\n\nAlasan ban:', 'Spam/penyalahgunaan lelang');
         if (alasan === null) return false; // batal
         window.location.href = '?ban_identitas=' + id + '&tipe=' + encodeURIComponent(tipe) + '&alasan=' + encodeURIComponent(alasan);

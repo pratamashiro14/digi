@@ -4,9 +4,9 @@ include 'admin/koneksi.php';
 require_once __DIR__ . '/mou_helper.php';
 
 // 1. CEK LOGIN DESAINER
-// BUKAN require_verified_designer(): MOU harus tetap bisa dibaca & ditandatangani
-// walau KTP desainer belum di-ACC admin — persetujuan MOU justru salah satu syarat
-// sebelum desainer bisa unggah karya (lihat require_mou_disetujui() di unggahan.php).
+// Persetujuan MOU adalah SATU-SATUNYA syarat sebelum desainer bisa unggah
+// karya (lihat require_mou_disetujui() di unggahan.php) — KTP/NIK sudah
+// dihapus total, digantikan Google Login untuk identitas.
 require_designer();
 
 $id_desainer = (int) current_id();

@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/google_auth_helper.php';
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -116,21 +120,26 @@
 
             <!-- ===== TAB DAFTAR DESAINER ===== -->
             <div class="tab-pane fade" id="tab-desainer">
-                <form action="proses_daftar_desainer.php" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <div class="form-info-box">
+                    <i class="fa-solid fa-circle-info text-primary"></i> Tidak perlu KTP. Setelah daftar,
+                    Anda perlu membaca &amp; menyetujui <strong>Perjanjian Kerja Sama Mitra Desainer (MOU)</strong>
+                    sebelum bisa mengunggah karya.
+                </div>
+
+                <?php if (google_login_tersedia()) { ?>
+                <a href="google_login.php" class="btn-outline-brand mb-3" style="display:flex; align-items:center; justify-content:center; gap:8px;">
+                    <i class="fa-brands fa-google"></i> Daftar dengan Google
+                </a>
+                <p class="hint" style="margin: 6px 0 18px;">— atau daftar pakai email &amp; kata sandi —</p>
+                <?php } ?>
+
+                <form action="proses_daftar_desainer.php" method="POST" class="needs-validation" novalidate>
                     <div class="text-center mb-3"><span class="badge-role">Akun Desainer (Kemitraan)</span></div>
-                    
-                    <div class="form-info-box">
-                        <i class="fa-solid fa-circle-info text-primary"></i> <strong>Persyaratan Mitra Desainer:</strong>
-                        <ul class="mb-0 ps-3 mt-1">
-                            <li>Masukkan NIK sesuai kartu identitas Anda.</li>
-                            <li>Unggah foto KTP yang jelas untuk verifikasi Admin secara manual.</li>
-                        </ul>
-                    </div>
 
                     <div class="mb-3">
-                        <label class="form-label">Nama Lengkap Sesuai KTP</label>
+                        <label class="form-label">Nama Lengkap</label>
                         <input type="text" class="form-control" name="nama" placeholder="Contoh: Budi Santoso" required>
-                        <div class="invalid-feedback">Nama sesuai KTP wajib diisi.</div>
+                        <div class="invalid-feedback">Nama lengkap wajib diisi.</div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Alamat Email</label>
@@ -141,17 +150,6 @@
                         <label class="form-label">Kata Sandi</label>
                         <input type="password" class="form-control" name="password" placeholder="Buat Kata Sandi" required>
                         <div class="invalid-feedback">Kata sandi wajib dibuat.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">NIK (Nomor Induk Kependudukan)</label>
-                        <input type="text" class="form-control" name="nik" placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka" required>
-                        <div class="invalid-feedback">NIK wajib diisi dengan format 16 digit angka.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Unggah Foto KTP</label>
-                        <input type="file" class="form-control" name="foto_ktp" accept="image/*" required>
-                        <div class="invalid-feedback">Foto KTP wajib diunggah.</div>
-                        <div class="form-text text-muted" style="font-size:11px;">Maksimal 4MB (jpg, jpeg, png).</div>
                     </div>
 
                     <button type="submit" class="btn-brand">Daftar sebagai Desainer</button>

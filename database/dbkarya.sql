@@ -395,8 +395,6 @@ CREATE TABLE `t_user` (
   `premium` tinyint(1) DEFAULT NULL,
   `foto` mediumtext NOT NULL,
   `foto_profil` varchar(255) DEFAULT NULL,
-  `foto_ktp` varchar(255) DEFAULT NULL,
-  `nik` varchar(20) DEFAULT NULL,
   `status_verifikasi` enum('unverified','pending','verified') DEFAULT 'unverified',
   `status_member` enum('free','premium') DEFAULT 'free'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -405,18 +403,18 @@ CREATE TABLE `t_user` (
 -- Dumping data for table `t_user`
 --
 
-INSERT INTO `t_user` (`id_user`, `nama`, `email`, `password`, `no_telp`, `alamat`, `role`, `status`, `premium`, `foto`, `foto_profil`, `foto_ktp`, `status_verifikasi`, `status_member`) VALUES
-(202, 'Alvi Designer', 'alvi@gmail.com', '5f249e6f5367a84cab13c8bb4cb7440f', '08995117514', 'norlaila014@gmail.com', 'designer', 'aktif', 1, 'WhatsApp Image 2020-10-27 at 08.45.16 (1).jpeg', NULL, NULL, 'unverified', 'free'),
-(230, 'Hasan', 'Hasan@gmail.com', '$2y$10$75F9cZOqr96D.JLe4GLM5Ok1C6FJYpUb7cJ/nH928Yls83nirN7Oe', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, NULL, 'unverified', 'free'),
-(231, 'DEN DEN MAULUD', 'dendenmaulud16@gmail.com', '$2y$10$niZ9PEvPvFE7lTBa0lNAreVywtQBs01tKXz3LN0AS6akgzQ2cgYyW', '', '', 'pelanggan', 'aktif', 0, '917_WhatsApp Image 2020-10-27 at 08.45.16 (1).jpeg', NULL, NULL, 'unverified', 'free'),
-(303, 'Maya Beli', 'maya@gmail.com', NULL, NULL, NULL, 'pelanggan', 'aktif', 0, '', NULL, NULL, 'unverified', 'free'),
-(397, 'Jojo', 'Jojo@gmail.com', '$2y$10$2PBxj5zIke1Ec6/9aWCZpuGHexlydAMP/2uZ0U5p3dRPulkEjl9YS', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, NULL, 'unverified', 'free'),
-(404, 'Fajar Bida', 'fajar@gmail.com', NULL, NULL, NULL, 'pelanggan', 'aktif', 0, '', NULL, NULL, 'unverified', 'free'),
-(418, 'dinda', 'dinda@gmail.com', '$2y$10$fdV0gTN0wR1DXC40vVDKiOz4izJVbKYcrYKxVms9tsa0fmirMV1UC', '', '', 'pelanggan', 'aktif', 0, '469_Orange and White Modern Customer Experience Presentation.png', NULL, '418_KTP_238.jpg', 'verified', 'free'),
-(483, 'Denden Mauludi', 'norlaila014@gmail.com', '$2y$10$VPVmihTTzi8uyJWiqtXnvuelt8DY5tFH4yke7JbcPbb7lMBpxlCgG', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, NULL, 'unverified', 'free'),
-(739, 'shabrina', 'shabrina@gmail.com', 'lolipop123', '4254252', 'Jl. Jalan yuk', 'designer', NULL, NULL, 'logo himabig.png', NULL, NULL, 'unverified', 'free'),
-(950, 'Jojo 3D ', 'Jojo3D@gmail.com', 'jojo123', NULL, NULL, 'designer', NULL, NULL, '', NULL, NULL, 'unverified', 'free'),
-(951, 'zildji', 'zot155@gmail.com', 'zotcimahi', '', '', 'designer', NULL, NULL, 'WhatsApp Image 2020-10-27 at 08.45.16.jpeg', NULL, NULL, 'unverified', 'free');
+INSERT INTO `t_user` (`id_user`, `nama`, `email`, `password`, `no_telp`, `alamat`, `role`, `status`, `premium`, `foto`, `foto_profil`, `status_verifikasi`, `status_member`) VALUES
+(202, 'Alvi Designer', 'alvi@gmail.com', '5f249e6f5367a84cab13c8bb4cb7440f', '08995117514', 'norlaila014@gmail.com', 'designer', 'aktif', 1, 'WhatsApp Image 2020-10-27 at 08.45.16 (1).jpeg', NULL, 'unverified', 'free'),
+(230, 'Hasan', 'Hasan@gmail.com', '$2y$10$75F9cZOqr96D.JLe4GLM5Ok1C6FJYpUb7cJ/nH928Yls83nirN7Oe', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, 'unverified', 'free'),
+(231, 'DEN DEN MAULUD', 'dendenmaulud16@gmail.com', '$2y$10$niZ9PEvPvFE7lTBa0lNAreVywtQBs01tKXz3LN0AS6akgzQ2cgYyW', '', '', 'pelanggan', 'aktif', 0, '917_WhatsApp Image 2020-10-27 at 08.45.16 (1).jpeg', NULL, 'unverified', 'free'),
+(303, 'Maya Beli', 'maya@gmail.com', NULL, NULL, NULL, 'pelanggan', 'aktif', 0, '', NULL, 'unverified', 'free'),
+(397, 'Jojo', 'Jojo@gmail.com', '$2y$10$2PBxj5zIke1Ec6/9aWCZpuGHexlydAMP/2uZ0U5p3dRPulkEjl9YS', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, 'unverified', 'free'),
+(404, 'Fajar Bida', 'fajar@gmail.com', NULL, NULL, NULL, 'pelanggan', 'aktif', 0, '', NULL, 'unverified', 'free'),
+(418, 'dinda', 'dinda@gmail.com', '$2y$10$fdV0gTN0wR1DXC40vVDKiOz4izJVbKYcrYKxVms9tsa0fmirMV1UC', '', '', 'pelanggan', 'aktif', 0, '469_Orange and White Modern Customer Experience Presentation.png', NULL, 'verified', 'free'),
+(483, 'Denden Mauludi', 'norlaila014@gmail.com', '$2y$10$VPVmihTTzi8uyJWiqtXnvuelt8DY5tFH4yke7JbcPbb7lMBpxlCgG', NULL, NULL, 'pelanggan', 'aktif', 0, 'default.jpg', NULL, 'unverified', 'free'),
+(739, 'shabrina', 'shabrina@gmail.com', 'lolipop123', '4254252', 'Jl. Jalan yuk', 'designer', NULL, NULL, 'logo himabig.png', NULL, 'unverified', 'free'),
+(950, 'Jojo 3D ', 'Jojo3D@gmail.com', 'jojo123', NULL, NULL, 'designer', NULL, NULL, '', NULL, 'unverified', 'free'),
+(951, 'zildji', 'zot155@gmail.com', 'zotcimahi', '', '', 'designer', NULL, NULL, 'WhatsApp Image 2020-10-27 at 08.45.16.jpeg', NULL, 'unverified', 'free');
 
 --
 -- Indexes for dumped tables

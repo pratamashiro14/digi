@@ -1,3 +1,7 @@
+<?php
+require_once __DIR__ . '/config.php';
+require_once __DIR__ . '/google_auth_helper.php';
+?>
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -171,6 +175,13 @@
             <a href="register.php" class="btn-outline-brand">Registrasi</a>
             <p class="hint">Sistem akan mengarahkan otomatis sesuai role akunmu (Pembeli / Desainer).</p>
         </form>
+
+        <?php if (google_login_tersedia()) { ?>
+        <p class="hint" style="margin: 14px 0 10px;">— atau, khusus Desainer —</p>
+        <a href="google_login.php" class="btn-outline-brand" style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:0;">
+            <i class="fa-brands fa-google"></i> Masuk/Daftar Desainer dengan Google
+        </a>
+        <?php } ?>
 
         <a href="admin/" class="admin-link">Masuk sebagai Admin &rarr;</a>
     </div>

@@ -132,13 +132,28 @@ function mou_simpan($koneksi, $id_user, $data) {
     // (return false) alih-alih fatal error / halaman putih; error lain
     // (mis. DB down) tetap dilempar apa adanya seperti semula.
     try {
-        return mysqli_stmt_execute($stmt);
+        $ok = mysqli_stmt_execute($stmt);
     } catch (mysqli_sql_exception $e) {
         if ($e->getCode() === 1062) {
             return false;
         }
         throw $e;
     }
+
+    // MOU disetujui = satu-satunya syarat kemitraan sejak KTP dihapus (Google
+    // Login menggantikan KYC identitas). status_verifikasi dijadikan cache
+    // fakta ini di t_user, dibaca badge "Terverifikasi" (toko_desainer.php,
+    // desainer_favorit.php) & panel admin tanpa perlu JOIN ke t_mou.
+    // Sumber kebenaran TETAP tabel t_mou (lihat mou_sudah_disetujui());
+    // kegagalan UPDATE ini tidak menggagalkan persetujuan MOU itu sendiri.
+    if ($ok) {
+        $upd = mysqli_prepare($koneksi, "UPDATE t_user SET status_verifikasi = 'verified' WHERE id_user = ?");
+        mysqli_stmt_bind_param($upd, 'i', $id_user);
+        mysqli_stmt_execute($upd);
+        mysqli_stmt_close($upd);
+    }
+
+    return $ok;
 }
 
 // ------------------------------------------------------------

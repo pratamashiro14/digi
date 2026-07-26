@@ -200,25 +200,6 @@ function require_designer($redirect = 'login.php') {
     redirect_with_alert('Silakan login sebagai Desainer terlebih dahulu.', $redirect);
 }
 
-/** Halaman khusus DESAINER TERVERIFIKASI (KTP approved). */
-function require_verified_designer() {
-    require_designer();
-    
-    // Gunakan koneksi tanpa declare ulang jika sudah ada
-    global $koneksi;
-    if (!isset($koneksi)) {
-        include __DIR__ . '/admin/koneksi.php';
-    }
-    
-    $id = (int) current_id();
-    $cek = mysqli_query($koneksi, "SELECT status_verifikasi FROM t_user WHERE id_user='$id'");
-    $data = mysqli_fetch_assoc($cek);
-    
-    if (!$data || $data['status_verifikasi'] !== 'verified') {
-        redirect_with_alert('Fitur ini hanya untuk desainer yang KTP-nya sudah diverifikasi oleh Admin. Silakan lengkapi profil Anda.', 'profil_desainer.php');
-    }
-}
-
 // ------------------------------------------------------------
 // 6. LOGIN / LOGOUT TERPUSAT (dipakai file proses_login*)
 // ------------------------------------------------------------

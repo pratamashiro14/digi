@@ -40,12 +40,6 @@ if(empty($_SESSION['admin'])){
         $types = 'ssssssi';
         $vals  = [$nama, $email, $password, $no_telp, $alamat, $role, $premium];
 
-        if ($role === 'designer') {
-            $sets[]  = 'nik=?';
-            $types  .= 's';
-            $vals[]  = $_POST['nik'] ?? '';
-        }
-
         $types .= 'i';
         $vals[] = $id;
         $sql = "UPDATE t_user SET " . implode(', ', $sets) . " WHERE id_user=?";
@@ -442,15 +436,10 @@ if(empty($_SESSION['admin'])){
 
             <div class="mb-3">
               <label class="form-label fw-bold">Peran</label>
-              <select name="role" id="roleSelect" class="form-select" required onchange="toggleNikField()">
+              <select name="role" id="roleSelect" class="form-select" required>
                 <option value="designer" <?= $data['role']=='designer'?'selected':''; ?>>Designer</option>
                 <option value="pelanggan" <?= $data['role']=='pelanggan'?'selected':''; ?>>Pelanggan</option>
               </select>
-            </div>
-
-            <div class="mb-3" id="nikField" style="<?= $data['role']=='designer'?'':'display:none;'; ?>">
-              <label class="form-label fw-bold">NIK (Nomor Induk Kependudukan)</label>
-              <input type="text" name="nik" class="form-control" value="<?= htmlspecialchars($data['nik'] ?? ''); ?>" maxlength="16" pattern="\d{16}" title="NIK harus berupa 16 digit angka">
             </div>
 
             <div class="mb-3">
@@ -509,16 +498,6 @@ if(empty($_SESSION['admin'])){
                 $('#notification-content-container').html('<div class="p-3 text-center text-danger">Gagal memuat notifikasi.</div>');
             }
         });
-    }
-
-    function toggleNikField() {
-        var role = document.getElementById('roleSelect').value;
-        var nikField = document.getElementById('nikField');
-        if (role === 'designer') {
-            nikField.style.display = 'block';
-        } else {
-            nikField.style.display = 'none';
-        }
     }
 
     // Panggil segera dan ulangi setiap 30 detik

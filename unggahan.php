@@ -6,9 +6,10 @@ require_once __DIR__ . '/wanprestasi_helper.php'; // sweep wanprestasi & tenggat
 require_once __DIR__ . '/mou_helper.php';
 
 // 1. CEK LOGIN KHUSUS DESAINER
-require_verified_designer();
+require_designer();
 
-// 1b. MOU Kemitraan wajib disetujui sebelum bisa mengunggah/mengelola karya
+// 1b. MOU Kemitraan — satu-satunya syarat sebelum bisa mengunggah/mengelola
+// karya sejak KTP dihapus (Google Login menggantikan verifikasi identitas).
 require_mou_disetujui();
 
 // Halaman biasa — cukup throttled per sesi. Desainer perlu tahu bila

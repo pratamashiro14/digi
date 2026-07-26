@@ -6,8 +6,7 @@
  * REVISI KEAMANAN: pelanggan TIDAK LAGI wajib verifikasi KTP. Foto KTP
  * pelanggan adalah data pribadi sensitif (UU PDP No. 27/2022) yang berisiko
  * bocor (tersimpan di admin/uploads/, bisa diakses langsung lewat URL) dan
- * tidak proporsional untuk pihak yang cuma MEMBAYAR (beda dengan desainer
- * yang MENERIMA pencairan dana lewat t_pencairan — KTP mereka tetap wajib).
+ * tidak proporsional untuk pihak yang cuma MEMBAYAR.
  *
  * Jangkar identitas pengganti untuk pelanggan:
  *   1) email_terverifikasi (OTP saat registrasi — lihat otp_helper.php)
@@ -17,24 +16,16 @@
  *   4) strike wanprestasi -> suspend berjangka (lihat wanprestasi_helper.php)
  *
  * TRADE-OFF YANG DISENGAJA: daya cegah ban turun dari NIK (nyaris mustahil
- * diganti) ke nomor HP (bisa dibeli ulang murah). Ban NIK LAMA untuk
- * pelanggan jadi tidak berdaya begitu data NIK-nya dihapus — deterrent
- * efektifnya berpindah ke ban nomor HP + email. Ban NIK untuk DESAINER
- * tetap penuh berdaya karena mereka tetap menyimpan NIK.
+ * diganti) ke nomor HP (bisa dibeli ulang murah). Sejak KTP/NIK desainer JUGA
+ * dihapus (digantikan Google Login + persetujuan MOU — lihat
+ * google_auth_helper.php & mou_helper.php), jangkar desainer pun sekarang
+ * email, bukan lagi NIK. Trade-off ini disengaja: admin cross-check manual
+ * saat pencairan dana (t_pencairan) jadi filter fraud kedua untuk desainer.
  *
  * Dipakai bersama oleh product.php (quick view), product-detail.php, dan
  * proses_bidding.php supaya tampilan & validasi server konsisten.
  */
 require_once __DIR__ . '/identitas_helper.php';
-
-/**
- * True jika NIK ada di daftar blokir (ban berbasis NIK — dipakai desainer).
- * Wrapper tipis di atas identitas_diblokir() generik, dipertahankan supaya
- * pemanggil lama (mis. admin/tables/datapengguna.php) tidak perlu diubah.
- */
-function nik_diblokir($koneksi, $nik) {
-    return identitas_diblokir($koneksi, 'nik', $nik);
-}
 
 /**
  * Status kelayakan bid seorang user.
@@ -49,7 +40,7 @@ function status_bid_user($koneksi, $id_user) {
     }
 
     $stmt = mysqli_prepare($koneksi,
-        "SELECT status, suspend_sampai, email, email_terverifikasi, no_telp_norm, nik,
+        "SELECT status, suspend_sampai, email, email_terverifikasi, no_telp_norm,
                 (suspend_sampai IS NOT NULL AND suspend_sampai <= NOW()) AS suspend_habis
            FROM t_user WHERE id_user = ?");
     mysqli_stmt_bind_param($stmt, 'i', $id_user);
@@ -75,15 +66,12 @@ function status_bid_user($koneksi, $id_user) {
         }
     }
 
-    // 2) BLOKIR IDENTITAS — email/telp (pelanggan) atau nik (desainer).
+    // 2) BLOKIR IDENTITAS — email/telp (jangkar identitas semua role).
     if (identitas_diblokir($koneksi, 'email', $u['email'])) {
         return ['ok' => false, 'code' => 'banned', 'reason' => 'Akun Anda diblokir permanen karena pelanggaran dan tidak dapat mengikuti lelang.'];
     }
     if (!empty($u['no_telp_norm']) && identitas_diblokir($koneksi, 'telp', $u['no_telp_norm'])) {
         return ['ok' => false, 'code' => 'banned', 'reason' => 'Nomor HP akun Anda diblokir permanen karena pelanggaran dan tidak dapat mengikuti lelang.'];
-    }
-    if (!empty($u['nik']) && identitas_diblokir($koneksi, 'nik', $u['nik'])) {
-        return ['ok' => false, 'code' => 'banned', 'reason' => 'Akun (NIK) Anda diblokir permanen karena pelanggaran dan tidak dapat mengikuti lelang.'];
     }
 
     // 3) EMAIL BELUM TERVERIFIKASI — pengganti gerbang KTP lama.

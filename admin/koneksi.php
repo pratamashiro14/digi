@@ -11,10 +11,17 @@ if (!$koneksi) {
     die("Koneksi gagal: " . mysqli_connect_error());
 }
 
-// Auto-migration untuk mendeteksi dan menambah kolom 'nik' jika belum ada
-$check_column = mysqli_query($koneksi, "SHOW COLUMNS FROM t_user LIKE 'nik'");
-if ($check_column && mysqli_num_rows($check_column) == 0) {
-    mysqli_query($koneksi, "ALTER TABLE t_user ADD COLUMN nik VARCHAR(20) DEFAULT NULL AFTER status_verifikasi");
+// Auto-migration: hapus kolom 'nik' & 'foto_ktp' dari t_user. KTP tidak lagi
+// jadi syarat desainer (digantikan Google Login + persetujuan MOU) — lihat
+// mou_helper.php::mou_simpan() yang sekarang men-set status_verifikasi
+// otomatis begitu MOU disetujui, tanpa perlu KTP/NIK sama sekali.
+$check_nik = mysqli_query($koneksi, "SHOW COLUMNS FROM t_user LIKE 'nik'");
+if ($check_nik && mysqli_num_rows($check_nik) > 0) {
+    mysqli_query($koneksi, "ALTER TABLE t_user DROP COLUMN nik");
+}
+$check_foto_ktp = mysqli_query($koneksi, "SHOW COLUMNS FROM t_user LIKE 'foto_ktp'");
+if ($check_foto_ktp && mysqli_num_rows($check_foto_ktp) > 0) {
+    mysqli_query($koneksi, "ALTER TABLE t_user DROP COLUMN foto_ktp");
 }
 
 // Auto-migration untuk mendeteksi dan menambah kolom 'is_read' di t_chat jika belum ada

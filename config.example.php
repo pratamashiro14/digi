@@ -93,3 +93,18 @@ if (!function_exists('app_url')) {
         return $scheme . '://' . $host . BASE_URL . $path;
     }
 }
+
+// ------------------------------------------------------------
+// 6. GOOGLE LOGIN (OAuth 2.0) — pendaftaran/login Desainer
+// ------------------------------------------------------------
+// Ambil dari Google Cloud Console -> APIs & Services -> Credentials ->
+// Create Credentials -> OAuth client ID -> tipe "Web application".
+// Authorized redirect URI harus PERSIS sama dengan GOOGLE_REDIRECT_URI di
+// bawah untuk tiap environment (boleh daftar >1 URI: localhost & produksi
+// sekaligus di satu OAuth client yang sama).
+define('GOOGLE_CLIENT_ID',     env_or('GOOGLE_CLIENT_ID', 'ISI_GOOGLE_CLIENT_ID'));
+define('GOOGLE_CLIENT_SECRET', env_or('GOOGLE_CLIENT_SECRET', 'ISI_GOOGLE_CLIENT_SECRET'));
+// Dibangun otomatis dari app_url() supaya cocok baik di localhost maupun
+// produksi tanpa perlu diisi manual — cukup daftarkan kedua URI-nya di
+// Google Cloud Console. Override lewat env GOOGLE_REDIRECT_URI bila perlu.
+define('GOOGLE_REDIRECT_URI', env_or('GOOGLE_REDIRECT_URI', app_url('google_callback.php')));
